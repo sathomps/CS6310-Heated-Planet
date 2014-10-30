@@ -210,6 +210,5 @@ public class GridCell
     public void calculateTemp()
     {
         temp = Math.round(settings.calculateSunHeat(this) + calculateNeighborHeat());
-        System.out.println("New Temp: " + temp);
     }
 }
