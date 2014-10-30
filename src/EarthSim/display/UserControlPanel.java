@@ -21,7 +21,7 @@ public class UserControlPanel extends JPanel
 {
     private static final long         serialVersionUID = 1L;
 
-    private static final Dimension    PREFERRED_SIZE   = new Dimension(100, 400);
+    private static final Dimension    PREFERRED_SIZE   = new Dimension(75, 120);
 
     private final SimulationSettings  settings;
 

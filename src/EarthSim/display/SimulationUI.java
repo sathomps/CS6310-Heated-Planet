@@ -1,6 +1,7 @@
 package EarthSim.display;
 
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -21,7 +22,7 @@ public class SimulationUI extends JFrame
 
     private void init()
     {
-        addPanels();
+        addGridBagLayout();
 
         pack();
         setLocationRelativeTo(null);
@@ -29,12 +30,40 @@ public class SimulationUI extends JFrame
         setVisible(true);
     }
 
-    private void addPanels()
+    private void addGridBagLayout()
     {
-        final JPanel panel = new JPanel(new GridLayout(2, 1));
+        final GridBagLayout gridbag = new GridBagLayout();
+        final JPanel panel = new JPanel(gridbag);
         add(panel);
 
-        panel.add(new EarthSunPanel(settings));
-        panel.add(new UserControlPanel(settings));
+        addEarthSunPanel(gridbag, panel);
+        addUserControlPanel(gridbag, panel);
+    }
+
+    private void addEarthSunPanel(final GridBagLayout gridbag, final JPanel panel)
+    {
+        final EarthSunPanel earthSunPanel = new EarthSunPanel(settings);
+        final GridBagConstraints c = new GridBagConstraints();
+        c.weightx = 1;
+        c.weighty = 1;
+        c.gridx = 0;
+        c.gridy = 0;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        gridbag.setConstraints(earthSunPanel, c);
+        panel.add(earthSunPanel);
+    }
+
+    private void addUserControlPanel(final GridBagLayout gridbag, final JPanel panel)
+    {
+        final UserControlPanel userControlPanel = new UserControlPanel(settings);
+        final GridBagConstraints c = new GridBagConstraints();
+
+        c.weightx = 0;
+        c.gridx = 1;
+        c.anchor = GridBagConstraints.NORTHEAST;
+        c.fill = GridBagConstraints.NONE;
+        gridbag.setConstraints(userControlPanel, c);
+        panel.add(userControlPanel);
     }
 }
