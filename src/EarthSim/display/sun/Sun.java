@@ -34,6 +34,8 @@ public class Sun extends JPanel
     private static int               MAJOR_AXIS_LENGTH     = 152500000;
     private static double            SUN_SURFACE_INTENSITY = 1e21 / (4 * Math.PI * Math.pow(SUN_RADIUS, 2));
 
+    public static final int          HEAT_OUTPUT_PER_HOUR  = 4;
+
     private static double            ORBIT_DEGREE_MINUTE   = 360.0 / 365.0 / 24.0 / 60.0;
     private static double            SPIN_DEGREE_MINUTE    = 360.0 / 24.0 / 60.0;
     private static int               MINUTE_VERNAL_EQUINOX = 115200;
@@ -137,6 +139,17 @@ public class Sun extends JPanel
         {
             return (float) (latRadiation * lonRadiation * ((SUN_SURFACE_INTENSITY / Math.pow(distance / SUN_RADIUS, 2)) * Math.pow(10, 10)));
         }
+    }
+
+    private float calculateHeatCoefficient()
+    {
+        final float heatFactor = settings.getGridSpacing() / 10f;
+        return (settings.getGridSpacing() / 12f) * (heatFactor == 0 ? 1 : heatFactor);
+    }
+
+    public float calculateSunHeat(final GridCell cell)
+    {
+        return (calculateHeatCoefficient() * calculateRadiationFactor(cell));
     }
 
     /**

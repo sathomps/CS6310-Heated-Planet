@@ -51,7 +51,7 @@ public class GridSettings
 
     public void addCell(final int row, final int col, final int width)
     {
-        final GridCell cell = new GridCell(settings);
+        final GridCell cell = new GridCell();
         cell.setWidth(width);
 
         LinkedList<GridCell> cols;
@@ -67,7 +67,7 @@ public class GridSettings
         }
         cols.add(cell);
         calculateCoordinates(row, col, cell);
-        cell.calculateGeometry();
+        calculateGeometry(cell);
     }
 
     public GridCell getCellByRowCol(final int row, final int col)
@@ -129,4 +129,35 @@ public class GridSettings
             getCellByRowCol(0, col).setLeft(getCellByRowCol(row, col));
         }
     }
+
+    private void calculateLengths(final GridCell cell)
+    {
+        final int earthRadius = settings.getEarthRadius();
+        final float sepDeg = cell.getLatitudeTop() - cell.getLatitudeBottom();
+        final float topLength = Util.calculateLatitudeCircum(cell.getLatitudeTop(), earthRadius) / (360 / Math.abs(sepDeg));
+        final float bottomLength = Util.calculateLatitudeCircum(cell.getLatitudeBottom(), earthRadius) / (360 / Math.abs(sepDeg));
+        // final float sideLength = Util.calculateTrapezoidSideLen(topLength,
+        // bottomLength, height);
+        calculateSurfaceArea(cell, topLength, bottomLength);
+    }
+
+    private void calculateSurfaceArea(final GridCell cell, final float topLength, final float bottomLength)
+    {
+        cell.setSurfaceArea(Util.calculateTrapezoidArea(topLength, bottomLength, cell.getHeight()));
+    }
+
+    private void calculateHeight(final GridCell cell)
+    {
+        final int earthRadius = settings.getEarthRadius();
+
+        cell.setHeight((int) Math.abs(Util.calculateDistanceToEquator(cell.getLatitudeTop(), earthRadius)
+                - Util.calculateDistanceToEquator(cell.getLatitudeBottom(), earthRadius)));
+    }
+
+    private void calculateGeometry(final GridCell cell)
+    {
+        calculateHeight(cell);
+        calculateLengths(cell);
+    }
+
 }

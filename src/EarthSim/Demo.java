@@ -5,7 +5,7 @@ import javax.swing.SwingUtilities;
 import EarthSim.common.SimulationSettings;
 import EarthSim.display.SimulationUI;
 import EarthSim.metrics.MetricsEngine;
-import EarthSim.simulation.SimulationEngine;
+import EarthSim.simulation.SimulationEngineDaemon;
 
 public class Demo
 {
@@ -26,7 +26,7 @@ public class Demo
 
     private static void startSimulation()
     {
-        new Thread(new SimulationEngine(settings)).start();
+        new Thread(new SimulationEngineDaemon(settings)).start();
     }
 
     private static void startUI()

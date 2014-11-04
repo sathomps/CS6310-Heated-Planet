@@ -1,78 +1,105 @@
 package EarthSim.common;
 
-import static EarthSim.common.TemperatureColorPicker.getColor;
-
-import java.awt.Color;
-
 public class GridCell
 {
-    private static final int         DEFAULT_CELL_TEMPERATURE_CELCIUS = 85;
+    private static final int DEFAULT_CELL_TEMPERATURE_CELCIUS = 85;
 
-    private int                      width;
-    private double                   height;
-    private double                   surfaceArea;
+    private int              width;
+    private int              height;
 
-    private int                      temp                             = DEFAULT_CELL_TEMPERATURE_CELCIUS;
-    private int                      oldTemp                          = DEFAULT_CELL_TEMPERATURE_CELCIUS;
+    private float            latitudeTop;
+    private float            latitudeBottom;
+    private float            longitudeLeft;
+    private float            longitudeRight;
 
-    private GridCell                 top;
-    private GridCell                 bottom;
-    private GridCell                 left;
-    private GridCell                 right;
+    private float            surfaceArea;
 
-    private float                    topLength;
-    private float                    bottomLength;
-    private float                    sideLength;
+    private float            temp                             = DEFAULT_CELL_TEMPERATURE_CELCIUS;
+    private float            oldTemp                          = DEFAULT_CELL_TEMPERATURE_CELCIUS;
 
-    private float                    latitudeTop;
-    private float                    latitudeBottom;
-    private float                    longitudeLeft;
-    private float                    longitudeRight;
-    private final SimulationSettings settings;
+    private GridCell         north;
+    private GridCell         south;
+    private GridCell         west;
+    private GridCell         east;
 
-    public GridCell(final SimulationSettings settings)
+    public GridCell getNorth()
     {
-        this.settings = settings;
+        return north;
+    }
+
+    public void setNorth(final GridCell north)
+    {
+        this.north = north;
+    }
+
+    public GridCell getSouth()
+    {
+        return south;
+    }
+
+    public void setSouth(final GridCell south)
+    {
+        this.south = south;
+    }
+
+    public GridCell getWest()
+    {
+        return west;
+    }
+
+    public void setWest(final GridCell west)
+    {
+        this.west = west;
+    }
+
+    public GridCell getEast()
+    {
+        return east;
+    }
+
+    public void setEast(final GridCell east)
+    {
+        this.east = east;
     }
 
     public GridCell getTop()
     {
-        return top;
+        return north;
     }
 
     public void setTop(final GridCell top)
     {
-        this.top = top;
+        this.north = top;
     }
 
     public GridCell getBottom()
     {
-        return bottom;
+        return south;
     }
 
     public void setBottom(final GridCell bottom)
     {
-        this.bottom = bottom;
+        this.south = bottom;
     }
 
     public GridCell getLeft()
     {
-        return left;
+        return west;
     }
 
     public void setLeft(final GridCell left)
     {
-        this.left = left;
+        this.west = left;
     }
 
     public GridCell getRight()
     {
-        return right;
+        return east;
     }
 
     public void setRight(final GridCell right)
     {
-        this.right = right;
+        this.east = right;
     }
 
     public float getLatitudeTop()
@@ -115,6 +142,61 @@ public class GridCell
         this.longitudeRight = longitudeRight;
     }
 
+    public float getSurfaceArea()
+    {
+        return surfaceArea;
+    }
+
+    public void setSurfaceArea(final float surfaceArea)
+    {
+        this.surfaceArea = surfaceArea;
+    }
+
+    public float getTemp()
+    {
+        return temp;
+    }
+
+    public void setTemp(final float temp)
+    {
+        this.temp = temp;
+    }
+
+    public float getWestTemp()
+    {
+        return west == null ? 0.0f : west.getTemp();
+    }
+
+    public float getEastTemp()
+    {
+        return east == null ? 0.0f : east.getTemp();
+    }
+
+    public float getSouthTemp()
+    {
+        return south == null ? 0.0f : south.getTemp();
+    }
+
+    public float getNorthTemp()
+    {
+        return north == null ? 0.0f : north.getTemp();
+    }
+
+    public void swapTemp()
+    {
+        this.oldTemp = this.temp;
+    }
+
+    public int getHeight()
+    {
+        return height;
+    }
+
+    public void setHeight(final int height)
+    {
+        this.height = height;
+    }
+
     public int getWidth()
     {
         return width;
@@ -123,92 +205,5 @@ public class GridCell
     public void setWidth(final int width)
     {
         this.width = width;
-    }
-
-    public double getHeight()
-    {
-        return height;
-    }
-
-    public void setHeight(final double height)
-    {
-        this.height = height;
-    }
-
-    public double getSurfaceArea()
-    {
-        return surfaceArea;
-    }
-
-    public void setSurfaceArea(final double surfaceArea)
-    {
-        this.surfaceArea = surfaceArea;
-    }
-
-    public int getTemp()
-    {
-        return temp;
-    }
-
-    public void setTemp(final int temp)
-    {
-        this.temp = temp;
-    }
-
-    public Color getTempColor()
-    {
-        return getColor(temp);
-    }
-
-    private void calculateLengths()
-    {
-        final int earthRadius = settings.getEarthRadius();
-        final float sepDeg = latitudeTop - latitudeBottom;
-        this.topLength = Util.calculateLatitudeCircum(latitudeTop, earthRadius) / (360 / Math.abs(sepDeg));
-        this.bottomLength = Util.calculateLatitudeCircum(latitudeBottom, earthRadius) / (360 / Math.abs(sepDeg));
-        this.sideLength = Util.calculateTrapezoidSideLen(topLength, bottomLength, height);
-    }
-
-    private void calculateArea()
-    {
-        this.surfaceArea = Util.calculateTrapezoidArea(topLength, bottomLength, height);
-    }
-
-    private void calculateHeight()
-    {
-        final int earthRadius = settings.getEarthRadius();
-
-        this.height = Math.abs(Util.calculateDistanceToEquator(latitudeTop, earthRadius) - Util.calculateDistanceToEquator(latitudeBottom, earthRadius));
-    }
-
-    public void calculateGeometry()
-    {
-        this.calculateHeight();
-        this.calculateLengths();
-        this.calculateArea();
-    }
-
-    private float calculateNeighborHeat()
-    {
-        final float totalLen = topLength + bottomLength + sideLength + sideLength;
-
-        final float l = (left != null) ? left.oldTemp : 0;
-        final float r = (right != null) ? right.oldTemp : 0;
-        final float t = (top != null) ? top.oldTemp : 0;
-        final float b = (bottom != null) ? bottom.oldTemp : 0;
-
-        final float result = ((sideLength / totalLen) * l) + ((sideLength / totalLen) * r) + ((topLength / totalLen) * t) + ((bottomLength / totalLen) * b);
-
-        return result;
-    }
-
-    public void swapTemp()
-    {
-        this.oldTemp = this.temp;
-    }
-
-    public void calculateTemp()
-    {
-        temp = Math.round(settings.calculateSunHeat(this) + calculateNeighborHeat());
     }
 }

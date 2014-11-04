@@ -1,12 +1,7 @@
 package EarthSim.display.earth;
 
-import static EarthSim.display.earth.EarthImage.IMAGE;
-
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.RescaleOp;
 import java.util.LinkedList;
 
 import javax.swing.JPanel;
@@ -20,12 +15,6 @@ public class Earth extends JPanel
 {
     private static final long        serialVersionUID = 1L;
 
-    private static final float       OPACITY          = .78f;
-
-    private BufferedImage            imgTransparent;
-    private final float[]            scales           = { 1f, 1f, 1f, OPACITY };
-    private final float[]            offsets          = new float[4];
-    private int                      gridSpacing;
     private int                      pixelsPerCellX;
     private int                      pixelsPerCellY;
     private int                      imgWidth;
@@ -35,6 +24,7 @@ public class Earth extends JPanel
     private int                      radius;
     private final SimulationSettings settings;
     private GridSettings             gridSettings;
+    private final EarthImage         image            = new EarthImage();
 
     /**
      * Constructs a display grid with a default grid spacing.
@@ -57,31 +47,23 @@ public class Earth extends JPanel
 
     private void calculateGridGranularity()
     {
-        this.gridSpacing = settings.getGridSpacing();
-
-        numCellsX = 360 / gridSpacing;
-        pixelsPerCellX = IMAGE.getWidth() / numCellsX;
+        numCellsX = 360 / settings.getGridSpacing();
+        pixelsPerCellX = image.getIconWidth() / numCellsX;
         imgWidth = numCellsX * pixelsPerCellX;
 
-        numCellsY = 180 / gridSpacing;
-        pixelsPerCellY = IMAGE.getHeight() / numCellsY;
+        numCellsY = 180 / settings.getGridSpacing();
+        pixelsPerCellY = image.getIconHeight() / numCellsY;
         imgHeight = numCellsY * pixelsPerCellY;
         radius = imgHeight / 2;
 
-        // create an image capable of transparency; then draw our image into it
-        imgTransparent = new BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_INT_ARGB);
-        final Graphics g = imgTransparent.getGraphics();
-
         gridSettings.setHeight(imgHeight).setWidth(imgWidth);
-
-        g.drawImage(IMAGE, 0, 0, imgWidth, imgHeight, null);
     }
 
     @Override
     public void paint(final Graphics g)
     {
+        drawEarthImage(g);
         fillCellColors(g);
-        drawTransparentImage(g);
         drawGrid(g);
     }
 
@@ -116,9 +98,8 @@ public class Earth extends JPanel
             for (int y = 0; y < cells.size(); y++)
             {
                 final GridCell cell = cells.get(y);
-                g.setColor(cell.getTempColor());
-
-                g.fillRect(cellX, cellY, cell.getWidth(), (int) cell.getHeight());
+                g.setColor(getColor(cell.getTemp()));
+                g.fillRect(cellX, cellY, cell.getWidth(), cell.getHeight());
                 cellY += cell.getHeight();
             }
             cellX += cellWidth;
@@ -126,11 +107,9 @@ public class Earth extends JPanel
         }
     }
 
-    private void drawTransparentImage(final Graphics g)
+    private void drawEarthImage(final Graphics g)
     {
-        final RescaleOp rop = new RescaleOp(scales, offsets, null);
-        final Graphics2D g2d = (Graphics2D) g;
-        g2d.drawImage(imgTransparent, rop, 0, 0);
+        g.drawImage(image.getImage(), 0, 0, null);
     }
 
     private void drawGrid(final Graphics g)
@@ -144,7 +123,7 @@ public class Earth extends JPanel
         }
 
         // draw scaled latitude lines
-        for (int lat = 0; lat <= 90; lat += gridSpacing)
+        for (int lat = 0; lat <= 90; lat += settings.getGridSpacing())
         {
             final int y = (int) Util.calculateDistanceToEquator(lat, radius);
             g.drawLine(0, radius - y, imgWidth, radius - y);
@@ -164,5 +143,30 @@ public class Earth extends JPanel
     public int getRadius()
     {
         return radius;
+    }
+
+    public float calculateAverageTemperature()
+    {
+        final LinkedList<LinkedList<GridCell>> grid = gridSettings.getGrid();
+
+        float totalTemp = 0;
+
+        for (int x = 0; x < grid.size(); x++)
+        {
+            final LinkedList<GridCell> cells = grid.get(x);
+            for (int y = 0; y < cells.size(); y++)
+            {
+
+                totalTemp += cells.get(y).getTemp();
+            }
+        }
+
+        return totalTemp / (grid.size() * grid.get(0).size());
+    }
+
+    private Color getColor(final float tempInCelcius)
+    {
+        final Color c = Color.getHSBColor(.666f * tempInCelcius, 1f, 1f);
+        return new Color(c.getRed(), c.getGreen(), c.getBlue(), 120);
     }
 }

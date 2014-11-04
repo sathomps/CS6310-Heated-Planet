@@ -1,26 +1,16 @@
 package EarthSim.display.earth;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.net.URL;
 
-import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 
-public class EarthImage
+public class EarthImage extends ImageIcon
 {
-    private final static URL    URL = EarthImage.class.getResource("EarthImage.jpg");
-    public static BufferedImage IMAGE;
+    private static final long serialVersionUID = 1L;
+    private final static URL  URL              = EarthImage.class.getResource("EarthImage.png");
 
-    static
+    public EarthImage()
     {
-        try
-        {
-            IMAGE = ImageIO.read(URL);
-        }
-        catch (final IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
+        super(URL.getPath());
     }
 }

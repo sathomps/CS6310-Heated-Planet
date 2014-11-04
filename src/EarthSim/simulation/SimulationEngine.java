@@ -1,15 +1,13 @@
 package EarthSim.simulation;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static EarthSim.common.SimulationSettings.EARTH_ROTATION_DEGREES_PER_HOUR;
 
 import java.util.LinkedList;
 
 import EarthSim.common.GridCell;
 import EarthSim.common.SimulationSettings;
-import EarthSim.common.Status;
 
-public class SimulationEngine implements Runnable
+public class SimulationEngine
 {
     private final SimulationSettings settings;
 
@@ -18,35 +16,51 @@ public class SimulationEngine implements Runnable
         this.settings = settings;
     }
 
-    @Override
-    public void run()
+    public void runSimulation()
     {
-        try
+        final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
+        for (int row = 0; row < grid.size(); row++)
         {
-            while (true)
+            for (int cell = 0; cell < grid.get(0).size(); cell++)
             {
-                while (Status.RUN.equals(settings.getStatus()))
-                {
-                    for (final LinkedList<GridCell> cells : settings.getGrid())
-                    {
-                        for (final GridCell cell : cells)
-                        {
-                            cell.calculateTemp();
-                        }
-                    }
-                    settings.moveSun();
-                    Thread.sleep(MILLISECONDS.convert(settings.getSimulationTimeStepMinutes(), SECONDS));
-                }
-                if (Status.STOP.equals(settings.getStatus()))
-                {
-                    settings.reset();
-                }
-                Thread.sleep(100);
+                calculateTemp(grid.get(row).get(cell));
             }
         }
-        catch (final InterruptedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        moveSun();
+    }
+
+    private void moveSun()
+    {
+        settings.getSun().movePosition(EARTH_ROTATION_DEGREES_PER_HOUR);
+    }
+
+    private void calculateTemp(final GridCell cell)
+    {
+        final float initialTemp = cell.getTemp();
+        final float sunTemp = calculateSunHeat(cell);
+        final float coolingTemp = calculateTemperatureDueToCooling(cell);
+        final float neighborTemp = calculateNeighborHeat(cell) / 2;
+
+        cell.setTemp(initialTemp + sunTemp + coolingTemp + neighborTemp);
+    }
+
+    private float calculateSunHeat(final GridCell cell)
+    {
+        return settings.getSun().calculateSunHeat(cell);
+    }
+
+    private float calculateTemperatureDueToCooling(final GridCell cell)
+    {
+        final float relativeTempFactor = cell.getTemp() / settings.getEarth().calculateAverageTemperature();
+
+        final float timeOffset = settings.getSimulationTimeStepMinutes() / 60f;
+        final float attenuationConstant = .406867508241966f / 2;
+
+        return (float) -1 * 4 * attenuationConstant * timeOffset * relativeTempFactor;
+    }
+
+    private float calculateNeighborHeat(final GridCell cell)
+    {
+        return (cell.getNorthTemp() + cell.getSouthTemp() + cell.getEastTemp() + cell.getWestTemp()) / 4f;
     }
 }

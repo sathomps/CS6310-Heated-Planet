@@ -37,21 +37,20 @@ public class SimulationSettings
         return this;
     }
 
+    public Sun getSun()
+    {
+        return sun;
+    }
+
     public SimulationSettings setEarth(final Earth earth)
     {
         this.earth = earth;
         return this;
     }
 
-    private float calculateHeatCoefficient()
+    public Earth getEarth()
     {
-        final float heatFactor = gridSpacing / 10f;
-        return (gridSpacing / 12f) * (heatFactor == 0 ? 1 : heatFactor);
-    }
-
-    public float calculateSunHeat(final GridCell cell)
-    {
-        return (calculateHeatCoefficient() * sun.calculateRadiationFactor(cell));
+        return earth;
     }
 
     public int getSimulationTimeStepMinutes()
@@ -100,11 +99,6 @@ public class SimulationSettings
     public int getEarthRadius()
     {
         return earth.getRadius();
-    }
-
-    public void moveSun()
-    {
-        sun.movePosition(EARTH_ROTATION_DEGREES_PER_HOUR);
     }
 
     public SimulationSettings setStatus(final Status status)
