@@ -3,17 +3,25 @@ package EarthSim.simulation;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import EarthSim.common.SimulationSettings;
-import EarthSim.common.Status;
+import EarthSim.common.event.EventBus;
+import EarthSim.common.event.Status;
+import EarthSim.common.event.Subscribe;
 
 public class SimulationEngineDaemon implements Runnable
 {
     private final SimulationSettings settings;
     private final SimulationEngine   engine;
 
-    public SimulationEngineDaemon(final SimulationSettings settings)
+    private final EventBus           eventBus;
+
+    private boolean                  run = false;
+
+    public SimulationEngineDaemon(final EventBus eventBus, final SimulationSettings settings)
     {
         this.settings = settings;
-        this.engine = new SimulationEngine(settings);
+        this.eventBus = eventBus;
+        eventBus.subscribe(this);
+        this.engine = new SimulationEngine(eventBus, settings);
     }
 
     @Override
@@ -21,19 +29,21 @@ public class SimulationEngineDaemon implements Runnable
     {
         try
         {
-            while (true)
+            while (run)
             {
-                while (Status.RUN.equals(settings.getStatus()))
-                {
-                    engine.runSimulation();
-                    Thread.sleep(MILLISECONDS.convert(settings.getSimulationTimeStepMinutes(), SECONDS));
-                }
-                Thread.sleep(100);
+                engine.run();
+                Thread.sleep(MILLISECONDS.convert(settings.getSimulationTimeStepMinutes(), SECONDS));
             }
         }
         catch (final InterruptedException e)
         {
             throw new RuntimeException(e);
         }
+    }
+
+    @Subscribe
+    public void stop(final Status stop)
+    {
+        run = false;
     }
 }

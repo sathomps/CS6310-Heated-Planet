@@ -1,9 +1,5 @@
 package EarthSim.display;
 
-import static EarthSim.common.Status.RUN;
-import static EarthSim.common.Status.STOP;
-import static EarthSim.common.Status.STOPPED;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -25,7 +21,8 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
 import EarthSim.common.SimulationSettings;
-import EarthSim.common.Status;
+import EarthSim.common.event.EventBus;
+import EarthSim.common.event.Status;
 
 public class UserControlPanel extends JPanel
 {
@@ -42,8 +39,11 @@ public class UserControlPanel extends JPanel
     private SpinnerNumberModel        gridSpacingModel;
     private SpinnerNumberModel        timeStepModel;
 
-    public UserControlPanel(final SimulationSettings settings)
+    private final EventBus            eventBus;
+
+    public UserControlPanel(final EventBus eventBus, final SimulationSettings settings)
     {
+        this.eventBus = eventBus;
         this.settings = settings;
         initLayout();
         addControlButtons();
@@ -134,29 +134,8 @@ public class UserControlPanel extends JPanel
             private void setSettings(final JButton button)
             {
                 final Status currentStatus = Status.getStatus(button.getActionCommand());
-                final Status prevStatus = settings.getStatus();
-                checkForRunStatus(currentStatus, prevStatus);
-                checkForStopStatus(currentStatus, prevStatus);
-                settings.setStatus(currentStatus);
+                eventBus.publish(currentStatus);
             }
-
-            private void checkForRunStatus(final Status currentStatus, final Status prevStatus)
-            {
-                if (STOP.equals(prevStatus) || (STOPPED.equals(prevStatus) && RUN.equals(currentStatus)))
-                {
-                    settings.setGridSpacing(gridSpacingModel.getNumber().intValue());
-                    settings.reset();
-                }
-            }
-
-            private void checkForStopStatus(final Status currentStatus, final Status prevStatus)
-            {
-                if (STOP.equals(currentStatus) && RUN.equals(prevStatus))
-                {
-                    settings.reset();
-                }
-            }
-
         });
 
         try

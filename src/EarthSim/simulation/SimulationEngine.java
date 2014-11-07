@@ -6,17 +6,20 @@ import java.util.LinkedList;
 
 import EarthSim.common.GridCell;
 import EarthSim.common.SimulationSettings;
+import EarthSim.common.event.EventBus;
 
 public class SimulationEngine
 {
     private final SimulationSettings settings;
+    private final EventBus           eventBus;
 
-    public SimulationEngine(final SimulationSettings settings)
+    public SimulationEngine(final EventBus eventBus, final SimulationSettings settings)
     {
         this.settings = settings;
+        this.eventBus = eventBus;
     }
 
-    public void runSimulation()
+    public void run()
     {
         final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
         for (int row = 0; row < grid.size(); row++)

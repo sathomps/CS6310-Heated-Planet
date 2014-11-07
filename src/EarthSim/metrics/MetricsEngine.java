@@ -12,12 +12,21 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import EarthSim.common.event.EventBus;
+
 import com.sun.management.OperatingSystemMXBean;
 
 public class MetricsEngine implements Runnable
 {
     private static final SimpleDateFormat SDF      = new SimpleDateFormat("hh:mm:ss.SSS");
     private static final String           LINE_SEP = System.getProperty("line.separator");
+
+    private final EventBus                eventBus;
+
+    public MetricsEngine(final EventBus eventBus)
+    {
+        this.eventBus = eventBus;
+    }
 
     @Override
     public void run()

@@ -7,16 +7,19 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import EarthSim.common.SimulationSettings;
+import EarthSim.common.event.EventBus;
 
 public class SimulationUI extends JFrame
 {
     private static final long        serialVersionUID = 1L;
 
     private final SimulationSettings settings;
+    private final EventBus           eventBus;
 
-    public SimulationUI(final SimulationSettings settings)
+    public SimulationUI(final EventBus eventBus, final SimulationSettings settings)
     {
         this.settings = settings;
+        this.eventBus = eventBus;
         init();
     }
 
@@ -56,7 +59,7 @@ public class SimulationUI extends JFrame
 
     private void addUserControlPanel(final GridBagLayout gridbag, final JPanel panel)
     {
-        final UserControlPanel userControlPanel = new UserControlPanel(settings);
+        final UserControlPanel userControlPanel = new UserControlPanel(eventBus, settings);
         final GridBagConstraints c = new GridBagConstraints();
 
         c.weightx = 0;

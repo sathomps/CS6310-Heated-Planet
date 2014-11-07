@@ -1,4 +1,4 @@
-package EarthSim.common;
+package EarthSim.common.event;
 
 import java.util.HashMap;
 import java.util.Map;

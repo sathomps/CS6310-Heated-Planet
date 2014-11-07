@@ -18,8 +18,6 @@ public class SimulationSettings
 
     private GridSettings      gridSettings;
 
-    private Status            status                          = Status.STOPPED;
-
     public SimulationSettings setGridSettings(final GridSettings gridSettings)
     {
         this.gridSettings = gridSettings;
@@ -99,17 +97,6 @@ public class SimulationSettings
     public int getEarthRadius()
     {
         return earth.getRadius();
-    }
-
-    public SimulationSettings setStatus(final Status status)
-    {
-        this.status = status;
-        return this;
-    }
-
-    public Status getStatus()
-    {
-        return status;
     }
 
     public void reset()
