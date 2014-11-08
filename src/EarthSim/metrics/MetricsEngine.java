@@ -69,11 +69,11 @@ public class MetricsEngine implements Runnable
         line.append(",");
         line.append(bean.getFreeSwapSpaceSize());
         line.append(",");
-        line.append(bean.getProcessCpuLoad());
+        //line.append(bean.getProcessCpuLoad());
         line.append(",");
         line.append(bean.getProcessCpuTime());
         line.append(",");
-        line.append(bean.getSystemCpuLoad());
+        //line.append(bean.getSystemCpuLoad());
         line.append(",");
         line.append(bean.getTotalPhysicalMemorySize());
         line.append(",");
