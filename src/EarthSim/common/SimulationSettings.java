@@ -104,4 +104,12 @@ public class SimulationSettings
         earth.reset();
         sun.reset();
     }
+    private String simulationName = "";
+	public String getName() {
+		return simulationName;
+	}
+	public void setName(String name)
+	{
+		simulationName = name;
+	}
 }

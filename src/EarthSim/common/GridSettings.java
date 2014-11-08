@@ -160,4 +160,29 @@ public class GridSettings
         calculateLengths(cell);
     }
 
+	public void addCell(int row, int col, int gridSpacing, double temp,
+			float longLeft, float latTop, float longRight, float latBottom,
+			int read_dt, int read_tm) {
+        final GridCell cell = new GridCell();
+        cell.setWidth(width);
+        cell.setTemp((int)temp);
+        cell.setLatitudeBottom(latBottom);
+        cell.setLatitudeTop(latTop);
+        cell.setLongitudeLeft(longLeft);
+        cell.setLongitudeRight(longRight);
+        LinkedList<GridCell> cols;
+
+        try
+        {
+            cols = grid.get(row);
+        }
+        catch (final IndexOutOfBoundsException ex)
+        {
+            cols = new LinkedList<GridCell>();
+            grid.add(cols);
+        }
+        cols.add(cell);
+        calculateGeometry(cell);		
+	}
+
 }
