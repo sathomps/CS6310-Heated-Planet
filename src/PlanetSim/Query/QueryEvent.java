@@ -1,18 +1,24 @@
 package PlanetSim.Query;
 
-import EarthSim.common.SimulationSettings;
-import EarthSim.common.event.EventType;
+import PlanetSim.common.SimulationSettings;
 
-public class QueryEvent implements EventType {
+public class QueryEvent
+{
+    private SimulationSettings settings;
 
-	SimulationSettings settings; 
-	public QueryEvent(SimulationSettings settings)
-	{
-		this.settings = settings;
-	}
-	@Override
-	public SimulationSettings result() {
-		return settings;
-	}
+    public QueryEvent(final SimulationSettings settings)
+    {
+        this.setSettings(settings);
+    }
+
+    public SimulationSettings getSettings()
+    {
+        return settings;
+    }
+
+    public void setSettings(final SimulationSettings settings)
+    {
+        this.settings = settings;
+    }
 
 }

@@ -5,8 +5,9 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Connection;
-import EarthSim.common.SimulationSettings;
-import EarthSim.common.GridSettings;
+
+import PlanetSim.common.GridSettings;
+import PlanetSim.common.SimulationSettings;
 
 /*
 CREATE DATABASE `heated_planet` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;

@@ -1,12 +1,12 @@
-package PlanetSim.Query;
+package PlanetSim.display;
 
 import PlanetSim.common.SimulationSettings;
 
-public class PersistEvent
+public class DisplayEvent
 {
     private SimulationSettings settings;
 
-    public PersistEvent(final SimulationSettings settings)
+    public DisplayEvent(final SimulationSettings settings)
     {
         this.setSettings(settings);
     }

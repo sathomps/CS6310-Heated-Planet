@@ -1,12 +1,12 @@
-package PlanetSim.Query;
+package PlanetSim.simulation;
 
 import PlanetSim.common.SimulationSettings;
 
-public class PersistEvent
+public class InterpolateEvent
 {
     private SimulationSettings settings;
 
-    public PersistEvent(final SimulationSettings settings)
+    public InterpolateEvent(final SimulationSettings settings)
     {
         this.setSettings(settings);
     }
@@ -20,4 +20,5 @@ public class PersistEvent
     {
         this.settings = settings;
     }
+
 }
