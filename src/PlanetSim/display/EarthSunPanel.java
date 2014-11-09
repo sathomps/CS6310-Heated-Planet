@@ -16,7 +16,7 @@ public class EarthSunPanel extends JPanel
 {
     private static final long        serialVersionUID = 1l;
 
-    private static final Dimension   PREFERRED_SIZE   = new Dimension(1200, 608);
+    private static final Dimension   PREFERRED_SIZE   = new Dimension(800, 400);
 
     private Sun                      sun;
     private Earth                    earth;
