@@ -65,4 +65,10 @@ public class SimulationEngineDaemon
             break;
         }
     }
+
+    @Subscribe
+    public void process(final InterpolateEvent event)
+    {
+    }
+
 }
