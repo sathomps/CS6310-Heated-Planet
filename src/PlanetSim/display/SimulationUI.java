@@ -38,9 +38,8 @@ public class SimulationUI extends JFrame
         final GridBagLayout gridbag = new GridBagLayout();
         final JPanel panel = new JPanel(gridbag);
         add(panel);
-
-        addEarthSunPanel(gridbag, panel);
         addUserControlPanel(gridbag, panel);
+        addEarthSunPanel(gridbag, panel);
     }
 
     private void addEarthSunPanel(final GridBagLayout gridbag, final JPanel panel)
@@ -50,8 +49,8 @@ public class SimulationUI extends JFrame
         c.weightx = 1;
         c.weighty = 1;
         c.gridx = 0;
-        c.gridy = 0;
-        c.anchor = GridBagConstraints.WEST;
+        c.gridy = 1;
+        //c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.NONE;
         gridbag.setConstraints(earthSunPanel, c);
         panel.add(earthSunPanel);
@@ -63,8 +62,9 @@ public class SimulationUI extends JFrame
         final GridBagConstraints c = new GridBagConstraints();
 
         c.weightx = 0;
-        c.gridx = 1;
-        c.anchor = GridBagConstraints.NORTHEAST;
+        c.gridx = 0;
+        c.gridy = 0;
+        //c.anchor = GridBagConstraints.NORTHEAST;
         c.fill = GridBagConstraints.NONE;
         gridbag.setConstraints(userControlPanel, c);
         panel.add(userControlPanel);
