@@ -165,10 +165,10 @@ public class UserControlPanel extends JPanel
 
     private void addSimulationTimeStep()
     {
-        final Integer value = new Integer(1);
+        final Integer value = new Integer(1440);
         final Integer min = new Integer(1);
-        final Integer max = new Integer(1440);
-        final Integer step = new Integer(1);
+        final Integer max = new Integer(525600);
+        final Integer step = new Integer(60);
         timeStepModel = new SpinnerNumberModel(value, min, max, step);
         final JSpinner spinner = new JSpinner(timeStepModel);
 
@@ -199,7 +199,7 @@ public class UserControlPanel extends JPanel
     
     private void addSimLength()
     {
-        final Integer value = new Integer(1);
+        final Integer value = new Integer(12);
         final Integer min = new Integer(1);
         final Integer max = new Integer(1200);
         final Integer step = new Integer(12);
