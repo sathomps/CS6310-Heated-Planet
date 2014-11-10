@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Connection;
+import java.util.ArrayList;
 
 import PlanetSim.common.GridSettings;
 import PlanetSim.common.SimulationSettings;
@@ -39,11 +40,16 @@ CREATE TABLE IF NOT EXISTS `simulation_grid_data` (
 -- Table structure for table `simulations`
 --
 
-CREATE TABLE IF NOT EXISTS `simulations` (
+CREATE TABLE `simulations` (
   `name` varchar(50) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `grid_spacing` int(11) NOT NULL,
   `simulation_time_step` int(11) NOT NULL,
   `simulation_length` int(11) NOT NULL,
+  `axial_tilt` double NOT NULL,
+  `orbital_eccentricity` double NOT NULL,
+  `temperature_precision` int(11) NOT NULL,
+  `geographic_precision` int(11) NOT NULL,
+  `temporal_precision` int(11) NOT NULL,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -66,6 +72,43 @@ public class MySqlConnection {
 	public MySqlConnection ()
 	{
 		
+	}
+	/**
+	 * @return - ArrayList<SimulationSettings>.  Will never be null. A length of zero means nothing was found.  More than one 
+	 * indicates a 'best choice' has to be made.  One means that will be displayed or interpolated.
+	 * 
+	 */
+	public ArrayList<SimulationSettings> queryHeader(String name, int gridSpacing, int timeStep, int simLength
+			, double axialTilt, double orbitalEccentricity, int tempPrecision, int geoPrecision, int temporalPrecision) throws SQLException
+	{
+		ArrayList<SimulationSettings> result = new ArrayList<SimulationSettings>();
+		String sql = "SELECT * FROM simulations WHERE 1=1 ";
+		if (name != null && name.length() > 0)
+			sql += String.format(" AND name = '%s'", name);
+		if (timeStep > 0)
+			sql += String.format(" AND simulation_time_spacing = %d", timeStep);
+		if (axialTilt > 0)
+			sql += String.format(" AND axial_tilt = %d", axialTilt);
+		if (orbitalEccentricity > 0)
+			sql += String.format(" AND orbital_eccentricity = %d", orbitalEccentricity);
+
+		Connection con = DriverManager.getConnection(url, user, password);
+        Statement st = con.createStatement();        
+        ResultSet rs = st.executeQuery(sql);        
+    	while (rs.next())
+    	{
+        	SimulationSettings ss = new SimulationSettings();
+        	ss.setAxialTilt(rs.getDouble("axial_tilt"));
+        	ss.setGridSpacing(rs.getInt("grid_spacing"));
+        	ss.setName(rs.getString("name"));
+        	ss.setOrbitalEccentricity(rs.getDouble("orbital_eccentricity"));
+        	ss.setGeographicPrecision(rs.getInt("geographic_precision"));
+        	ss.setSimulationLength(rs.getInt("simulation_length"));
+        	ss.setSimulationTimeStepMinutes(rs.getInt("simulation_time_step"));
+        	ss.setTemporalPrecision(rs.getInt("temporal_precision"));
+        	result.add(ss);
+        }
+		return result;
 	}
 	public GridSettings query(SimulationSettings settings) throws SQLException 
 	{

@@ -1,5 +1,7 @@
 package PlanetSim.Query;
 
+import java.util.ArrayList;
+
 import PlanetSim.Query.db.MySqlConnection;
 import PlanetSim.common.GridSettings;
 import PlanetSim.common.SimulationSettings;
@@ -41,19 +43,28 @@ public class QueryEngine
         {
             final MySqlConnection con = new MySqlConnection();
             final SimulationSettings settings = event.getSettings();
-            final GridSettings gs = con.query(settings);
-            if (gs == null)
+            ArrayList<SimulationSettings> ss = con.queryHeader(settings.getName(), settings.getGridSpacing()
+            		, settings.getSimulationTimeStepMinutes(), settings.getSimulationLength()
+            		, settings.getAxialTilt(), settings.getOrbitalEccentricity()
+            		, settings.getDatastoragePrecision(), settings.getGeographicPrecision(), settings.getTemporalPrecision());
+            if (ss.isEmpty())
             {
                 eventBus.publish(new SimulateEvent(settings));
             }
-            else if (gs.getHeight() != settings.getGridSpacing())
-            {
-                settings.setGridSettings(gs);
-                eventBus.publish(new InterpolateEvent(settings));
-            }
             else
             {
-                eventBus.publish(new DisplayEvent(settings));
+            	boolean interpolate = false;
+            	if (ss.size() > 1)
+            	{
+            		//just pick the first one for now.  this needs to be more complicated
+            		settings.setSimulationName(ss.get(0).getName());
+            	}
+                final GridSettings gs = con.query(settings);
+                settings.setGridSettings(gs);
+            	if (interpolate)
+            		eventBus.publish(new InterpolateEvent(settings));
+            	else
+            		eventBus.publish(new DisplayEvent(settings));
             }
         }
         catch (final Exception e)
