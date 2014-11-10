@@ -64,10 +64,14 @@ public class UserControlPanel extends JPanel
         setPreferredSize(PREFERRED_SIZE);
     }
 
-    private void addControlButtons()
+    @SuppressWarnings("deprecation")
+	private void addControlButtons()
     {
         final Panel panel = new Panel();
-        panel.setLayout(new GridLayout(1, 3));
+        panel.setLayout(new GridLayout(1, 4));
+        final JButton query = new JButton();
+        query.setLabel("Edit Query");
+        panel.add(query);
         panel.add(createButton("run"));
         panel.add(createButton("pause"));
         panel.add(createButton("stop"));
