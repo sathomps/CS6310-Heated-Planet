@@ -206,4 +206,22 @@ public class GridCell
     {
         this.width = width;
     }
+	private int readDate = 0;
+	private int readTime = 0;
+
+	public int getDate() {
+		return readDate;
+	}
+
+	public void setDate(int readDate) {
+		this.readDate = readDate;
+	}
+
+	public int getTime() {
+		return readTime;
+	}
+
+	public void setTime(int readTime) {
+		this.readTime = readTime;
+	}
 }

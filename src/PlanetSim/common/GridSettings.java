@@ -170,6 +170,8 @@ public class GridSettings
         cell.setLatitudeTop(latTop);
         cell.setLongitudeLeft(longLeft);
         cell.setLongitudeRight(longRight);
+        cell.setDate(read_dt);
+        cell.setTime(read_tm);
         LinkedList<GridCell> cols;
 
         try

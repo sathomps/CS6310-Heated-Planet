@@ -112,4 +112,124 @@ public class SimulationSettings
 	{
 		simulationName = name;
 	}
+	////-t #: The temporal precision of the temperature data to be stored, as an integer percentage of the number of time periods 
+	//saved versus the number computed. The default is 100%; that is, all computed values should be stored.
+	private double axialTilt = 23.44;
+	////Orbital eccentricity: non-negative real number less than one; default is .0167. 
+	private double orbitalEccentricity = 0.0167;
+	//Simulation length: non-negative integer (Solar) months between 1 and 1200; default 12 (one Solar year). 
+	private int simulationLength = 0;
+	//-p #: The precision of the data to be stored, in decimal digits after the decimal point. The default is to use the 
+	//number of digits storable in a normalized float variable. The maximum is the number of digits storable in a 
+	//normalized double variable. The minimum is zero.
+	private int datastoragePrecision = 7; 
+	//-g #: The geographic precision (sampling rate) of the temperature data to be stored, as an integer percentage of the 
+	//number of grid cells saved versus the number simulated. The default is 100%; that is, a value is stored for each grid cell.
+	private int geographicPrecision = 100;
+	//-t #: The temporal precision of the temperature data to be stored, as an integer percentage of the number of time periods
+	//saved versus the number computed. The default is 100%; that is, all computed values should be stored.
+	private int temporalPrecision = 100;
+
+	public String getSimulationName() {
+		return simulationName;
+	}
+
+	public void setSimulationName(String simulationName) {
+		this.simulationName = simulationName;
+	}
+
+	public double getAxialTilt() {
+		return axialTilt;
+	}
+
+	public void setAxialTilt(double axialTilt) {
+		this.axialTilt = axialTilt;
+	}
+
+	public double getOrbitalEccentricity() {
+		return orbitalEccentricity;
+	}
+
+	public void setOrbitalEccentricity(double orbitalEccentricity) {
+		this.orbitalEccentricity = orbitalEccentricity;
+	}
+
+	public int getSimulationLength() {
+		return simulationLength;
+	}
+
+	public void setSimulationLength(int simulationLength) {
+		this.simulationLength = simulationLength;
+	}
+
+	public int getDatastoragePrecision() {
+		return datastoragePrecision;
+	}
+
+	public void setDatastoragePrecision(int datastoragePrecision) {
+		this.datastoragePrecision = datastoragePrecision;
+	}
+
+	public int getGeographicPrecision() {
+		return geographicPrecision;
+	}
+
+	public void setGeographicPrecision(int geographicPrecision) {
+		this.geographicPrecision = geographicPrecision;
+	}
+
+	public int getTemporalPrecision() {
+		return temporalPrecision;
+	}
+
+	public void setTemporalPrecision(int temporalPrecision) {
+		this.temporalPrecision = temporalPrecision;
+	}
+
+	public GridSettings getGridSettings() {
+		return gridSettings;
+	}
+	
+	//query only related properties
+	//Reading date: simulated date at which the temperature reading was taken in terms of years and days since 
+	//the start of the simulation
+	//Reading time: hours and minutes since the start of the Reading Date
+	//need a start and end value for both of those
+	private int startDate = 0;
+	private int startTime = 0;
+	private int endDate = 0;
+	private int endTime = 0;
+
+	public int getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(int startDate) {
+		this.startDate = startDate;
+	}
+
+	public int getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(int startTime) {
+		this.startTime = startTime;
+	}
+
+	public int getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(int endDate) {
+		this.endDate = endDate;
+	}
+
+	public int getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(int endTime) {
+		this.endTime = endTime;
+	}
+	
 }
