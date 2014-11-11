@@ -1,5 +1,6 @@
 package PlanetSim.Query;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import PlanetSim.Query.db.MySqlConnection;
@@ -20,7 +21,15 @@ public class QueryEngine
         this.eventBus = eventBus;
         eventBus.subscribe(this);
     }
-
+    /**
+     * Lists the simulation names so they can be put in a GUI widget (or whatever)
+     * @return ArrayList<String>.  It will always be non-null.  It will be empty if nothing existed
+     * @throws SQLException
+     */
+	public ArrayList<String> listSimulationNames() throws SQLException
+	{
+		return (new MySqlConnection()).listSimulationNames();
+	}
     @Subscribe
     public void save(final PersistEvent event)
     {

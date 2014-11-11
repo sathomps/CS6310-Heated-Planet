@@ -76,13 +76,14 @@ public class MySqlConnection {
 	/**
 	 * @return - ArrayList<SimulationSettings>.  Will never be null. A length of zero means nothing was found.  More than one 
 	 * indicates a 'best choice' has to be made.  One means that will be displayed or interpolated.
+	 * @param - all parameters that are to be ignored should be zero or zero length
 	 * 
 	 */
 	public ArrayList<SimulationSettings> queryHeader(String name, int gridSpacing, int timeStep, int simLength
 			, double axialTilt, double orbitalEccentricity, int tempPrecision, int geoPrecision, int temporalPrecision) throws SQLException
 	{
 		ArrayList<SimulationSettings> result = new ArrayList<SimulationSettings>();
-		String sql = "SELECT * FROM simulations WHERE 1=1 ";
+		String sql = "SELECT * FROM simulations WHERE 1=1 "; //1=1 is stupid trick to not have to figure out when an AND should be used.
 		if (name != null && name.length() > 0)
 			sql += String.format(" AND name = '%s'", name);
 		if (timeStep > 0)
@@ -108,6 +109,18 @@ public class MySqlConnection {
         	ss.setTemporalPrecision(rs.getInt("temporal_precision"));
         	result.add(ss);
         }
+		return result;
+	}
+	public ArrayList<String> listSimulationNames() throws SQLException
+	{
+		ArrayList<String> result = new ArrayList<String>();
+		Connection con = DriverManager.getConnection(url, user, password);
+        Statement st = con.createStatement();        
+        ResultSet rs = st.executeQuery("SELECT name FROM simulations" );
+		while (rs.next())
+		{
+			result.add(rs.getString(0));
+		}
 		return result;
 	}
 	public GridSettings query(SimulationSettings settings) throws SQLException 
