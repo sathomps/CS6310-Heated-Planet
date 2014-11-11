@@ -162,10 +162,31 @@ public class MySqlConnection {
         }
 		
 	}
+	public void saveHeader(String simName, int gridSpacing, double orbitalEcc,
+			double axialTilt, int simLength, int simTimeStep, int dsPrecision,
+			int geoPrecision, double temporalPrecision) throws SQLException {
+		Connection con = DriverManager.getConnection(url, user, password);
+        Statement st = con.createStatement();
+        String sql = "INSERT INTO simulations (name, grid_spacing, simulation_time_step, simulation_length" +
+        		", axial_tilt, orbital_eccentricity, temperature_precision, geographic_precision, temporal_precision) " +
+        		"VALUES ('%s', %d, %d, %d, %f, %f, %d, %d, %d"; 
+		st.execute(sql);
+	}
 	public void save(SimulationSettings settings) throws SQLException
 	{
+	}
+	public void saveCell(String simName, int row, int cell, float temp,
+			float latitudeTop, float longitudeLeft, float latitudeBottom,
+			float longitudeRight, int date, int time, int dsPrecision) throws SQLException 
+	{
 		Connection con = DriverManager.getConnection(url, user, password);
-        Statement st = con.createStatement();        
-		
+        Statement st = con.createStatement();
+        String sql = "INSERT INTO simulation_grid_data (name, row_position, column_position, temperature, reading_date, reading_time" +
+        			", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom) VALUES ('%s', %d, %d" +
+        			", %." + dsPrecision + "f" + //how many decimals to store, kinda dorky but but i can't figure how to round to x places.
+        			", %d, %d, %f, %f, %f, %f)"; 
+		st.execute(
+				String.format(sql, simName, row, cell, temp, date, time, longitudeLeft, longitudeRight, latitudeTop, latitudeBottom)				
+			);
 	}
 }

@@ -2,8 +2,10 @@ package PlanetSim.Query;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import PlanetSim.Query.db.MySqlConnection;
+import PlanetSim.common.GridCell;
 import PlanetSim.common.GridSettings;
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
@@ -35,9 +37,32 @@ public class QueryEngine
     {
         try
         {
-            final MySqlConnection con = new MySqlConnection();
             final SimulationSettings settings = event.getSettings();
-            con.save(settings);
+            //sanity checks
+            String simName = settings.getSimulationName();
+            if (simName == null || simName.length() == 0)
+            	throw new IllegalArgumentException();
+            int gridSpacing = settings.getGridSpacing();
+            double orbitalEcc = settings.getOrbitalEccentricity();
+            double axialTilt = settings.getAxialTilt();
+            int simLength = settings.getSimulationLength();
+            int simTimeStep = settings.getSimulationTimeStepMinutes();
+            int dsPrecision = settings.getDatastoragePrecision();
+            int geoPrecision = settings.getGeographicPrecision();
+            double temporalPrecision = settings.getTemporalPrecision();
+            MySqlConnection con = new MySqlConnection();
+            con.saveHeader(simName, gridSpacing, orbitalEcc, axialTilt, simLength, simTimeStep, dsPrecision, geoPrecision, temporalPrecision);
+            final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
+            for (int row = 0; row < grid.size(); row++)
+            {
+                for (int cell = 0; cell < grid.get(0).size(); cell++)
+                {
+                	GridCell c = grid.get(row).get(cell);
+                    con.saveCell(simName, row, cell, c.getTemp()
+                    		, c.getLatitudeTop(), c.getLongitudeLeft(), c.getLatitudeBottom(), c.getLongitudeRight()
+                    		, c.getDate(), c.getTime(), dsPrecision);
+                }
+            }
         }
         catch (final Exception e)
         {
