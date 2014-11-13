@@ -1,14 +1,20 @@
 package PlanetSim.common;
 
+import static PlanetSim.common.GeoUtil.calculateDistanceToEquator;
+import static PlanetSim.common.GeoUtil.calculateLatitudeCircum;
+import static PlanetSim.common.GeoUtil.calculateTrapezoidArea;
+
 import java.util.LinkedList;
+
+import PlanetSim.model.GridCell;
 
 public class GridSettings
 {
-    private static final float                     LATITUDE_TOP    = 90;
-    private static final float                     LATITUDE_BOTTOM = -90;
+    private static final double                    LATITUDE_TOP    = 90;
+    private static final double                    LATITUDE_BOTTOM = -90;
 
-    private static final float                     LONGITUDE_LEFT  = 180;
-    private static final float                     LONGITUDE_RIGHT = -180;
+    private static final double                    LONGITUDE_LEFT  = 180;
+    private static final double                    LONGITUDE_RIGHT = -180;
 
     private int                                    width;
     private int                                    height;
@@ -132,26 +138,26 @@ public class GridSettings
 
     private void calculateLengths(final GridCell cell)
     {
-        final int earthRadius = settings.getEarthRadius();
-        final float sepDeg = cell.getLatitudeTop() - cell.getLatitudeBottom();
-        final float topLength = Util.calculateLatitudeCircum(cell.getLatitudeTop(), earthRadius) / (360 / Math.abs(sepDeg));
-        final float bottomLength = Util.calculateLatitudeCircum(cell.getLatitudeBottom(), earthRadius) / (360 / Math.abs(sepDeg));
-        // final float sideLength = Util.calculateTrapezoidSideLen(topLength,
+        final int earthRadius = settings.getPlanetRadius();
+        final double sepDeg = cell.getLatitudeTop() - cell.getLatitudeBottom();
+        final double topLength = calculateLatitudeCircum(cell.getLatitudeTop(), earthRadius) / (360 / Math.abs(sepDeg));
+        final double bottomLength = calculateLatitudeCircum(cell.getLatitudeBottom(), earthRadius) / (360 / Math.abs(sepDeg));
+        // final double sideLength = Util.calculateTrapezoidSideLen(topLength,
         // bottomLength, height);
         calculateSurfaceArea(cell, topLength, bottomLength);
     }
 
-    private void calculateSurfaceArea(final GridCell cell, final float topLength, final float bottomLength)
+    private void calculateSurfaceArea(final GridCell cell, final double topLength, final double bottomLength)
     {
-        cell.setSurfaceArea(Util.calculateTrapezoidArea(topLength, bottomLength, cell.getHeight()));
+        cell.setSurfaceArea(calculateTrapezoidArea(topLength, bottomLength, cell.getHeight()));
     }
 
     private void calculateHeight(final GridCell cell)
     {
-        final int earthRadius = settings.getEarthRadius();
+        final int earthRadius = settings.getPlanetRadius();
 
-        cell.setHeight((int) Math.abs(Util.calculateDistanceToEquator(cell.getLatitudeTop(), earthRadius)
-                - Util.calculateDistanceToEquator(cell.getLatitudeBottom(), earthRadius)));
+        cell.setHeight((int) Math.abs(calculateDistanceToEquator(cell.getLatitudeTop(), earthRadius)
+                - calculateDistanceToEquator(cell.getLatitudeBottom(), earthRadius)));
     }
 
     private void calculateGeometry(final GridCell cell)
@@ -160,12 +166,12 @@ public class GridSettings
         calculateLengths(cell);
     }
 
-	public void addCell(int row, int col, int gridSpacing, double temp,
-			float longLeft, float latTop, float longRight, float latBottom,
-			int read_dt, int read_tm) {
+    public void addCell(final int row, final int col, final int gridSpacing, final double temp, final double longLeft, final double latTop,
+            final double longRight, final double latBottom, final int read_dt, final int read_tm)
+    {
         final GridCell cell = new GridCell();
         cell.setWidth(width);
-        cell.setTemp((int)temp);
+        cell.setTemp((int) temp);
         cell.setLatitudeBottom(latBottom);
         cell.setLatitudeTop(latTop);
         cell.setLongitudeLeft(longLeft);
@@ -184,7 +190,7 @@ public class GridSettings
             grid.add(cols);
         }
         cols.add(cell);
-        calculateGeometry(cell);		
-	}
+        calculateGeometry(cell);
+    }
 
 }

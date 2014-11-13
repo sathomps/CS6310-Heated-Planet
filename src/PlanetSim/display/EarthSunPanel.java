@@ -9,7 +9,7 @@ import javax.swing.JPanel;
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
 import PlanetSim.common.event.Subscribe;
-import PlanetSim.display.earth.Earth;
+import PlanetSim.display.planet.Planet;
 import PlanetSim.display.sun.Sun;
 
 public class EarthSunPanel extends JPanel
@@ -19,7 +19,7 @@ public class EarthSunPanel extends JPanel
     private static final Dimension   PREFERRED_SIZE   = new Dimension(800, 400);
 
     private Sun                      sun;
-    private Earth                    earth;
+    private Planet                    earth;
 
     private final SimulationSettings settings;
     private final EventBus           eventBus;
@@ -54,7 +54,7 @@ public class EarthSunPanel extends JPanel
 
     private void initEarth()
     {
-        earth = new Earth(settings);
+        earth = new Planet(settings);
         earth.setAlignmentX(Component.LEFT_ALIGNMENT);
         earth.init();
     }

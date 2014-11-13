@@ -1,29 +1,27 @@
 package PlanetSim.display.sun;
 
-import static PlanetSim.common.SimulationSettings.DEFAULT_SUN_POSITION;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 
 import javax.swing.JPanel;
 
-import PlanetSim.common.GridCell;
 import PlanetSim.common.SimulationSettings;
+import PlanetSim.model.GridCell;
 
 public class Sun extends JPanel
 {
     private static final long        serialVersionUID      = 1L;
 
     private int                      pathLength;
-    private float                    pixelsPerDegree;
+    private double                   pixelsPerDegree;
     private final int                lineOffsetY           = 10;
     private final int                dimHeight             = lineOffsetY + 10;
 
     private final Color              sunColor              = Color.yellow;
     private final int                sunDiameter           = 10;
 
-    private float                    degreePosition        = DEFAULT_SUN_POSITION;
+    private double                   degreePosition        = 180f;
     private int                      pixelPosition;
 
     private static int               EARTH_TILT            = 45;
@@ -92,7 +90,7 @@ public class Sun extends JPanel
         g.fillOval(pixelPosition, lineOffsetY / 2, sunDiameter, sunDiameter);
     }
 
-    public void movePosition(final float rotationalDegree)
+    public void movePosition(final double rotationalDegree)
     {
         degreePosition -= rotationalDegree;
         if (degreePosition < 0)
@@ -105,7 +103,7 @@ public class Sun extends JPanel
 
     private void calculatePosition()
     {
-        final float pos = pixelsPerDegree * degreePosition;
+        final double pos = pixelsPerDegree * degreePosition;
         pixelPosition = (int) (pos - (sunDiameter / 2));
 
         minuteOfYear = (minuteOfYear + 1) % MINUTES_OF_YEAR;
@@ -117,10 +115,10 @@ public class Sun extends JPanel
         equinoxAngle = Math.atan(orbitY / orbitX);
     }
 
-    public float calculateRadiationFactor(final GridCell cell)
+    public double calculateRadiationFactor(final GridCell cell)
     {
-        final float aveLat = (cell.getLatitudeTop() + cell.getLatitudeBottom()) / 2;
-        final float aveLon = (cell.getLongitudeLeft() + cell.getLongitudeRight()) / 2;
+        final double aveLat = (cell.getLatitudeTop() + cell.getLatitudeBottom()) / 2;
+        final double aveLon = (cell.getLongitudeLeft() + cell.getLongitudeRight()) / 2;
 
         orbitX = MAJOR_AXIS_LENGTH * Math.cos(Math.toRadians((minuteOfYear - MINUTE_VERNAL_EQUINOX) * ORBIT_DEGREE_MINUTE));
         orbitY = minorAxisLength * Math.cos(Math.toRadians((minuteOfYear - MINUTE_VERNAL_EQUINOX) * ORBIT_DEGREE_MINUTE));
@@ -137,17 +135,17 @@ public class Sun extends JPanel
         }
         else
         {
-            return (float) (latRadiation * lonRadiation * ((SUN_SURFACE_INTENSITY / Math.pow(distance / SUN_RADIUS, 2)) * Math.pow(10, 10)));
+            return latRadiation * lonRadiation * ((SUN_SURFACE_INTENSITY / Math.pow(distance / SUN_RADIUS, 2)) * Math.pow(10, 10));
         }
     }
 
-    private float calculateHeatCoefficient()
+    private double calculateHeatCoefficient()
     {
-        final float heatFactor = settings.getGridSpacing() / 10f;
+        final double heatFactor = settings.getGridSpacing() / 10f;
         return (settings.getGridSpacing() / 12f) * (heatFactor == 0 ? 1 : heatFactor);
     }
 
-    public float calculateSunHeat(final GridCell cell)
+    public double calculateSunHeat(final GridCell cell)
     {
         return (calculateHeatCoefficient() * calculateRadiationFactor(cell));
     }
@@ -157,7 +155,7 @@ public class Sun extends JPanel
      */
     public void reset()
     {
-        degreePosition = DEFAULT_SUN_POSITION;
+        degreePosition = 180f;
         pixelPosition = 0;
         calculatePosition();
         paint(this.getGraphics());

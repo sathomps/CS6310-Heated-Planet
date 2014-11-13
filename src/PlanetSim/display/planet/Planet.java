@@ -1,4 +1,6 @@
-package PlanetSim.display.earth;
+package PlanetSim.display.planet;
+
+import static PlanetSim.common.GeoUtil.calculateDistanceToEquator;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -6,12 +8,11 @@ import java.util.LinkedList;
 
 import javax.swing.JPanel;
 
-import PlanetSim.common.GridCell;
 import PlanetSim.common.GridSettings;
 import PlanetSim.common.SimulationSettings;
-import PlanetSim.common.Util;
+import PlanetSim.model.GridCell;
 
-public class Earth extends JPanel
+public class Planet extends JPanel
 {
     private static final long        serialVersionUID = 1L;
 
@@ -31,10 +32,10 @@ public class Earth extends JPanel
      * 
      * @param settings
      */
-    public Earth(final SimulationSettings settings)
+    public Planet(final SimulationSettings settings)
     {
         this.settings = settings;
-        settings.setEarth(this);
+        settings.setPlanet(this);
     }
 
     public void init()
@@ -125,7 +126,7 @@ public class Earth extends JPanel
         // draw scaled latitude lines
         for (int lat = 0; lat <= 90; lat += settings.getGridSpacing())
         {
-            final int y = (int) Util.calculateDistanceToEquator(lat, radius);
+            final int y = (int) calculateDistanceToEquator(lat, radius);
             g.drawLine(0, radius - y, imgWidth, radius - y);
             g.drawLine(0, radius + y, imgWidth, radius + y);
         }
@@ -164,9 +165,9 @@ public class Earth extends JPanel
         return totalTemp / (grid.size() * grid.get(0).size());
     }
 
-    private Color getColor(final float tempInCelcius)
+    private Color getColor(final double tempInCelcius)
     {
-        final Color c = Color.getHSBColor(.666f * tempInCelcius, 1f, 1f);
+        final Color c = Color.getHSBColor((float) (.666 * tempInCelcius), 1f, 1f);
         return new Color(c.getRed(), c.getGreen(), c.getBlue(), 120);
     }
 }

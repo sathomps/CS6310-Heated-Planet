@@ -1,4 +1,4 @@
-package PlanetSim.common;
+package PlanetSim.model;
 
 public class GridCell
 {
@@ -7,15 +7,14 @@ public class GridCell
     private int              width;
     private int              height;
 
-    private float            latitudeTop;
-    private float            latitudeBottom;
-    private float            longitudeLeft;
-    private float            longitudeRight;
+    private double           latitudeTop;
+    private double           latitudeBottom;
+    private double           longitudeLeft;
+    private double           longitudeRight;
 
-    private float            surfaceArea;
+    private double           surfaceArea;
 
-    private float            temp                             = DEFAULT_CELL_TEMPERATURE_CELCIUS;
-    private float            oldTemp                          = DEFAULT_CELL_TEMPERATURE_CELCIUS;
+    private double           temp                             = DEFAULT_CELL_TEMPERATURE_CELCIUS;
 
     private GridCell         north;
     private GridCell         south;
@@ -102,89 +101,84 @@ public class GridCell
         this.east = right;
     }
 
-    public float getLatitudeTop()
+    public double getLatitudeTop()
     {
         return latitudeTop;
     }
 
-    public void setLatitudeTop(final float latitudeTop)
+    public void setLatitudeTop(final double latitudeTop)
     {
         this.latitudeTop = latitudeTop;
     }
 
-    public float getLatitudeBottom()
+    public double getLatitudeBottom()
     {
         return latitudeBottom;
     }
 
-    public void setLatitudeBottom(final float latitudeBottom)
+    public void setLatitudeBottom(final double latitudeBottom)
     {
         this.latitudeBottom = latitudeBottom;
     }
 
-    public float getLongitudeLeft()
+    public double getLongitudeLeft()
     {
         return longitudeLeft;
     }
 
-    public void setLongitudeLeft(final float longitudeLeft)
+    public void setLongitudeLeft(final double longitudeLeft)
     {
         this.longitudeLeft = longitudeLeft;
     }
 
-    public float getLongitudeRight()
+    public double getLongitudeRight()
     {
         return longitudeRight;
     }
 
-    public void setLongitudeRight(final float longitudeRight)
+    public void setLongitudeRight(final double longitudeRight)
     {
         this.longitudeRight = longitudeRight;
     }
 
-    public float getSurfaceArea()
+    public double getSurfaceArea()
     {
         return surfaceArea;
     }
 
-    public void setSurfaceArea(final float surfaceArea)
+    public void setSurfaceArea(final double surfaceArea)
     {
         this.surfaceArea = surfaceArea;
     }
 
-    public float getTemp()
+    public double getTemp()
     {
         return temp;
     }
 
-    public void setTemp(final float temp)
+    public void setTemp(final double temp)
     {
         this.temp = temp;
     }
 
-    public float getWestTemp()
+    public double getWestTemp()
     {
-        return west == null ? 0.0f : west.getTemp();
+        return west == null ? 0.0 : west.getTemp();
     }
 
-    public float getEastTemp()
+    public double getEastTemp()
     {
-        return east == null ? 0.0f : east.getTemp();
+        return east == null ? 0.0 : east.getTemp();
     }
 
-    public float getSouthTemp()
+    public double getSouthTemp()
     {
-        return south == null ? 0.0f : south.getTemp();
+        return south == null ? 0.0 : south.getTemp();
     }
 
-    public float getNorthTemp()
+    public double getNorthTemp()
     {
-        return north == null ? 0.0f : north.getTemp();
-    }
-
-    public void swapTemp()
-    {
-        this.oldTemp = this.temp;
+        return north == null ? 0.0 : north.getTemp();
     }
 
     public int getHeight()
@@ -206,22 +200,35 @@ public class GridCell
     {
         this.width = width;
     }
-	private int readDate = 0;
-	private int readTime = 0;
 
-	public int getDate() {
-		return readDate;
-	}
+    private int readDate = 0;
+    private int readTime = 0;
 
-	public void setDate(int readDate) {
-		this.readDate = readDate;
-	}
+    public int getDate()
+    {
+        return readDate;
+    }
 
-	public int getTime() {
-		return readTime;
-	}
+    public void setDate(final int readDate)
+    {
+        this.readDate = readDate;
+    }
 
-	public void setTime(int readTime) {
-		this.readTime = readTime;
-	}
+    public int getTime()
+    {
+        return readTime;
+    }
+
+    public void setTime(final int readTime)
+    {
+        this.readTime = readTime;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "GridCell [width=" + width + ", height=" + height + ", latitudeTop=" + latitudeTop + ", latitudeBottom=" + latitudeBottom + ", longitudeLeft="
+                + longitudeLeft + ", longitudeRight=" + longitudeRight + ", surfaceArea=" + surfaceArea + ", temp=" + temp + ", north=" + north + ", south="
+                + south + ", west=" + west + ", east=" + east + ", readDate=" + readDate + ", readTime=" + readTime + "]";
+    }
 }

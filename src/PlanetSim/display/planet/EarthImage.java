@@ -1,4 +1,4 @@
-package PlanetSim.display.earth;
+package PlanetSim.display.planet;
 
 import java.net.URL;
 

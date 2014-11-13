@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import PlanetSim.Query.db.MySqlConnection;
-import PlanetSim.common.GridCell;
 import PlanetSim.common.GridSettings;
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
 import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.DisplayEvent;
+import PlanetSim.model.GridCell;
 import PlanetSim.simulation.InterpolateEvent;
 import PlanetSim.simulation.SimulateEvent;
 
