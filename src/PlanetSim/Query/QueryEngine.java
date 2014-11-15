@@ -41,7 +41,7 @@ public class QueryEngine
             //sanity checks
             String simName = settings.getSimulationName();
             if (simName == null || simName.length() == 0)
-            	throw new IllegalArgumentException();
+            	throw new IllegalArgumentException(); //this should be an event on the bus
             int gridSpacing = settings.getGridSpacing();
             double orbitalEcc = settings.getOrbitalEccentricity();
             double axialTilt = settings.getAxialTilt();

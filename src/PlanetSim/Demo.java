@@ -2,6 +2,7 @@ package PlanetSim;
 
 import javax.swing.SwingUtilities;
 
+import PlanetSim.Query.QueryEngine;
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
 import PlanetSim.display.SimulationUI;
@@ -12,6 +13,7 @@ public class Demo
 {
     private static SimulationSettings settings;
     private static EventBus           eventBus;
+    private static QueryEngine        queryEngine;
 
     public static void main(final String[] args)
     {
@@ -19,9 +21,15 @@ public class Demo
         startUI();
         startSimulation();
         startMetrics();
+        createQueryEngine();
     }
 
-    private static void init()
+    private static void createQueryEngine() {
+		queryEngine = new QueryEngine(eventBus);
+		
+	}
+
+	private static void init()
     {
         settings = new SimulationSettings();
         eventBus = new EventBus();

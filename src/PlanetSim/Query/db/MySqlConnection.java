@@ -192,8 +192,8 @@ public class MySqlConnection
     {
     }
 
-    public void saveCell(final String simName, final int row, final int cell, final float temp, final float latitudeTop, final float longitudeLeft,
-            final float latitudeBottom, final float longitudeRight, final int date, final int time, final int dsPrecision) throws SQLException
+    public void saveCell(final String simName, final int row, final int cell, final double d, final double e, final double f,
+            final double g, final double h, final int date, final int time, final int dsPrecision) throws SQLException
     {
         final Connection con = DriverManager.getConnection(url, user, password);
         final Statement st = con.createStatement();
@@ -217,6 +217,6 @@ public class MySqlConnection
                                                                                                                                       // x
                                                                                                                                       // places.
                 ", %d, %d, %f, %f, %f, %f)";
-        st.execute(String.format(sql, simName, row, cell, temp, date, time, longitudeLeft, longitudeRight, latitudeTop, latitudeBottom));
+        st.execute(String.format(sql, simName, row, cell, d, date, time, f, h, e, g));
     }
 }
