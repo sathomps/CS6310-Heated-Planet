@@ -81,25 +81,121 @@ public class QueryEngine
             		, settings.getSimulationTimeStepMinutes(), settings.getSimulationLength()
             		, settings.getAxialTilt(), settings.getOrbitalEccentricity()
             		, settings.getDatastoragePrecision(), settings.getGeographicPrecision(), settings.getTemporalPrecision());
-            if (ss.isEmpty())
-            {
+        	boolean interpolate = true;
+        	//if the user wanted data for longer than what was saved then force a simulation
+        	//even if the physical factors match (according to the project page)
+        	//remove the simulations that matched on name and/or physical factors but that didn't 
+        	//match based on the length of the simulation
+			ArrayList<SimulationSettings> s1 = new ArrayList<SimulationSettings>();   
+    		if (settings.getEndDate() > 0 || settings.getEndTime() > 0)
+    		{
+    			for (SimulationSettings s: ss)
+    				if (s.getEndDate() <= settings.getEndDate() && s.getEndTime() <= settings.getEndTime())
+    					s1.add(s);
+        	}
+    		else //enddate and time set to zero so the query doesn't concern those values
+    			s1 = ss;
+    		//at this point s1 is the list of Simulations that is decided upon whether to send them to the 
+    		//the bus as a DisplayEvent or the SE as a Simulate or Interpolate event
+    		SimulationSettings chosenOne = null; //the golden child - this this one that gets picked.
+    		//if there is more than one in the list iterate over them and pick the best.  The best is defined
+    		//as the one that matches the query settings the closest.  If none match the pick the first 
+    		//one in the list.
+    		//this is some of the ugliest code i have ever written.  It could be wrapped in a function but
+    		//there is a side effect here that if one in the list is a perfect match that the interpolate 
+    		//variable is set to false.  Since a function returns a scalar i just left it this way but it is
+    		//hideous
+        	if (s1.size() > 1)
+        	{
+        		for (SimulationSettings s: s1)
+        		{
+        			if (
+                			settings.getGeographicPrecision() == s.getGeographicPrecision() &&
+                			settings.getTemporalPrecision() == s.getTemporalPrecision() &&
+                			settings.getDatastoragePrecision() == s.getDatastoragePrecision() &&
+                			settings.getGridSpacing() == s.getGridSpacing() &&
+                			settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()
+               			)
+        			{
+        				interpolate = false;
+        				chosenOne = s;
+        				break;
+        			}
+        			else if (
+                			//settings.getGeographicPrecision() == s.getGeographicPrecision() &&
+                			settings.getTemporalPrecision() == s.getTemporalPrecision() &&
+                			settings.getDatastoragePrecision() == s.getDatastoragePrecision() &&
+                			settings.getGridSpacing() == s.getGridSpacing() &&
+                			settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()
+                			)
+        			{
+        				chosenOne = s;
+        				break;
+        			}
+        			else if (
+                			//settings.getGeographicPrecision() == s.getGeographicPrecision() &&
+                			//settings.getTemporalPrecision() == s.getTemporalPrecision() &&
+                			settings.getDatastoragePrecision() == s.getDatastoragePrecision() &&
+                			settings.getGridSpacing() == s.getGridSpacing() &&
+                			settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()
+                			)
+        			{
+        				chosenOne = s;
+        				break;
+        			}
+        			else if (
+                			//settings.getGeographicPrecision() == s.getGeographicPrecision() &&
+                			//settings.getTemporalPrecision() == s.getTemporalPrecision() &&
+                			//settings.getDatastoragePrecision() == s.getDatastoragePrecision() &&
+                			settings.getGridSpacing() == s.getGridSpacing() &&
+                			settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()
+                			)
+        			{
+        				chosenOne = s;
+        				break;
+        			}
+        			else if (
+                			//settings.getGeographicPrecision() == s.getGeographicPrecision() &&
+                			//settings.getTemporalPrecision() == s.getTemporalPrecision() &&
+                			//settings.getDatastoragePrecision() == s.getDatastoragePrecision() &&
+                			//settings.getGridSpacing() == s.getGridSpacing() &&
+                			settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()
+                			)
+        			{
+        				chosenOne = s;
+        				break;
+        			}
+        			else
+        			{
+        				chosenOne = s;
+        				break;
+        			}
+
+        		}
+        	}
+        	//nothing in the list so a simulation has to be run 
+        	else if (s1.size() == 0)
+        	{
                 eventBus.publish(new SimulateEvent(settings));
-            }
-            else
-            {
-            	boolean interpolate = false;
-            	if (ss.size() > 1)
-            	{
-            		//just pick the first one for now.  this needs to be more complicated
-            		settings.setSimulationName(ss.get(0).getName());
-            	}
-                final GridSettings gs = con.query(settings);
-                settings.setGridSettings(gs);
-            	if (interpolate)
-            		eventBus.publish(new InterpolateEvent(settings));
-            	else
-            		eventBus.publish(new DisplayEvent(settings));
-            }
+        	}
+        	//only one in the list so get it and determine the correct value of interpolate 
+        	else
+        	{
+        		chosenOne = s1.get(0);
+        		interpolate = !(
+        			settings.getGeographicPrecision() == chosenOne.getGeographicPrecision() &&
+        			settings.getTemporalPrecision() == chosenOne.getTemporalPrecision() &&
+        			settings.getDatastoragePrecision() == chosenOne.getDatastoragePrecision() &&
+        			settings.getGridSpacing() == chosenOne.getGridSpacing() &&
+        			settings.getSimulationTimeStepMinutes() == chosenOne.getSimulationTimeStepMinutes()
+        			);
+        	}
+            final GridSettings gs = con.query(settings);
+            chosenOne.setGridSettings(gs);
+        	if (interpolate)
+        		eventBus.publish(new InterpolateEvent(chosenOne));
+        	else
+        		eventBus.publish(new DisplayEvent(chosenOne));
         }
         catch (final Exception e)
         {
