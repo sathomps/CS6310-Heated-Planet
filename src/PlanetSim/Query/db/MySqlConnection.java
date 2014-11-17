@@ -192,8 +192,8 @@ public class MySqlConnection
     {
     }
 
-    public void saveCell(final String simName, final int row, final int cell, final float temp, final float latitudeTop, final float longitudeLeft,
-            final float latitudeBottom, final float longitudeRight, final int date, final int time, final int dsPrecision) throws SQLException
+    public void saveCell(final String simName, final int row, final int cell, final double d, final double e, final double f,
+            final double g, final double h, final int date, final int time, final int dsPrecision) throws SQLException
     {
         final Connection con = DriverManager.getConnection(url, user, password);
         final Statement st = con.createStatement();
@@ -217,6 +217,22 @@ public class MySqlConnection
                 // x
                 // places.
                 ", %d, %d, %f, %f, %f, %f)";
-        st.execute(String.format(sql, simName, row, cell, temp, date, time, longitudeLeft, longitudeRight, latitudeTop, latitudeBottom));
+        st.execute(String.format(sql, simName, row, cell, d, date, time, f, h, e, g));
+    }
+    
+    public long getDatabaseSize()
+    {
+    	final String sql = "SELECT sum( data_length + index_length ) FROM information_schema.TABLES  WHERE table_schema = 'heated_planet'";
+        Connection con;
+		try {
+			con = DriverManager.getConnection(url, user, password);
+	        final Statement st = con.createStatement();
+	        ResultSet rs = st.executeQuery(sql);
+	        return rs.getLong(0);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return -1;
     }
 }
