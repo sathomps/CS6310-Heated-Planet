@@ -202,4 +202,13 @@ public class QueryEngine
             throw new RuntimeException(e);
         }
     }
+    /**
+     * This method is intended to be part of the metrics for the design study.  It may be returned
+     * on the event bus that isn't known yet but the data is now available when we need it.
+     * @return - long value that is the database size in bytes
+     */
+    public long getDataStoreSize()
+    {
+    	return (new MySqlConnection()).getDatabaseSize();
+    }
 }
