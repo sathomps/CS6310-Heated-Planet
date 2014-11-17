@@ -1,4 +1,4 @@
-package PlanetSim.model;
+package PlanetSim.simulation.util;
 
 public class SunPosition
 {
@@ -6,6 +6,8 @@ public class SunPosition
     private double latitude;
     private double elevation;
     private double azimuth;
+    private double distanceToSun;
+    private double declination;
 
     public double getLongitude()
     {
@@ -47,9 +49,23 @@ public class SunPosition
         this.azimuth = azimuth;
     }
 
-    @Override
-    public String toString()
+    public double getDistanceToSun()
     {
-        return "SunPosition [longitude=" + longitude + ", latitude=" + latitude + ", elevation=" + elevation + ", azimuth=" + azimuth + "]";
+        return distanceToSun;
+    }
+
+    public void setDistanceToSun(final double distanceToSun)
+    {
+        this.distanceToSun = distanceToSun;
+    }
+
+    public double getDeclination()
+    {
+        return declination;
+    }
+
+    public void setDeclination(double declination)
+    {
+        this.declination = declination;
     }
 }

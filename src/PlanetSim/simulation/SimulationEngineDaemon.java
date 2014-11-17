@@ -29,10 +29,9 @@ public class SimulationEngineDaemon
     {
         try
         {
-            while (run)
+            while (engine.run())
             {
-                engine.run();
-                Thread.sleep(MILLISECONDS.convert(settings.getSimulationTimeStepMinutes(), SECONDS));
+                Thread.sleep(MILLISECONDS.convert(1, SECONDS));
             }
         }
         catch (final InterruptedException e)
@@ -54,7 +53,6 @@ public class SimulationEngineDaemon
 
         case RUN:
             run = true;
-            this.run();
             break;
 
         case PAUSE:

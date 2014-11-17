@@ -1,12 +1,13 @@
 package PlanetSim.common;
 
+import java.util.Date;
 import java.util.LinkedList;
 
 import PlanetSim.display.planet.Planet;
 import PlanetSim.display.sun.Sun;
 import PlanetSim.model.GridCell;
 
-public class SimulationSettings
+public class SimulationSettings implements Cloneable
 {
     private String       simulationName            = "";
 
@@ -98,7 +99,7 @@ public class SimulationSettings
 
     private void validateSimulationTimeStepMinutes()
     {
-        simulationTimeStepMinutes = ((simulationTimeStepMinutes >= 1) && (simulationTimeStepMinutes <= 1440)) ? simulationTimeStepMinutes : 1;
+        simulationTimeStepMinutes = ((simulationTimeStepMinutes >= 1) && (simulationTimeStepMinutes <= 525600)) ? simulationTimeStepMinutes : 1;
     }
 
     public int getGridSpacing()
@@ -138,24 +139,21 @@ public class SimulationSettings
         sun.reset();
     }
 
-    public String getName()
-    {
-        return simulationName;
-    }
-
-    public void setName(final String name)
-    {
-        simulationName = name;
-    }
-
     public String getSimulationName()
     {
         return simulationName;
     }
 
-    public void setSimulationName(final String simulationName)
+    public SimulationSettings setSimulationName(final String simulationName)
     {
         this.simulationName = simulationName;
+        validateSimulationName();
+        return this;
+    }
+
+    private void validateSimulationName()
+    {
+        simulationName = ((simulationName != null) && (simulationName.length() > 0)) ? simulationName : new Date().toString();
     }
 
     public double getAxialTilt()
@@ -163,9 +161,16 @@ public class SimulationSettings
         return axialTilt;
     }
 
-    public void setAxialTilt(final double axialTilt)
+    public SimulationSettings setAxialTilt(final double axialTilt)
     {
         this.axialTilt = axialTilt;
+        validateAxialTilt();
+        return this;
+    }
+
+    private void validateAxialTilt()
+    {
+        axialTilt = ((axialTilt >= 1) && (axialTilt <= 180)) ? axialTilt : 23.44;
     }
 
     public double getOrbitalEccentricity()
@@ -173,9 +178,16 @@ public class SimulationSettings
         return orbitalEccentricity;
     }
 
-    public void setOrbitalEccentricity(final double orbitalEccentricity)
+    public SimulationSettings setOrbitalEccentricity(final double orbitalEccentricity)
     {
         this.orbitalEccentricity = orbitalEccentricity;
+        validatOrbitalEccentricity();
+        return this;
+    }
+
+    private void validatOrbitalEccentricity()
+    {
+        orbitalEccentricity = ((orbitalEccentricity >= 0) && (orbitalEccentricity <= 1)) ? orbitalEccentricity : .0167;
     }
 
     public int getSimulationLength()
@@ -183,9 +195,16 @@ public class SimulationSettings
         return simulationLength;
     }
 
-    public void setSimulationLength(final int simulationLength)
+    public SimulationSettings setSimulationLength(final int simulationLength)
     {
         this.simulationLength = simulationLength;
+        validateSimulationLength();
+        return this;
+    }
+
+    private void validateSimulationLength()
+    {
+        simulationLength = ((simulationLength >= 1) && (simulationLength <= 1200)) ? simulationLength : 12;
     }
 
     public int getDatastoragePrecision()
@@ -193,9 +212,16 @@ public class SimulationSettings
         return datastoragePrecision;
     }
 
-    public void setDatastoragePrecision(final int datastoragePrecision)
+    public SimulationSettings setDatastoragePrecision(final int datastoragePrecision)
     {
         this.datastoragePrecision = datastoragePrecision;
+        validateDatastoragePrecision();
+        return this;
+    }
+
+    private void validateDatastoragePrecision()
+    {
+        datastoragePrecision = ((datastoragePrecision >= 0) && (datastoragePrecision <= 7)) ? datastoragePrecision : 7;
     }
 
     public int getGeographicPrecision()
@@ -203,9 +229,16 @@ public class SimulationSettings
         return geographicPrecision;
     }
 
-    public void setGeographicPrecision(final int geographicPrecision)
+    public SimulationSettings setGeographicPrecision(final int geographicPrecision)
     {
         this.geographicPrecision = geographicPrecision;
+        validateGeographicPrecision();
+        return this;
+    }
+
+    private void validateGeographicPrecision()
+    {
+        geographicPrecision = ((geographicPrecision >= 1) && (geographicPrecision <= 100) ? geographicPrecision : 100);
     }
 
     public int getTemporalPrecision()
@@ -213,9 +246,16 @@ public class SimulationSettings
         return temporalPrecision;
     }
 
-    public void setTemporalPrecision(final int temporalPrecision)
+    public SimulationSettings setTemporalPrecision(final int temporalPrecision)
     {
         this.temporalPrecision = temporalPrecision;
+        validaTemporalPrecision();
+        return this;
+    }
+
+    private void validaTemporalPrecision()
+    {
+        temporalPrecision = ((temporalPrecision >= 1) && (temporalPrecision <= 100) ? temporalPrecision : 100);
     }
 
     public GridSettings getGridSettings()
@@ -274,4 +314,9 @@ public class SimulationSettings
         this.endTime = endTime;
     }
 
+    @Override
+    public SimulationSettings clone() throws CloneNotSupportedException
+    {
+        return (SimulationSettings) super.clone();
+    }
 }

@@ -2,12 +2,16 @@ package PlanetSim.simulation.util;
 
 import static PlanetSim.common.util.JulianCalendarUtil.julianDay;
 
-import java.util.Date;
+import java.util.Calendar;
 
 import PlanetSim.model.GridCell;
-import PlanetSim.model.SunPosition;
 
-public class SunPositionUtil
+/**
+ * http://www.geog.ucsb.edu/ideas/Insolation.html
+ * http://www.azimuthproject.org/azimuth/show/Insolation
+ * 
+ */
+public final class SunPositionUtil
 {
     private static final double DARK           = Double.NaN;
 
@@ -18,6 +22,10 @@ public class SunPositionUtil
      * the horizon (solar elevation angle of -6°).
      */
     private static final double CIVIL_TWILIGHT = -6;
+
+    private SunPositionUtil()
+    {
+    }
 
     /**
      * Calculate the equation of center for the sun. This value is a correction
@@ -79,18 +87,6 @@ public class SunPositionUtil
     }
 
     /**
-     * Calculate the Geometric Mean Anomaly of the Sun.
-     *
-     * @param t
-     *            number of Julian centuries since J2000.
-     * @return Geometric Mean Anomaly of the Sun in degrees.
-     */
-    private static double sunGeometricMeanAnomaly(final double t)
-    {
-        return 357.52911 + (t * (35999.05029 - (0.0001537 * t)));
-    }
-
-    /**
      * Calculate the true anamoly of the sun.
      *
      * @param t
@@ -103,6 +99,32 @@ public class SunPositionUtil
     }
 
     /**
+     * Calculate the distance to the sun in Astronomical Units (AU).
+     *
+     * @param t
+     *            number of Julian centuries since J2000.
+     * @return Sun radius vector in AUs.
+     */
+    private static double distanceToSun(final double planetsEccentrity, final double t)
+    {
+        final double v = Math.toRadians(sunTrueAnomaly(t));
+        final double e = eccentricityPlanetOrbit(planetsEccentrity, t);
+        return (1.000001018 * (1 - (e * e))) / (1 + (e * Math.cos(v)));
+    }
+
+    /**
+     * Calculate the Geometric Mean Anomaly of the Sun.
+     *
+     * @param t
+     *            number of Julian centuries since J2000.
+     * @return Geometric Mean Anomaly of the Sun in degrees.
+     */
+    private static double sunGeometricMeanAnomaly(final double t)
+    {
+        return 357.52911 + (t * (35999.05029 - (0.0001537 * t)));
+    }
+
+    /**
      * Calculate the eccentricity of the p orbit. This is the ratio
      * {@code (a-b)/a} where <var>a</var> is the semi-major axis length and
      * <var>b</var> is the semi-minor axis length. Value is 0 for a circular
@@ -112,23 +134,9 @@ public class SunPositionUtil
      *            number of Julian centuries since J2000.
      * @return The unitless eccentricity.
      */
-    private static double eccentricityEarthOrbit(final double t)
+    private static double eccentricityPlanetOrbit(final double planetsEccentrity, final double t)
     {
-        return 0.016708634 - (t * (0.000042037 + (0.0000001267 * t)));
-    }
-
-    /**
-     * Calculate the distance to the sun in Astronomical Units (AU).
-     *
-     * @param t
-     *            number of Julian centuries since J2000.
-     * @return Sun radius vector in AUs.
-     */
-    public static double sunRadiusVector(final double t)
-    {
-        final double v = Math.toRadians(sunTrueAnomaly(t));
-        final double e = eccentricityEarthOrbit(t);
-        return (1.000001018 * (1 - (e * e))) / (1 + (e * Math.cos(v)));
+        return planetsEccentrity - (t * (0.000042037 + (0.0000001267 * t)));
     }
 
     /**
@@ -138,10 +146,10 @@ public class SunPositionUtil
      *            number of Julian centuries since J2000.
      * @return Mean obliquity in degrees.
      */
-    private static double meanObliquityOfEcliptic(final double t)
+    private static double meanObliquityOfEcliptic(final double planetsAxialTilt, final double t)
     {
         final double seconds = 21.448 - (t * (46.8150 + (t * (0.00059 - (t * (0.001813))))));
-        return 23.0 + ((26.0 + (seconds / 60.0)) / 60.0);
+        return planetsAxialTilt + ((26.0 + (seconds / 60.0)) / 60.0);
     }
 
     /**
@@ -151,50 +159,26 @@ public class SunPositionUtil
      *            number of Julian centuries since J2000.
      * @return Corrected obliquity in degrees.
      */
-    private static double obliquityCorrected(final double t)
+    private static double obliquityCorrected(final double planetsAxialTilt, final double t)
     {
-        final double e0 = meanObliquityOfEcliptic(t);
+        final double e0 = meanObliquityOfEcliptic(planetsAxialTilt, t);
         final double omega = Math.toRadians(125.04 - (1934.136 * t));
         return e0 + (0.00256 * Math.cos(omega));
     }
 
     /**
-     * Calculate the right ascension of the sun. Similar to the angular system
-     * used to define latitude and longitude on Earth's surface, right ascension
-     * is roughly analogous to longitude, and defines an angular offset from the
-     * meridian of the vernal equinox.
-     *
-     * <P align="center">
-     * <img src="doc-files/CelestialSphere.png">
-     * </P>
-     *
-     * @param t
-     *            number of Julian centuries since J2000.
-     * @return Sun's right ascension in degrees.
-     */
-    public static double sunRightAscension(final double t)
-    {
-        final double e = Math.toRadians(obliquityCorrected(t));
-        final double b = Math.toRadians(sunApparentLongitude(t));
-        final double y = Math.sin(b) * Math.cos(e);
-        final double x = Math.cos(b);
-        final double alpha = Math.atan2(y, x);
-        return Math.toDegrees(alpha);
-    }
-
-    /**
      * Calculate the declination of the sun. Declination is analogous to
-     * latitude on Earth's surface, and measures an angular displacement north
-     * or south from the projection of Earth's equator on the celestial sphere
+     * latitude on Planet's surface, and measures an angular displacement north
+     * or south from the projection of Planet's equator on the celestial sphere
      * to the location of a celestial body.
      *
      * @param t
      *            number of Julian centuries since J2000.
      * @return Sun's declination in degrees.
      */
-    private static double sunDeclination(final double t)
+    private static double sunDeclination(final double planetsAxialTilt, final double t)
     {
-        final double e = Math.toRadians(obliquityCorrected(t));
+        final double e = Math.toRadians(obliquityCorrected(planetsAxialTilt, t));
         final double b = Math.toRadians(sunApparentLongitude(t));
         final double sint = Math.sin(e) * Math.sin(b);
         final double theta = Math.asin(sint);
@@ -202,43 +186,17 @@ public class SunPositionUtil
     }
 
     /**
-     * Calculate the Universal Coordinated Time (UTC) of solar noon for the
-     * given day at the given location on earth.
-     *
-     * @param lon
-     *            longitude of observer in degrees.
-     * @param eqTime
-     *            Equation of time.
-     * @return Time in minutes from beginnning of day in UTC.
-     */
-    private static double solarNoonTime(final double lon, final double eqTime)
-    {
-        return (720.0 + (lon * 4.0)) - eqTime;
-    }
-
-    /**
-     * Calculate the difference between true solar time and mean. The "equation
-     * of time" is a term accounting for changes in the time of solar noon for a
-     * given location over the course of a year. Earth's elliptical orbit and
-     * Kepler's law of equal areas in equal times are the culprits behind this
-     * phenomenon. See the <A
-     * HREF="http://www.analemma.com/Pages/framesPage.html">Analemma page</A>.
-     * Below is a plot of the equation of time versus the day of the year.
-     *
-     * <P align="center">
-     * <img src="doc-files/EquationOfTime.png">
-     * </P>
      *
      * @param t
      *            number of Julian centuries since J2000.
      * @return Equation of time in minutes of time.
      */
-    private static double equationOfTime(final double t)
+    private static double equationOfTime(final double planetsEccentrity, final double planetsAxialTilt, final double t)
     {
-        final double eps = Math.toRadians(obliquityCorrected(t));
+        final double eps = Math.toRadians(obliquityCorrected(planetsAxialTilt, t));
         final double l0 = Math.toRadians(sunGeometricMeanLongitude(t));
         final double m = Math.toRadians(sunGeometricMeanAnomaly(t));
-        final double e = eccentricityEarthOrbit(t);
+        final double e = eccentricityPlanetOrbit(planetsEccentrity, t);
         double y = Math.tan(eps / 2);
         y *= y;
 
@@ -296,8 +254,9 @@ public class SunPositionUtil
      * Calculates solar position for the current date, time and location.
      * Results are reported in azimuth and elevation in degrees.
      */
-    public static SunPosition compute(final GridCell gridCell, final long time)
+    public static SunPosition compute(final GridCell gridCell, final Calendar date, final double planetsEccentrity, final double planetsAxialTilt)
     {
+        final long time = date.getTimeInMillis();
         final SunPosition sunPosition = new SunPosition();
         double latitude = gridCell.getLatitudeTop();
         double longitude = gridCell.getLongitudeRight();
@@ -311,8 +270,8 @@ public class SunPositionUtil
         // 2) Time as the centuries ellapsed since January 1, 2000 at 12:00 GMT.
         final double julianDay = julianDay(time);
 
-        double solarDec = sunDeclination(time);
-        final double eqTime = equationOfTime(time);
+        double solarDec = sunDeclination(planetsAxialTilt, time);
+        final double eqTime = equationOfTime(planetsEccentrity, planetsAxialTilt, time);
 
         // Formula below use longitude in degrees. Steps are:
         // 1) Extract the time part of the date, in minutes.
@@ -388,25 +347,14 @@ public class SunPositionUtil
             elevation = DARK;
         }
 
+        sunPosition.setDeclination(solarDec);
         sunPosition.setAzimuth(azimuth);
         sunPosition.setElevation(elevation);
         sunPosition.setLatitude(latitude);
         sunPosition.setLongitude(longitude);
+        sunPosition.setDistanceToSun(distanceToSun(planetsEccentrity, time));
 
         return sunPosition;
     }
 
-    public static void main(final String[] args)
-    {
-        final GridCell gridCell = new GridCell();
-        gridCell.setLatitudeTop(25);
-        gridCell.setLongitudeRight(50);
-
-        final SunPosition sunPosition = SunPositionUtil.compute(gridCell, new Date().getTime());
-
-        System.out.println("getAzimuth: " + sunPosition.getAzimuth());
-        System.out.println("getElevation: " + sunPosition.getElevation());
-        System.out.println("getLatitude: " + sunPosition.getLatitude());
-        System.out.println("getLongitude: " + sunPosition.getLongitude());
-    }
 }

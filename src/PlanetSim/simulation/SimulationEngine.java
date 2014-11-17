@@ -1,5 +1,10 @@
 package PlanetSim.simulation;
 
+import static java.util.Calendar.DAY_OF_MONTH;
+import static java.util.Calendar.MINUTE;
+import static java.util.Calendar.MONTH;
+
+import java.util.Calendar;
 import java.util.LinkedList;
 
 import PlanetSim.common.SimulationSettings;
@@ -12,59 +17,74 @@ public class SimulationEngine
     private final SimulationSettings settings;
     private final EventBus           eventBus;
 
+    private Calendar                 currentSimulationTime;
+
+    private int                      simulationTimeMinutes;
+
+    private static int               MINUTES_IN_A_MONTH = 43829;
+
     public SimulationEngine(final EventBus eventBus, final SimulationSettings settings)
     {
-        this.settings = settings;
+        this.settings = cloneSettings(settings);
+        setSimulationTime();
+
         this.eventBus = eventBus;
         eventBus.subscribe(this);
     }
 
-    public void run()
+    private void setSimulationTime()
     {
-        final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
-        for (int row = 0; row < grid.size(); row++)
+        currentSimulationTime = Calendar.getInstance();
+        currentSimulationTime.set(MONTH, 1);
+        currentSimulationTime.set(DAY_OF_MONTH, 4);
+    }
+
+    private SimulationSettings cloneSettings(final SimulationSettings settings)
+    {
+        try
         {
-            for (int cell = 0; cell < grid.get(0).size(); cell++)
-            {
-                calculateTemp(grid.get(row).get(cell));
-            }
+            return settings.clone();
         }
-        moveSun();
-        eventBus.publish(new DisplayEvent(settings));
+        catch (final Exception e)
+        {
+        }
+        return settings;
     }
 
-    private void moveSun()
+    public boolean run()
     {
-        // settings.getSun().movePosition(Constants.EARTH_ROTATION_DEGREES_PER_HOUR);
+        if (!hasSimulationFinished())
+        {
+            calculateSimulationTime();
+
+            final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
+            for (int row = 0; row < grid.size(); row++)
+            {
+                for (int cell = 0; cell < grid.get(0).size(); cell++)
+                {
+                    // calculateTemp(grid.get(row).get(cell));
+                }
+            }
+            eventBus.publish(new DisplayEvent(settings));
+
+            return true;
+        }
+        return false;
     }
 
-    private void calculateTemp(final GridCell cell)
+    private void calculateSimulationTime()
     {
-        final double initialTemp = cell.getTemp();
-        final double sunTemp = calculateSunHeat(cell);
-        final double coolingTemp = calculateTemperatureDueToCooling(cell);
-        final double neighborTemp = calculateNeighborHeat(cell) / 2;
-
-        cell.setTemp(initialTemp + sunTemp + coolingTemp + neighborTemp);
+        simulationTimeMinutes += settings.getSimulationTimeStepMinutes();
+        currentSimulationTime.add(MINUTE, simulationTimeMinutes);
     }
 
-    private double calculateSunHeat(final GridCell cell)
+    private boolean hasSimulationFinished()
     {
-        return settings.getSun().calculateSunHeat(cell);
+        return calculateMonthsPassed() >= settings.getSimulationLength();
     }
 
-    private double calculateTemperatureDueToCooling(final GridCell cell)
+    private int calculateMonthsPassed()
     {
-        final double relativeTempFactor = cell.getTemp() / settings.getPlanet().calculateAverageTemperature();
-
-        final double timeOffset = settings.getSimulationTimeStepMinutes() / 60f;
-        final double attenuationConstant = .406867508241966f / 2;
-
-        return (double) -1 * 4 * attenuationConstant * timeOffset * relativeTempFactor;
-    }
-
-    private double calculateNeighborHeat(final GridCell cell)
-    {
-        return (cell.getNorthTemp() + cell.getSouthTemp() + cell.getEastTemp() + cell.getWestTemp()) / 4f;
+        return (MINUTES_IN_A_MONTH / simulationTimeMinutes);
     }
 }

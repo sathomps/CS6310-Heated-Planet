@@ -89,10 +89,10 @@ public class MySqlConnection
     {
         final ArrayList<SimulationSettings> result = new ArrayList<SimulationSettings>();
         String sql = "SELECT * FROM simulations WHERE 1=1 "; // 1=1 is stupid
-                                                             // trick to not
-                                                             // have to figure
-                                                             // out when an AND
-                                                             // should be used.
+        // trick to not
+        // have to figure
+        // out when an AND
+        // should be used.
         if ((name != null) && (name.length() > 0))
         {
             sql += String.format(" AND name = '%s'", name);
@@ -118,7 +118,7 @@ public class MySqlConnection
             final SimulationSettings ss = new SimulationSettings();
             ss.setAxialTilt(rs.getDouble("axial_tilt"));
             ss.setGridSpacing(rs.getInt("grid_spacing"));
-            ss.setName(rs.getString("name"));
+            ss.setSimulationName(rs.getString("name"));
             ss.setOrbitalEccentricity(rs.getDouble("orbital_eccentricity"));
             ss.setGeographicPrecision(rs.getInt("geographic_precision"));
             ss.setSimulationLength(rs.getInt("simulation_length"));
@@ -146,13 +146,13 @@ public class MySqlConnection
     {
         final Connection con = DriverManager.getConnection(url, user, password);
         final Statement st = con.createStatement();
-        ResultSet rs = st.executeQuery(String.format("SELECT * FROM simulations WHERE name = '%s'", settings.getName()));
+        ResultSet rs = st.executeQuery(String.format("SELECT * FROM simulations WHERE name = '%s'", settings.getSimulationName()));
 
         if (rs.next())
         {
             final GridSettings gs = new GridSettings(settings);
             rs = st.executeQuery(String.format("SELECT row_position, column_position, temperature, reading_date, reading_time"
-                    + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom " + " FROM simulation_grid WHERE name = '%s'", settings.getName()));
+                    + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom " + " FROM simulation_grid WHERE name = '%s'", settings.getSimulationName()));
             while (rs.next())
             {
                 final int row_pos = rs.getInt("row_position");
@@ -199,23 +199,23 @@ public class MySqlConnection
         final Statement st = con.createStatement();
         final String sql = "INSERT INTO simulation_grid_data (name, row_position, column_position, temperature, reading_date, reading_time"
                 + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom) VALUES ('%s', %d, %d" + ", %." + dsPrecision + "f" + // how
-                                                                                                                                      // many
-                                                                                                                                      // decimals
-                                                                                                                                      // to
-                                                                                                                                      // store,
-                                                                                                                                      // kinda
-                                                                                                                                      // dorky
-                                                                                                                                      // but
-                                                                                                                                      // but
-                                                                                                                                      // i
-                                                                                                                                      // can't
-                                                                                                                                      // figure
-                                                                                                                                      // how
-                                                                                                                                      // to
-                                                                                                                                      // round
-                                                                                                                                      // to
-                                                                                                                                      // x
-                                                                                                                                      // places.
+                // many
+                // decimals
+                // to
+                // store,
+                // kinda
+                // dorky
+                // but
+                // but
+                // i
+                // can't
+                // figure
+                // how
+                // to
+                // round
+                // to
+                // x
+                // places.
                 ", %d, %d, %f, %f, %f, %f)";
         st.execute(String.format(sql, simName, row, cell, temp, date, time, longitudeLeft, longitudeRight, latitudeTop, latitudeBottom));
     }
