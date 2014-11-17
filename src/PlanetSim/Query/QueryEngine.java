@@ -43,23 +43,6 @@ public class QueryEngine
         try
         {
             final SimulationSettings settings = event.getSettings();
-<<<<<<< HEAD
-            // sanity checks
-            final String simName = settings.getSimulationName();
-            if ((simName == null) || (simName.length() == 0))
-            {
-                throw new IllegalArgumentException();
-            }
-            final int gridSpacing = settings.getGridSpacing();
-            final double orbitalEcc = settings.getOrbitalEccentricity();
-            final double axialTilt = settings.getAxialTilt();
-            final int simLength = settings.getSimulationLength();
-            final int simTimeStep = settings.getSimulationTimeStepMinutes();
-            final int dsPrecision = settings.getDatastoragePrecision();
-            final int geoPrecision = settings.getGeographicPrecision();
-            final double temporalPrecision = settings.getTemporalPrecision();
-            final MySqlConnection con = new MySqlConnection();
-=======
             //sanity checks
             String simName = settings.getSimulationName();
             if (simName == null || simName.length() == 0)
@@ -73,7 +56,6 @@ public class QueryEngine
             int geoPrecision = settings.getGeographicPrecision();
             double temporalPrecision = settings.getTemporalPrecision();
             MySqlConnection con = new MySqlConnection();
->>>>>>> 186f36c2a4f31c1afc44900d3b4cc4107ed91d07
             con.saveHeader(simName, gridSpacing, orbitalEcc, axialTilt, simLength, simTimeStep, dsPrecision, geoPrecision, temporalPrecision);
             final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
             for (int row = 0; row < grid.size(); row++)
@@ -101,36 +83,7 @@ public class QueryEngine
         {
             final MySqlConnection con = new MySqlConnection();
             final SimulationSettings settings = event.getSettings();
-<<<<<<< HEAD
-            final ArrayList<SimulationSettings> ss = con.queryHeader(settings.getSimulationName(), settings.getGridSpacing(),
-                    settings.getSimulationTimeStepMinutes(), settings.getSimulationLength(), settings.getAxialTilt(), settings.getOrbitalEccentricity(),
-                    settings.getDatastoragePrecision(), settings.getGeographicPrecision(), settings.getTemporalPrecision());
-            if (ss.isEmpty())
-            {
-                eventBus.publish(new SimulateEvent(settings));
-            }
-            else
-            {
-                final boolean interpolate = false;
-                if (ss.size() > 1)
-                {
-                    // just pick the first one for now. this needs to be more
-                    // complicated
-                    settings.setSimulationName(ss.get(0).getSimulationName());
-                }
-                final GridSettings gs = con.query(settings);
-                settings.setGridSettings(gs);
-                if (interpolate)
-                {
-                    eventBus.publish(new InterpolateEvent(settings));
-                }
-                else
-                {
-                    eventBus.publish(new DisplayEvent(settings));
-                }
-            }
-=======
-            ArrayList<SimulationSettings> ss = con.queryHeader(settings.getName(), settings.getGridSpacing()
+            ArrayList<SimulationSettings> ss = con.queryHeader(settings.getSimulationName(), settings.getGridSpacing()
             		, settings.getSimulationTimeStepMinutes(), settings.getSimulationLength()
             		, settings.getAxialTilt(), settings.getOrbitalEccentricity()
             		, settings.getDatastoragePrecision(), settings.getGeographicPrecision(), settings.getTemporalPrecision());
@@ -243,13 +196,12 @@ public class QueryEngine
         			settings.getSimulationTimeStepMinutes() == chosenOne.getSimulationTimeStepMinutes()
         			);
         	}
-            final GridSettings gs = con.query(settings);
-            chosenOne.setGridSettings(gs);
+	        final GridSettings gs = con.query(settings);
+	        chosenOne.setGridSettings(gs);
         	if (interpolate)
         		eventBus.publish(new InterpolateEvent(chosenOne));
         	else
         		eventBus.publish(new DisplayEvent(chosenOne));
->>>>>>> 186f36c2a4f31c1afc44900d3b4cc4107ed91d07
         }
         catch (final Exception e)
         {
