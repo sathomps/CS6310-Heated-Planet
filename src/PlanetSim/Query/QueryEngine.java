@@ -63,10 +63,11 @@ public class QueryEngine
                 for (int cell = 0; cell < grid.get(0).size(); cell++)
                 {
                     final GridCell c = grid.get(row).get(cell);
-                    // con.saveCell(simName, row, cell, c.getTemp()
-                    // , c.getLatitudeTop(), c.getLongitudeLeft(),
-                    // c.getLatitudeBottom(), c.getLongitudeRight()
-                    // , c.getDate(), c.getTime(), dsPrecision);
+                    con.saveCell(simName, row, cell, c.getTemp()
+                     , c.getLatitudeTop(), c.getLongitudeLeft(),
+                     c.getLatitudeBottom(), c.getLongitudeRight()
+                     , c.getDate(), c.getTime(), dsPrecision);
+                    
                 }
             }
         }
@@ -93,10 +94,10 @@ public class QueryEngine
         	//remove the simulations that matched on name and/or physical factors but that didn't 
         	//match based on the length of the simulation
 			ArrayList<SimulationSettings> s1 = new ArrayList<SimulationSettings>();   
-    		if (settings.getEndDate() > 0 || settings.getEndTime() > 0)
+    		if (settings.getEndDate() > 0)
     		{
     			for (SimulationSettings s: ss)
-    				if (s.getEndDate() <= settings.getEndDate() && s.getEndTime() <= settings.getEndTime())
+    				if (s.getEndDate() <= settings.getEndDate())
     					s1.add(s);
         	}
     		else //enddate and time set to zero so the query doesn't concern those values

@@ -21,18 +21,17 @@ import PlanetSim.common.SimulationSettings;
  --
 
  CREATE TABLE IF NOT EXISTS `simulation_grid_data` (
- `simulation_name` varchar(50) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
- `temperature` double NOT NULL,
- `reading_date` int(11) NOT NULL,
- `reading_time` int(11) NOT NULL,
- `row_position` int(11) NOT NULL,
- `column_position` int(11) NOT NULL,
- `longitudeLeft` float NOT NULL,
- `longitudeRight` float NOT NULL,
- `latitudeTop` float NOT NULL,
- `latitudeBottom` float NOT NULL,
- PRIMARY KEY (`simulation_name`,`reading_date`,`reading_time`,`row_position`,`column_position`)
- ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `simulation_name` varchar(50) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+  `temperature` double NOT NULL,
+  `reading_date` bigint(20) NOT NULL,
+  `row_position` int(11) NOT NULL,
+  `column_position` int(11) NOT NULL,
+  `longitudeLeft` float NOT NULL,
+  `longitudeRight` float NOT NULL,
+  `latitudeTop` float NOT NULL,
+  `latitudeBottom` float NOT NULL,
+  PRIMARY KEY (`simulation_name`,`reading_date`,`row_position`,`column_position`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
  -- --------------------------------------------------------
 

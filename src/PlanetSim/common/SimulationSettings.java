@@ -269,50 +269,50 @@ public class SimulationSettings implements Cloneable
     // the start of the simulation
     // Reading time: hours and minutes since the start of the Reading Date
     // need a start and end value for both of those
-    private int startDate = 0;
-    private int startTime = 0;
-    private int endDate   = 0;
-    private int endTime   = 0;
+    private long startDate = 0;
+    //private int startTime = 0;
+    private long endDate   = 0;
+    //private int endTime   = 0;
 
-    public int getStartDate()
+    public long getStartDate()
     {
         return startDate;
     }
 
-    public void setStartDate(final int startDate)
+    public void setStartDate(final long startDate)
     {
         this.startDate = startDate;
     }
 
-    public int getStartTime()
-    {
-        return startTime;
-    }
+//    public int getStartTime()
+//    {
+//        return startTime;
+//    }
 
-    public void setStartTime(final int startTime)
-    {
-        this.startTime = startTime;
-    }
+//    public void setStartTime(final int startTime)
+//    {
+//        this.startTime = startTime;
+//    }
 
-    public int getEndDate()
+    public long getEndDate()
     {
         return endDate;
     }
 
-    public void setEndDate(final int endDate)
+    public void setEndDate(final long endDate)
     {
         this.endDate = endDate;
     }
 
-    public int getEndTime()
-    {
-        return endTime;
-    }
+//    public int getEndTime()
+//    {
+//        return endTime;
+//    }
 
-    public void setEndTime(final int endTime)
-    {
-        this.endTime = endTime;
-    }
+//    public void setEndTime(final int endTime)
+//    {
+//        this.endTime = endTime;
+//    }
 
     @Override
     public SimulationSettings clone() throws CloneNotSupportedException
