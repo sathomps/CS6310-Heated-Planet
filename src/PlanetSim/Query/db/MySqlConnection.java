@@ -140,7 +140,10 @@ public class MySqlConnection
         }
         return result;
     }
-
+    private boolean isInRectangle(double longitudeLeft, double longitudeRight, double latitudeTop, double latitudeBottom, float x, float y)
+    {
+    	return longitudeLeft <= x && x <= longitudeRight && latitudeTop >= y && latitudeBottom <= y;
+    }
     public GridSettings query(final SimulationSettings settings) throws SQLException
     {
         final Connection con = DriverManager.getConnection(url, user, password);
@@ -154,16 +157,21 @@ public class MySqlConnection
                     + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom " + " FROM simulation_grid WHERE name = '%s'", settings.getSimulationName()));
             while (rs.next())
             {
-                final int row_pos = rs.getInt("row_position");
-                final int col_pos = rs.getInt("column_position");
-                final double temp = rs.getDouble("temperature");
-                final int read_dt = rs.getInt("reading_date");
-                final int read_tm = rs.getInt("reading_time");
+                //final int read_tm = rs.getInt("reading_time");
                 final float longLeft = rs.getFloat("longitudeLeft");
                 final float longRight = rs.getFloat("longitudeRight");
                 final float latTop = rs.getFloat("latitudeTop");
                 final float latBottom = rs.getFloat("latitudeBottom");
-                gs.addCell(row_pos, col_pos, settings.getGridSpacing(), temp, longLeft, latTop, longRight, latBottom, read_dt, read_tm);
+                //if this wasn't requested don't return it.
+                if (isInRectangle(settings.getLongitudeLeft(), settings.getLongitudeRight(), settings.getLatitudeTop(), settings.getLatitudeBottom()
+                			, longLeft, latTop))
+                {
+	                final int row_pos = rs.getInt("row_position");
+	                final int col_pos = rs.getInt("column_position");
+	                final double temp = rs.getDouble("temperature");
+	                final long read_dt = rs.getLong("reading_date");
+	                gs.addCell(row_pos, col_pos, settings.getGridSpacing(), temp, longLeft, latTop, longRight, latBottom, read_dt);
+                }
             }
 
             return gs;
@@ -196,7 +204,7 @@ public class MySqlConnection
     {
         final Connection con = DriverManager.getConnection(url, user, password);
         final Statement st = con.createStatement();
-        final String sql = "INSERT INTO simulation_grid_data (name, row_position, column_position, temperature, reading_date, reading_time"
+        final String sql = "INSERT INTO simulation_grid_data (name, row_position, column_position, temperature, reading_date"
                 + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom) VALUES ('%s', %d, %d" + ", %." + dsPrecision + "f" + // how
                 // many
                 // decimals
@@ -216,7 +224,7 @@ public class MySqlConnection
                 // x
                 // places.
                 ", %d, %d, %f, %f, %f, %f)";
-        st.execute(String.format(sql, simName, row, cell, d, date, time, f, h, e, g));
+        st.execute(String.format(sql, simName, row, cell, d, date, f, h, e, g));
     }
     
     public long getDatabaseSize()

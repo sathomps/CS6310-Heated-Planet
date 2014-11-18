@@ -55,7 +55,25 @@ public class GridSettings
         return height;
     }
 
-    public void addCell(final int row, final int col, final int width)
+	public void addCell(final int row, final int col, final int width)
+	{
+		final GridCell cell = new GridCell();
+		cell.setWidth(width);
+		LinkedList<GridCell> cols;
+		try
+		{
+			cols = grid.get(row);
+		}
+		catch (final IndexOutOfBoundsException ex)
+		{
+			cols = new LinkedList<GridCell>();
+			grid.add(cols);
+		}
+		cols.add(cell);
+		calculateCoordinates(row, col, cell);
+		calculateGeometry(cell);
+	}
+    public void addCell(final int row, final int col, final int width, double temp, float longLeft, float latTop, float longRight, float latBottom, long read_dt)
     {
         final GridCell cell = new GridCell();
         cell.setWidth(width);

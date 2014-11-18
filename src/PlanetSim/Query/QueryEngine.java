@@ -183,6 +183,7 @@ public class QueryEngine
         	//nothing in the list so a simulation has to be run 
         	else if (s1.size() == 0)
         	{
+        		settings.setDataSourceProcess(SimulationSettings.DATASOURCE_PROCESS_SIMULATE);
                 eventBus.publish(new SimulateEvent(settings));
         	}
         	//only one in the list so get it and determine the correct value of interpolate 
@@ -197,12 +198,19 @@ public class QueryEngine
         			settings.getSimulationTimeStepMinutes() == chosenOne.getSimulationTimeStepMinutes()
         			);
         	}
-	        final GridSettings gs = con.query(settings);
+        	
+	        final GridSettings gs = con.query(chosenOne);
 	        chosenOne.setGridSettings(gs);
         	if (interpolate)
+        	{
+        		chosenOne.setDataSourceProcess(SimulationSettings.DATASOURCE_PROCESS_INTERPOLATE);
         		eventBus.publish(new InterpolateEvent(chosenOne));
+        	}
         	else
+        	{
+        		chosenOne.setDataSourceProcess(SimulationSettings.DATASOURCE_PROCESS_QUERY);
         		eventBus.publish(new DisplayEvent(chosenOne));
+        	}
         }
         catch (final Exception e)
         {

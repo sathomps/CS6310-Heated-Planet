@@ -319,4 +319,99 @@ public class SimulationSettings implements Cloneable
     {
         return (SimulationSettings) super.clone();
     }
+    //the next four attributes are the bounding rectangle for the query engine.  
+    //only the cells within this box are returned/interpolated/simulated/persisted
+    private double           latitudeTop;
+    private double           latitudeBottom;
+    private double           longitudeLeft;
+    private double           longitudeRight;
+
+    public double getLatitudeTop()
+    {
+        return latitudeTop;
+    }
+
+    public void setLatitudeTop(final double latitudeTop)
+    {
+        this.latitudeTop = latitudeTop;
+    }
+
+    public double getLatitudeBottom()
+    {
+        return latitudeBottom;
+    }
+
+    public void setLatitudeBottom(final double latitudeBottom)
+    {
+        this.latitudeBottom = latitudeBottom;
+    }
+
+    public double getLongitudeLeft()
+    {
+        return longitudeLeft;
+    }
+
+    public void setLongitudeLeft(final double longitudeLeft)
+    {
+        this.longitudeLeft = longitudeLeft;
+    }
+
+    public double getLongitudeRight()
+    {
+        return longitudeRight;
+    }
+
+    public void setLongitudeRight(final double longitudeRight)
+    {
+        this.longitudeRight = longitudeRight;
+    }
+    
+    //these are for the UI as well.  it has to change the values on the screen
+    private double oribitalPosition = 0.0;
+    private double rotationalPosition = 0.0;
+    //again ms since midnight in 1970
+    private long currentDate = 0;
+	
+	//0 = is nothing
+	//1 is query
+	//2 is interpolate
+	//3 is simulate
+    public final static int DATASOURCE_PROCESS_DEFAULT = 0;
+    public final static int DATASOURCE_PROCESS_QUERY = 1;
+    public final static int DATASOURCE_PROCESS_INTERPOLATE = 2;
+    public final static int DATASOURCE_PROCESS_SIMULATE = 3;
+	private int dataSourceProcess = 0;
+
+	public double getOribitalPosition() {
+		return oribitalPosition;
+	}
+
+	public void setOribitalPosition(double oribitalPosition) {
+		this.oribitalPosition = oribitalPosition;
+	}
+
+	public double getRotationalPosition() {
+		return rotationalPosition;
+	}
+
+	public void setRotationalPosition(double rotationalPosition) {
+		this.rotationalPosition = rotationalPosition;
+	}
+
+	public long getCurrentDate() {
+		return currentDate;
+	}
+
+	public void setCurrentDate(long currentDate) {
+		this.currentDate = currentDate;
+	}
+
+	public int getDataSourceProcess() {
+		return dataSourceProcess;
+	}
+
+	public void setDataSourceProcess(int dataSourceProcess) {
+		this.dataSourceProcess = dataSourceProcess;
+	}
+
 }
