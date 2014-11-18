@@ -2,35 +2,37 @@ package PlanetSim.simulation;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import PlanetSim.common.SimulationSettings;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import PlanetSim.common.event.EventBus;
-import PlanetSim.common.event.Status;
+import PlanetSim.common.event.PauseEvent;
+import PlanetSim.common.event.RunEvent;
+import PlanetSim.common.event.StopEvent;
 import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.DisplayEvent;
 
 public class SimulationEngineDaemon
 {
-    private final SimulationSettings settings;
-    private final SimulationEngine   engine;
+    private final EventBus      eventBus;
 
-    private final EventBus           eventBus;
+    private SimulationEngine    engine;
 
-    private boolean                  run = false;
+    private final AtomicBoolean run = new AtomicBoolean();
 
-    public SimulationEngineDaemon(final EventBus eventBus, final SimulationSettings settings)
+    public SimulationEngineDaemon(final EventBus eventBus)
     {
-        this.settings = settings;
         this.eventBus = eventBus;
         eventBus.subscribe(this);
-        this.engine = new SimulationEngine(eventBus, settings);
     }
 
-    public void run()
+    private void run()
     {
         try
         {
-            while (engine.run())
+            while (run.get() && engine.run())
             {
+                eventBus.publish(new DisplayEvent(engine.getSimulationSettings()));
                 Thread.sleep(MILLISECONDS.convert(1, SECONDS));
             }
         }
@@ -41,32 +43,27 @@ public class SimulationEngineDaemon
     }
 
     @Subscribe
-    public void process(final Status status)
+    public void start(final RunEvent event)
     {
-        switch (status)
+        run.set(true);
+
+        if (engine == null)
         {
-        case STOP:
-            settings.reset();
-            run = false;
-            eventBus.publish(new DisplayEvent(settings));
-            break;
-
-        case RUN:
-            run = true;
-            break;
-
-        case PAUSE:
-            run = false;
-            break;
-
-        default:
-            break;
+            engine = new SimulationEngine(event.getSettings());
+            run();
         }
     }
 
     @Subscribe
-    public void process(final InterpolateEvent event)
+    public void stop(final StopEvent event)
     {
+        engine = null;
+        run.set(false);
     }
 
+    @Subscribe
+    public void pause(final PauseEvent event)
+    {
+        run.set(false);
+    }
 }

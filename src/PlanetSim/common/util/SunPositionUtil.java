@@ -1,10 +1,11 @@
-package PlanetSim.simulation.util;
+package PlanetSim.common.util;
 
 import static PlanetSim.common.util.JulianCalendarUtil.julianDay;
 
 import java.util.Calendar;
 
 import PlanetSim.model.GridCell;
+import PlanetSim.model.SunPosition;
 
 /**
  * http://www.geog.ucsb.edu/ideas/Insolation.html
@@ -105,10 +106,10 @@ public final class SunPositionUtil
      *            number of Julian centuries since J2000.
      * @return Sun radius vector in AUs.
      */
-    private static double distanceToSun(final double planetsEccentrity, final double t)
+    private static double distanceToSun(final double planetsOrbitalEccentrity, final double t)
     {
         final double v = Math.toRadians(sunTrueAnomaly(t));
-        final double e = eccentricityPlanetOrbit(planetsEccentrity, t);
+        final double e = eccentricityPlanetOrbit(planetsOrbitalEccentrity, t);
         return (1.000001018 * (1 - (e * e))) / (1 + (e * Math.cos(v)));
     }
 
@@ -134,9 +135,9 @@ public final class SunPositionUtil
      *            number of Julian centuries since J2000.
      * @return The unitless eccentricity.
      */
-    private static double eccentricityPlanetOrbit(final double planetsEccentrity, final double t)
+    private static double eccentricityPlanetOrbit(final double planetsOrbitalEccentrity, final double t)
     {
-        return planetsEccentrity - (t * (0.000042037 + (0.0000001267 * t)));
+        return planetsOrbitalEccentrity - (t * (0.000042037 + (0.0000001267 * t)));
     }
 
     /**
@@ -191,12 +192,12 @@ public final class SunPositionUtil
      *            number of Julian centuries since J2000.
      * @return Equation of time in minutes of time.
      */
-    private static double equationOfTime(final double planetsEccentrity, final double planetsAxialTilt, final double t)
+    private static double equationOfTime(final double planetsOrbitalEccentrity, final double planetsAxialTilt, final double t)
     {
         final double eps = Math.toRadians(obliquityCorrected(planetsAxialTilt, t));
         final double l0 = Math.toRadians(sunGeometricMeanLongitude(t));
         final double m = Math.toRadians(sunGeometricMeanAnomaly(t));
-        final double e = eccentricityPlanetOrbit(planetsEccentrity, t);
+        final double e = eccentricityPlanetOrbit(planetsOrbitalEccentrity, t);
         double y = Math.tan(eps / 2);
         y *= y;
 
@@ -254,7 +255,7 @@ public final class SunPositionUtil
      * Calculates solar position for the current date, time and location.
      * Results are reported in azimuth and elevation in degrees.
      */
-    public static SunPosition compute(final GridCell gridCell, final Calendar date, final double planetsEccentrity, final double planetsAxialTilt)
+    public static SunPosition compute(final GridCell gridCell, final Calendar date, final double planetsOrbitalEccentrity, final double planetsAxialTilt)
     {
         final long time = date.getTimeInMillis();
         final SunPosition sunPosition = new SunPosition();
@@ -271,7 +272,7 @@ public final class SunPositionUtil
         final double julianDay = julianDay(time);
 
         double solarDec = sunDeclination(planetsAxialTilt, time);
-        final double eqTime = equationOfTime(planetsEccentrity, planetsAxialTilt, time);
+        final double eqTime = equationOfTime(planetsOrbitalEccentrity, planetsAxialTilt, time);
 
         // Formula below use longitude in degrees. Steps are:
         // 1) Extract the time part of the date, in minutes.
@@ -348,11 +349,10 @@ public final class SunPositionUtil
         }
 
         sunPosition.setDeclination(solarDec);
-        sunPosition.setAzimuth(azimuth);
         sunPosition.setElevation(elevation);
         sunPosition.setLatitude(latitude);
         sunPosition.setLongitude(longitude);
-        sunPosition.setDistanceToSun(distanceToSun(planetsEccentrity, time));
+        sunPosition.setDistanceToSun(distanceToSun(planetsOrbitalEccentrity, time));
 
         return sunPosition;
     }

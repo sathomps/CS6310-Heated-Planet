@@ -1,12 +1,12 @@
-package PlanetSim.simulation;
+package PlanetSim.common.event;
 
 import PlanetSim.common.SimulationSettings;
 
-public class SimulateEvent
+public class RunEvent
 {
     private SimulationSettings settings;
 
-    public SimulateEvent(final SimulationSettings settings)
+    public RunEvent(final SimulationSettings settings)
     {
         this.setSettings(settings);
     }
@@ -20,5 +20,4 @@ public class SimulateEvent
     {
         this.settings = settings;
     }
-
 }

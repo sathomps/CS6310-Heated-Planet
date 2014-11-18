@@ -1,4 +1,4 @@
-package PlanetSim.simulation.util;
+package PlanetSim.model;
 
 public class SunPosition
 {

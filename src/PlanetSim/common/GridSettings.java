@@ -1,8 +1,8 @@
 package PlanetSim.common;
 
-import static PlanetSim.common.GeoUtil.calculateDistanceToEquator;
-import static PlanetSim.common.GeoUtil.calculateLatitudeCircum;
-import static PlanetSim.common.GeoUtil.calculateTrapezoidArea;
+import static PlanetSim.common.util.GeoUtil.calculateDistanceToEquator;
+import static PlanetSim.common.util.GeoUtil.calculateLatitudeCircum;
+import static PlanetSim.common.util.GeoUtil.calculateTrapezoidArea;
 
 import java.util.LinkedList;
 
@@ -156,12 +156,10 @@ public class GridSettings
 
     private void calculateLengths(final GridCell cell)
     {
-        final int earthRadius = settings.getPlanetRadius();
+        final int planetRadius = settings.getPlanetRadius();
         final double sepDeg = cell.getLatitudeTop() - cell.getLatitudeBottom();
-        final double topLength = calculateLatitudeCircum(cell.getLatitudeTop(), earthRadius) / (360 / Math.abs(sepDeg));
-        final double bottomLength = calculateLatitudeCircum(cell.getLatitudeBottom(), earthRadius) / (360 / Math.abs(sepDeg));
-        // final double sideLength = Util.calculateTrapezoidSideLen(topLength,
-        // bottomLength, height);
+        final double topLength = calculateLatitudeCircum(cell.getLatitudeTop(), planetRadius) / (360 / Math.abs(sepDeg));
+        final double bottomLength = calculateLatitudeCircum(cell.getLatitudeBottom(), planetRadius) / (360 / Math.abs(sepDeg));
         calculateSurfaceArea(cell, topLength, bottomLength);
     }
 
@@ -210,5 +208,4 @@ public class GridSettings
         cols.add(cell);
         calculateGeometry(cell);
     }
-
 }

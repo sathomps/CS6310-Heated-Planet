@@ -21,17 +21,17 @@ import PlanetSim.common.SimulationSettings;
  --
 
  CREATE TABLE IF NOT EXISTS `simulation_grid_data` (
-  `simulation_name` varchar(50) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `temperature` double NOT NULL,
-  `reading_date` bigint(20) NOT NULL,
-  `row_position` int(11) NOT NULL,
-  `column_position` int(11) NOT NULL,
-  `longitudeLeft` float NOT NULL,
-  `longitudeRight` float NOT NULL,
-  `latitudeTop` float NOT NULL,
-  `latitudeBottom` float NOT NULL,
-  PRIMARY KEY (`simulation_name`,`reading_date`,`row_position`,`column_position`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+ `simulation_name` varchar(50) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+ `temperature` double NOT NULL,
+ `reading_date` bigint(20) NOT NULL,
+ `row_position` int(11) NOT NULL,
+ `column_position` int(11) NOT NULL,
+ `longitudeLeft` float NOT NULL,
+ `longitudeRight` float NOT NULL,
+ `latitudeTop` float NOT NULL,
+ `latitudeBottom` float NOT NULL,
+ PRIMARY KEY (`simulation_name`,`reading_date`,`row_position`,`column_position`)
+ ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
  -- --------------------------------------------------------
 
@@ -85,7 +85,7 @@ public class MySqlConnection
      */
     public ArrayList<SimulationSettings> queryHeader(final String name, final int gridSpacing, final int timeStep, final int simLength, final double axialTilt,
             final double orbitalEccentricity, final int tempPrecision, final int geoPrecision, final int temporalPrecision) throws SQLException
-    {
+            {
         final ArrayList<SimulationSettings> result = new ArrayList<SimulationSettings>();
         String sql = "SELECT * FROM simulations WHERE 1=1 "; // 1=1 is stupid
         // trick to not
@@ -115,10 +115,10 @@ public class MySqlConnection
         while (rs.next())
         {
             final SimulationSettings ss = new SimulationSettings();
-            ss.setAxialTilt(rs.getDouble("axial_tilt"));
+            ss.setPlanetsAxialTilt(rs.getDouble("axial_tilt"));
             ss.setGridSpacing(rs.getInt("grid_spacing"));
             ss.setSimulationName(rs.getString("name"));
-            ss.setOrbitalEccentricity(rs.getDouble("orbital_eccentricity"));
+            ss.setPlanetsOrbitalEccentricity(rs.getDouble("orbital_eccentricity"));
             ss.setGeographicPrecision(rs.getInt("geographic_precision"));
             ss.setSimulationLength(rs.getInt("simulation_length"));
             ss.setSimulationTimeStepMinutes(rs.getInt("simulation_time_step"));
@@ -126,7 +126,7 @@ public class MySqlConnection
             result.add(ss);
         }
         return result;
-    }
+            }
 
     public ArrayList<String> listSimulationNames() throws SQLException
     {
@@ -140,10 +140,13 @@ public class MySqlConnection
         }
         return result;
     }
-    private boolean isInRectangle(double longitudeLeft, double longitudeRight, double latitudeTop, double latitudeBottom, float x, float y)
+
+    private boolean isInRectangle(final double longitudeLeft, final double longitudeRight, final double latitudeTop, final double latitudeBottom,
+            final float x, final float y)
     {
-    	return longitudeLeft <= x && x <= longitudeRight && latitudeTop >= y && latitudeBottom <= y;
+        return (longitudeLeft <= x) && (x <= longitudeRight) && (latitudeTop >= y) && (latitudeBottom <= y);
     }
+
     public GridSettings query(final SimulationSettings settings) throws SQLException
     {
         final Connection con = DriverManager.getConnection(url, user, password);
@@ -157,20 +160,20 @@ public class MySqlConnection
                     + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom " + " FROM simulation_grid WHERE name = '%s'", settings.getSimulationName()));
             while (rs.next())
             {
-                //final int read_tm = rs.getInt("reading_time");
+                // final int read_tm = rs.getInt("reading_time");
                 final float longLeft = rs.getFloat("longitudeLeft");
                 final float longRight = rs.getFloat("longitudeRight");
                 final float latTop = rs.getFloat("latitudeTop");
                 final float latBottom = rs.getFloat("latitudeBottom");
-                //if this wasn't requested don't return it.
-                if (isInRectangle(settings.getLongitudeLeft(), settings.getLongitudeRight(), settings.getLatitudeTop(), settings.getLatitudeBottom()
-                			, longLeft, latTop))
+                // if this wasn't requested don't return it.
+                if (isInRectangle(settings.getLongitudeLeft(), settings.getLongitudeRight(), settings.getLatitudeTop(), settings.getLatitudeBottom(), longLeft,
+                        latTop))
                 {
-	                final int row_pos = rs.getInt("row_position");
-	                final int col_pos = rs.getInt("column_position");
-	                final double temp = rs.getDouble("temperature");
-	                final long read_dt = rs.getLong("reading_date");
-	                gs.addCell(row_pos, col_pos, settings.getGridSpacing(), temp, longLeft, latTop, longRight, latBottom, read_dt);
+                    final int row_pos = rs.getInt("row_position");
+                    final int col_pos = rs.getInt("column_position");
+                    final double temp = rs.getDouble("temperature");
+                    final long read_dt = rs.getLong("reading_date");
+                    gs.addCell(row_pos, col_pos, settings.getGridSpacing(), temp, longLeft, latTop, longRight, latBottom, read_dt);
                 }
             }
 
@@ -199,8 +202,8 @@ public class MySqlConnection
     {
     }
 
-    public void saveCell(final String simName, final int row, final int cell, final double d, final double e, final double f,
-            final double g, final double h, final int date, final int time, final int dsPrecision) throws SQLException
+    public void saveCell(final String simName, final int row, final int cell, final double d, final double e, final double f, final double g, final double h,
+            final int date, final int time, final int dsPrecision) throws SQLException
     {
         final Connection con = DriverManager.getConnection(url, user, password);
         final Statement st = con.createStatement();
@@ -226,20 +229,23 @@ public class MySqlConnection
                 ", %d, %d, %f, %f, %f, %f)";
         st.execute(String.format(sql, simName, row, cell, d, date, f, h, e, g));
     }
-    
+
     public long getDatabaseSize()
     {
-    	final String sql = "SELECT sum( data_length + index_length ) FROM information_schema.TABLES  WHERE table_schema = 'heated_planet'";
+        final String sql = "SELECT sum( data_length + index_length ) FROM information_schema.TABLES  WHERE table_schema = 'heated_planet'";
         Connection con;
-		try {
-			con = DriverManager.getConnection(url, user, password);
-	        final Statement st = con.createStatement();
-	        ResultSet rs = st.executeQuery(sql);
-	        return rs.getLong(0);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	return -1;
+        try
+        {
+            con = DriverManager.getConnection(url, user, password);
+            final Statement st = con.createStatement();
+            final ResultSet rs = st.executeQuery(sql);
+            return rs.getLong(0);
+        }
+        catch (final SQLException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return -1;
     }
 }

@@ -7,22 +7,25 @@ import java.awt.Graphics;
 import javax.swing.JPanel;
 
 import PlanetSim.common.SimulationSettings;
+import PlanetSim.common.event.StopEvent;
+import PlanetSim.common.event.Subscribe;
+import PlanetSim.display.DisplayEvent;
 
 public class Sun extends JPanel
 {
-    private static final long        serialVersionUID = 1L;
+    private static final long  serialVersionUID = 1L;
 
-    private int                      pathLength;
-    private final int                lineOffsetY      = 10;
-    private final int                dimHeight        = lineOffsetY + 10;
+    private int                pathLength;
+    private final int          lineOffsetY      = 10;
+    private final int          dimHeight        = lineOffsetY + 10;
 
-    private final Color              sunColor         = Color.yellow;
-    private final int                sunDiameter      = 10;
+    private final Color        sunColor         = Color.yellow;
+    private final int          sunDiameter      = 10;
 
-    private double                   degreePosition   = 180f;
-    private int                      pixelPosition;
+    private double             degreePosition   = 180f;
+    private int                pixelPosition;
 
-    private final SimulationSettings settings;
+    private SimulationSettings settings;
 
     public Sun(final SimulationSettings settings)
     {
@@ -37,7 +40,7 @@ public class Sun extends JPanel
 
     public void drawSunPath()
     {
-        this.pathLength = settings.getEarthWidth();
+        this.pathLength = settings.getPlanetWidth();
 
         final float pixelsPerDegree = pathLength / 360f;
 
@@ -70,13 +73,19 @@ public class Sun extends JPanel
         }
     }
 
-    /**
-     * Resets the sun to its default position.
-     */
-    public void reset()
+    @Subscribe
+    public void reset(final StopEvent event)
     {
         degreePosition = 180f;
         pixelPosition = 0;
         paint(this.getGraphics());
     }
+
+    @Subscribe
+    public void process(final DisplayEvent displayEvent)
+    {
+        settings = displayEvent.getSettings();
+        repaint();
+    }
+
 }

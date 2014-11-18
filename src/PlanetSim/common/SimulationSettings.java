@@ -1,5 +1,10 @@
 package PlanetSim.common;
 
+import static java.util.Calendar.DAY_OF_MONTH;
+import static java.util.Calendar.MINUTE;
+import static java.util.Calendar.MONTH;
+
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 
@@ -9,48 +14,82 @@ import PlanetSim.model.GridCell;
 
 public class SimulationSettings implements Cloneable
 {
-    private String       simulationName            = "";
+    private static int      MINUTES_IN_A_MONTH             = 43829;
+
+    // these are for the UI as well. it has to change the values on the screen
+    private double          oribitalPosition               = 0.0;
+    private double          rotationalPosition             = 0.0;
+
+    // 0 = is nothing
+    // 1 is query
+    // 2 is interpolate
+    // 3 is simulate
+    public final static int DATASOURCE_PROCESS_DEFAULT     = 0;
+    public final static int DATASOURCE_PROCESS_QUERY       = 1;
+    public final static int DATASOURCE_PROCESS_INTERPOLATE = 2;
+    public final static int DATASOURCE_PROCESS_SIMULATE    = 3;
+    private int             dataSourceProcess              = 0;
+
+    // the next four attributes are the bounding rectangle for the query engine.
+    // only the cells within this box are
+    // returned/interpolated/simulated/persisted
+    private double          latitudeTop;
+    private double          latitudeBottom;
+    private double          longitudeLeft;
+    private double          longitudeRight;
+
+    private String          simulationName                 = "";
 
     // //-t #: The temporal precision of the temperature data to be stored, as
     // an integer percentage of the number of time periods
     // saved versus the number computed. The default is 100%; that is, all
     // computed values should be stored.
-    private double       axialTilt                 = 23.44;
+    private double          planetsAxialTilt               = 23.44;
 
     // //Orbital eccentricity: non-negative real number less than one; default
     // is .0167.
-    private double       orbitalEccentricity       = 0.0167;
+    private double          planetsOrbitalEccentrity       = 0.0167;
 
     // Simulation length: non-negative integer (Solar) months between 1 and
     // 1200; default 12 (one Solar year).
-    private int          simulationLength          = 0;
+    private int             simulationLength               = 12;
 
     // -p #: The precision of the data to be stored, in decimal digits after the
     // decimal point. The default is to use the
     // number of digits storable in a normalized float variable. The maximum is
     // the number of digits storable in a
     // normalized double variable. The minimum is zero.
-    private int          datastoragePrecision      = 7;
+    private int             datastoragePrecision           = 7;
 
     // -g #: The geographic precision (sampling rate) of the temperature data to
     // be stored, as an integer percentage of the
     // number of grid cells saved versus the number simulated. The default is
     // 100%; that is, a value is stored for each grid cell.
-    private int          geographicPrecision       = 100;
+    private int             geographicPrecision            = 100;
 
     // -t #: The temporal precision of the temperature data to be stored, as an
     // integer percentage of the number of time periods
     // saved versus the number computed. The default is 100%; that is, all
     // computed values should be stored.
-    private int          temporalPrecision         = 100;
+    private int             temporalPrecision              = 100;
 
-    private int          simulationTimeStepMinutes = 1;
-    private int          gridSpacing               = 15;
+    private int             simulationTimeStepMinutes      = 1;
+    private int             gridSpacing                    = 15;
 
-    private Sun          sun;
-    private Planet       planet;
+    private final Calendar  simulationTimestamp;
+    private int             simulationTimeMinutes;
 
-    private GridSettings gridSettings;
+    private Sun             sun;
+    private Planet          planet;
+
+    private GridSettings    gridSettings;
+
+    public SimulationSettings()
+    {
+        simulationTimestamp = Calendar.getInstance();
+        simulationTimestamp.set(MONTH, 1);
+        simulationTimestamp.set(DAY_OF_MONTH, 4);
+    }
 
     public SimulationSettings setGridSettings(final GridSettings gridSettings)
     {
@@ -123,7 +162,7 @@ public class SimulationSettings implements Cloneable
         }
     }
 
-    public int getEarthWidth()
+    public int getPlanetWidth()
     {
         return planet.getWidth();
     }
@@ -131,12 +170,6 @@ public class SimulationSettings implements Cloneable
     public int getPlanetRadius()
     {
         return planet.getRadius();
-    }
-
-    public void reset()
-    {
-        planet.reset();
-        sun.reset();
     }
 
     public String getSimulationName()
@@ -156,38 +189,38 @@ public class SimulationSettings implements Cloneable
         simulationName = ((simulationName != null) && (simulationName.length() > 0)) ? simulationName : new Date().toString();
     }
 
-    public double getAxialTilt()
+    public double getPlanetsAxialTilt()
     {
-        return axialTilt;
+        return planetsAxialTilt;
     }
 
-    public SimulationSettings setAxialTilt(final double axialTilt)
+    public SimulationSettings setPlanetsAxialTilt(final double planetsAxialTilt)
     {
-        this.axialTilt = axialTilt;
-        validateAxialTilt();
+        this.planetsAxialTilt = planetsAxialTilt;
+        validatePlanetsAxialTilt();
         return this;
     }
 
-    private void validateAxialTilt()
+    private void validatePlanetsAxialTilt()
     {
-        axialTilt = ((axialTilt >= 1) && (axialTilt <= 180)) ? axialTilt : 23.44;
+        planetsAxialTilt = ((planetsAxialTilt >= 1) && (planetsAxialTilt <= 180)) ? planetsAxialTilt : 23.44;
     }
 
-    public double getOrbitalEccentricity()
+    public double getPlanetsOrbitalEccentricity()
     {
-        return orbitalEccentricity;
+        return planetsOrbitalEccentrity;
     }
 
-    public SimulationSettings setOrbitalEccentricity(final double orbitalEccentricity)
+    public SimulationSettings setPlanetsOrbitalEccentricity(final double planetsOrbitalEccentrity)
     {
-        this.orbitalEccentricity = orbitalEccentricity;
-        validatOrbitalEccentricity();
+        this.planetsOrbitalEccentrity = planetsOrbitalEccentrity;
+        validatPlanetsOrbitalEccentricity();
         return this;
     }
 
-    private void validatOrbitalEccentricity()
+    private void validatPlanetsOrbitalEccentricity()
     {
-        orbitalEccentricity = ((orbitalEccentricity >= 0) && (orbitalEccentricity <= 1)) ? orbitalEccentricity : .0167;
+        planetsOrbitalEccentrity = ((planetsOrbitalEccentrity >= 0) && (planetsOrbitalEccentrity <= 1)) ? planetsOrbitalEccentrity : .0167;
     }
 
     public int getSimulationLength()
@@ -263,68 +296,11 @@ public class SimulationSettings implements Cloneable
         return gridSettings;
     }
 
-    // query only related properties
-    // Reading date: simulated date at which the temperature reading was taken
-    // in terms of years and days since
-    // the start of the simulation
-    // Reading time: hours and minutes since the start of the Reading Date
-    // need a start and end value for both of those
-    private long startDate = 0;
-    //private int startTime = 0;
-    private long endDate   = 0;
-    //private int endTime   = 0;
-
-    public long getStartDate()
-    {
-        return startDate;
-    }
-
-    public void setStartDate(final long startDate)
-    {
-        this.startDate = startDate;
-    }
-
-//    public int getStartTime()
-//    {
-//        return startTime;
-//    }
-
-//    public void setStartTime(final int startTime)
-//    {
-//        this.startTime = startTime;
-//    }
-
-    public long getEndDate()
-    {
-        return endDate;
-    }
-
-    public void setEndDate(final long endDate)
-    {
-        this.endDate = endDate;
-    }
-
-//    public int getEndTime()
-//    {
-//        return endTime;
-//    }
-
-//    public void setEndTime(final int endTime)
-//    {
-//        this.endTime = endTime;
-//    }
-
     @Override
     public SimulationSettings clone() throws CloneNotSupportedException
     {
         return (SimulationSettings) super.clone();
     }
-    //the next four attributes are the bounding rectangle for the query engine.  
-    //only the cells within this box are returned/interpolated/simulated/persisted
-    private double           latitudeTop;
-    private double           latitudeBottom;
-    private double           longitudeLeft;
-    private double           longitudeRight;
 
     public double getLatitudeTop()
     {
@@ -365,53 +341,55 @@ public class SimulationSettings implements Cloneable
     {
         this.longitudeRight = longitudeRight;
     }
-    
-    //these are for the UI as well.  it has to change the values on the screen
-    private double oribitalPosition = 0.0;
-    private double rotationalPosition = 0.0;
-    //again ms since midnight in 1970
-    private long currentDate = 0;
-	
-	//0 = is nothing
-	//1 is query
-	//2 is interpolate
-	//3 is simulate
-    public final static int DATASOURCE_PROCESS_DEFAULT = 0;
-    public final static int DATASOURCE_PROCESS_QUERY = 1;
-    public final static int DATASOURCE_PROCESS_INTERPOLATE = 2;
-    public final static int DATASOURCE_PROCESS_SIMULATE = 3;
-	private int dataSourceProcess = 0;
 
-	public double getOribitalPosition() {
-		return oribitalPosition;
-	}
+    public double getOribitalPosition()
+    {
+        return oribitalPosition;
+    }
 
-	public void setOribitalPosition(double oribitalPosition) {
-		this.oribitalPosition = oribitalPosition;
-	}
+    public void setOribitalPosition(final double oribitalPosition)
+    {
+        this.oribitalPosition = oribitalPosition;
+    }
 
-	public double getRotationalPosition() {
-		return rotationalPosition;
-	}
+    public double getRotationalPosition()
+    {
+        return rotationalPosition;
+    }
 
-	public void setRotationalPosition(double rotationalPosition) {
-		this.rotationalPosition = rotationalPosition;
-	}
+    public void setRotationalPosition(final double rotationalPosition)
+    {
+        this.rotationalPosition = rotationalPosition;
+    }
 
-	public long getCurrentDate() {
-		return currentDate;
-	}
+    public int getDataSourceProcess()
+    {
+        return dataSourceProcess;
+    }
 
-	public void setCurrentDate(long currentDate) {
-		this.currentDate = currentDate;
-	}
+    public void setDataSourceProcess(final int dataSourceProcess)
+    {
+        this.dataSourceProcess = dataSourceProcess;
+    }
 
-	public int getDataSourceProcess() {
-		return dataSourceProcess;
-	}
+    public void calculateSimulationTimestamp()
+    {
+        simulationTimeMinutes += getSimulationTimeStepMinutes();
+        simulationTimestamp.add(MINUTE, simulationTimeMinutes);
+    }
 
-	public void setDataSourceProcess(int dataSourceProcess) {
-		this.dataSourceProcess = dataSourceProcess;
-	}
+    public boolean hasSimulationFinished()
+    {
+        return (calculateMonthsPassed() >= getSimulationLength());
+    }
 
+    private int calculateMonthsPassed()
+    {
+        return simulationTimeMinutes != 0 ? (MINUTES_IN_A_MONTH / simulationTimeMinutes) : 0;
+    }
+
+    public Calendar getSimulationTimestamp()
+    {
+        return simulationTimestamp;
+    }
 }

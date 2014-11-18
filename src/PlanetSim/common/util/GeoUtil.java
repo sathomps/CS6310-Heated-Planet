@@ -1,4 +1,4 @@
-package PlanetSim.common;
+package PlanetSim.common.util;
 
 public final class GeoUtil
 {
