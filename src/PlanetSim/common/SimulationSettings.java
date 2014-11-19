@@ -8,8 +8,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 
-import PlanetSim.display.planet.Planet;
-import PlanetSim.display.sun.Sun;
 import PlanetSim.model.GridCell;
 
 public class SimulationSettings implements Cloneable
@@ -82,12 +80,13 @@ public class SimulationSettings implements Cloneable
 
     private int             simulationTimeMinutes;
 
-    private Sun             sun;
-    private Planet          planet;
-
     private GridSettings    gridSettings;
 
     private int             uiRfreshRate;
+
+    private int             planetWidth;
+
+    private int             planetRadius;
 
     public SimulationSettings()
     {
@@ -105,28 +104,6 @@ public class SimulationSettings implements Cloneable
     public LinkedList<LinkedList<GridCell>> getGrid()
     {
         return gridSettings.getGrid();
-    }
-
-    public SimulationSettings setSun(final Sun sun)
-    {
-        this.sun = sun;
-        return this;
-    }
-
-    public Sun getSun()
-    {
-        return sun;
-    }
-
-    public SimulationSettings setPlanet(final Planet planet)
-    {
-        this.planet = planet;
-        return this;
-    }
-
-    public Planet getPlanet()
-    {
-        return planet;
     }
 
     public int getSimulationTimeStepMinutes()
@@ -169,12 +146,17 @@ public class SimulationSettings implements Cloneable
 
     public int getPlanetWidth()
     {
-        return planet.getWidth();
+        return planetWidth;
+    }
+
+    public void setPlanetWidth(final int planetWidth)
+    {
+        this.planetWidth = planetWidth;
     }
 
     public int getPlanetRadius()
     {
-        return planet.getRadius();
+        return planetRadius;
     }
 
     public String getSimulationName()

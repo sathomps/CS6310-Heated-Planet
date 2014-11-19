@@ -45,7 +45,6 @@ public class Planet extends JPanel
 
     public void init()
     {
-        settings.setPlanet(this);
         gridSettings = new GridSettings(settings);
         calculateGridGranularity();
         setIgnoreRepaint(true);

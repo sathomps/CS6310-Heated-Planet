@@ -30,7 +30,6 @@ public class Sun extends JPanel
     public Sun(final SimulationSettings settings)
     {
         this.settings = settings;
-        settings.setSun(this);
     }
 
     public void init()
