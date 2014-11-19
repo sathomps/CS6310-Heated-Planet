@@ -144,8 +144,12 @@ public class MySqlConnection
     private boolean isInRectangle(final double longitudeLeft, final double longitudeRight, final double latitudeTop, final double latitudeBottom,
             final float x, final float y)
     {
-        return (longitudeLeft <= x) && (x <= longitudeRight) && (latitudeTop >= y) && (latitudeBottom <= y);
-    }
+		//if zero was supplied for all four corners then the whole grid is what we want - return true
+		if ((longitudeLeft != 0) && (latitudeBottom  != 0)&& (longitudeRight != 0) && (latitudeTop  != 0))
+			return (longitudeLeft <= x) && (x <= longitudeRight) && (latitudeTop >= y) && (latitudeBottom <= y);
+		else 
+			return true;
+	}
 
     public GridSettings query(final SimulationSettings settings) throws SQLException
     {
