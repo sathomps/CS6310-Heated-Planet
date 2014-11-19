@@ -9,6 +9,7 @@ import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,6 +47,10 @@ public class UserControlPanel extends JPanel
 
     private final Map<JButton, Image> selectedImages   = new HashMap<JButton, Image>();
 
+    private SpinnerNumberModel        simulationLength;
+    private UtilDateModel             fromDateModel;
+    private UtilDateModel             toDateModel;
+
     private SpinnerNumberModel        gridSpacingModel;
     private SpinnerNumberModel        timeStepModel;
 
@@ -55,52 +60,55 @@ public class UserControlPanel extends JPanel
 
     private final EventBus            eventBus;
 
+    private JTextField                tlat;
+
+    private JTextField                blat;
+
+    private JTextField                llong;
+
+    private JTextField                rlong;
+
+    private JComboBox                 simulationName;
+
+    private JTextField                eccentricity;
+
+    private JTextField                tilt;
+
+    private JTextField                precision;
+
+    private JTextField                geoAccuracy;
+
+    private JTextField                temporalAccuracy;
+
+    private SpinnerNumberModel        refreshRateModel;
+
     public UserControlPanel(final EventBus eventBus, final SimulationSettings settings)
     {
         this.eventBus = eventBus;
         this.settings = settings;
         initLayout();
 
-        final Panel sPanel = new Panel();
-        sPanel.setLayout(new GridLayout(1, 3));
-        add(sPanel);
+        final Panel panel = new Panel();
+        panel.setLayout(new GridLayout(1, 3));
+        add(panel);
 
-        final JPanel sPanel1 = new JPanel();
-        sPanel1.setLayout(new BoxLayout(sPanel1, BoxLayout.Y_AXIS));
-        sPanel1.setBorder(BorderFactory.createTitledBorder("Properties"));
-        addSettingsFields(sPanel1);
-        sPanel.add(sPanel1);
+        addSettingsPanel(panel);
 
-        final JPanel sPanel2 = new JPanel();
-        sPanel2.setLayout(new BoxLayout(sPanel2, BoxLayout.Y_AXIS));
-        sPanel2.setBorder(BorderFactory.createTitledBorder("Location"));
-        addLocationFields(sPanel2);
-        sPanel.add(sPanel2);
+        addlocationPanel(panel);
 
         final Panel sPanel3 = new Panel();
         sPanel3.setLayout(new GridLayout(2, 1));
-        sPanel.add(sPanel3);
+        panel.add(sPanel3);
 
-        final JPanel sPanel31 = new JPanel();
-        sPanel31.setLayout(new BoxLayout(sPanel31, BoxLayout.Y_AXIS));
-        sPanel31.setBorder(BorderFactory.createTitledBorder("Accuracy"));
-        addAccuracyFields(sPanel31);
-        sPanel3.add(sPanel31);
+        addAccuracyPanel(sPanel3);
 
-        final JPanel sPanel32 = new JPanel();
-        sPanel32.setLayout(new BoxLayout(sPanel32, BoxLayout.X_AXIS));
-        sPanel32.setBorder(BorderFactory.createTitledBorder("Time"));
-        addDateButtons(sPanel32);
-        sPanel3.add(sPanel32);
+        addTimePanel(sPanel3);
 
-        final JPanel config = new JPanel();
-        config.setLayout(new BoxLayout(config, BoxLayout.X_AXIS));
-        config.setBorder(BorderFactory.createTitledBorder("Config Options"));
-        add(config);
+        final JPanel config = addConfigPanel();
 
         addGridSpacing(config);
         addSimulationTimeStep(config);
-        addVisRate(config);
+        addRefreshRate(config);
         addSimLength(config);
 
         final Panel sPanel4 = new Panel();
@@ -118,26 +126,79 @@ public class UserControlPanel extends JPanel
         addControlButtons(sPanel5);
     }
 
+    private JPanel addConfigPanel()
+    {
+        final JPanel config = new JPanel();
+        config.setLayout(new BoxLayout(config, BoxLayout.X_AXIS));
+        config.setBorder(BorderFactory.createTitledBorder("Config Options"));
+        add(config);
+        return config;
+    }
+
+    private void addTimePanel(final Panel sPanel3)
+    {
+        final JPanel sPanel32 = new JPanel();
+        sPanel32.setLayout(new BoxLayout(sPanel32, BoxLayout.X_AXIS));
+        sPanel32.setBorder(BorderFactory.createTitledBorder("Time"));
+        addDateButtons(sPanel32);
+        sPanel3.add(sPanel32);
+    }
+
+    private void addAccuracyPanel(final Panel sPanel3)
+    {
+        final JPanel sPanel31 = new JPanel();
+        sPanel31.setLayout(new BoxLayout(sPanel31, BoxLayout.Y_AXIS));
+        sPanel31.setBorder(BorderFactory.createTitledBorder("Accuracy"));
+        addAccuracyFields(sPanel31);
+        sPanel3.add(sPanel31);
+    }
+
+    private void addlocationPanel(final Panel panel)
+    {
+        final JPanel sPanel2 = new JPanel();
+        sPanel2.setLayout(new BoxLayout(sPanel2, BoxLayout.Y_AXIS));
+        sPanel2.setBorder(BorderFactory.createTitledBorder("Location"));
+        addLocationFields(sPanel2);
+        panel.add(sPanel2);
+    }
+
+    private void addSettingsPanel(final Panel sPanel)
+    {
+        final JPanel sPanel1 = new JPanel();
+        sPanel1.setLayout(new BoxLayout(sPanel1, BoxLayout.Y_AXIS));
+        sPanel1.setBorder(BorderFactory.createTitledBorder("Properties"));
+        addSettingsFields(sPanel1);
+        sPanel.add(sPanel1);
+    }
+
     private void addDateButtons(final JPanel root)
     {
         final JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        final JLabel simFromTime = new JLabel("From:");
-        final UtilDateModel model1 = new UtilDateModel();
-        final JDatePanelImpl datePanel1 = new JDatePanelImpl(model1);
-        final JDatePickerImpl datePicker1 = new JDatePickerImpl(datePanel1);
-        row1.add(simFromTime);
-        row1.add(datePicker1);
-        root.add(row1);
+        addFromDate(root, row1);
+        addToDate(root, row1);
+    }
 
+    private void addFromDate(final JPanel root, final JPanel row)
+    {
+        fromDateModel = new UtilDateModel();
+        row.add(new JLabel("From:"));
+        row.add(createDatePicker(fromDateModel));
+        root.add(row);
+    }
+
+    private JDatePickerImpl createDatePicker(final UtilDateModel dateModel)
+    {
+        final JDatePanelImpl datePanel = new JDatePanelImpl(dateModel);
+        return new JDatePickerImpl(datePanel);
+    }
+
+    private void addToDate(final JPanel root, final JPanel row1)
+    {
         final JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        final JLabel simToTime = new JLabel("To:     ");
-        final UtilDateModel model2 = new UtilDateModel();
-        final JDatePanelImpl datePanel2 = new JDatePanelImpl(model2);
-        final JDatePickerImpl datePicker2 = new JDatePickerImpl(datePanel2);
-        row1.add(simToTime);
-        row1.add(datePicker2);
+        toDateModel = new UtilDateModel();
+        row1.add(new JLabel("To:     "));
+        row1.add(createDatePicker(toDateModel));
         root.add(row2);
-
     }
 
     private void initLayout()
@@ -181,25 +242,20 @@ public class UserControlPanel extends JPanel
         simTimePanel.setLayout(new BoxLayout(simTimePanel, BoxLayout.Y_AXIS));
         simTimePanel.setBorder(BorderFactory.createTitledBorder("Simulation Status"));
 
-        final JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        final JLabel simTime = new JLabel("");
-        row1.add(new JLabel("Simulation Time:"));
-        row1.add(simTime);
-        simTimePanel.add(row1);
-
-        final JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        final JLabel simOrbitAngle = new JLabel("");
-        row2.add(new JLabel("Orbital Position:"));
-        row2.add(simOrbitAngle);
-        simTimePanel.add(row2);
-
-        final JPanel row3 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        final JLabel simRotPosition = new JLabel("");
-        row3.add(new JLabel("Rotational Position:"));
-        row3.add(simRotPosition);
-        simTimePanel.add(row3);
+        addSimTimeField(simTimePanel, "Simulation Time:");
+        addSimTimeField(simTimePanel, "Orbital Position:");
+        addSimTimeField(simTimePanel, "Rotational Position:");
 
         root.add(simTimePanel);
+    }
+
+    private void addSimTimeField(final JPanel simTimePanel, final String label)
+    {
+        final JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        final JLabel value = new JLabel("");
+        row.add(new JLabel(label));
+        row.add(value);
+        simTimePanel.add(row);
     }
 
     private void addResultPanel(final Panel root)
@@ -251,139 +307,76 @@ public class UserControlPanel extends JPanel
 
     private void addSettingsFields(final JPanel root)
     {
-        final JPanel row0 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        final JComboBox simulationName = new JComboBox();
+        final JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        simulationName = new JComboBox();
         simulationName.setEditable(true);
-        row0.add(new JLabel("Simulation Name:"));
-        row0.add(simulationName);
-        root.add(row0);
+        row.add(new JLabel("Simulation Name:"));
+        row.add(simulationName);
+        root.add(row);
 
-        final JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        row1.add(new JLabel("Eccentricity:"));
-        final JTextField eccentricity = new JTextField(5);
-        row1.add(eccentricity);
-        root.add(row1);
-
-        final JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        row2.add(new JLabel("Tilt:"));
-        final JTextField tilt = new JTextField(5);
-        row2.add(tilt);
-        root.add(row2);
-
-        final JPanel row6 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        row6.add(new JLabel("Precision:"));
-        final JTextField precision = new JTextField(5);
-        row6.add(precision);
-        root.add(row6);
+        addField(root, eccentricity = new JTextField(5), "Eccentricity:");
+        addField(root, tilt = new JTextField(5), "Tilt:");
+        addField(root, precision = new JTextField(5), "Precision:");
     }
 
     private void addLocationFields(final JPanel root)
     {
+        addField(root, tlat = new JTextField(5), "Top Latitude:");
+        addField(root, blat = new JTextField(5), "Bottom Latitude:");
+        addField(root, llong = new JTextField(5), "Left Longitude:");
+        addField(root, rlong = new JTextField(5), "Right Longitude:");
+    }
 
-        final JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        row1.add(new JLabel("Top Latitude:"));
-        final JTextField tlat = new JTextField(5);
-        row1.add(tlat);
-        root.add(row1);
-
-        final JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        row2.add(new JLabel("Bottom Latitude:"));
-        final JTextField blat = new JTextField(5);
-        row2.add(blat);
-        root.add(row2);
-
-        final JPanel row3 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        row3.add(new JLabel("Left Longitude:"));
-        final JTextField llong = new JTextField(5);
-        row3.add(llong);
-        root.add(row3);
-
-        final JPanel row4 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        row4.add(new JLabel("Right Longitude:"));
-        final JTextField rlong = new JTextField(5);
-        row4.add(rlong);
-        root.add(row4);
+    private void addField(final JPanel root, final JTextField field, final String label)
+    {
+        final JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        row.add(new JLabel(label));
+        row.add(field);
+        root.add(row);
     }
 
     private void addAccuracyFields(final JPanel root)
     {
-        final JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        row1.add(new JLabel("Geo. Accuracy(%):"));
-        final JTextField geoAccuracy = new JTextField(5);
-        row1.add(geoAccuracy);
-        root.add(row1);
+        geoAccuracy = new JTextField(5);
+        addAccuracyField(root, geoAccuracy, "Geo. Accuracy(%):");
 
-        final JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        row2.add(new JLabel("Time Accuracy(%):"));
-        final JTextField timeAccuracy = new JTextField(5);
-        row2.add(timeAccuracy);
-        root.add(row2);
+        temporalAccuracy = new JTextField(5);
+        addAccuracyField(root, temporalAccuracy, "Temporal Accuracy(%):");
+    }
+
+    private void addAccuracyField(final JPanel root, final JTextField field, final String label)
+    {
+        final JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        row.add(new JLabel(label));
+        row.add(geoAccuracy);
+        root.add(row);
     }
 
     private void addGridSpacing(final JPanel root)
     {
-        final Integer value = new Integer(15);
-        final Integer min = new Integer(1);
-        final Integer max = new Integer(180);
-        final Integer step = new Integer(15);
-        gridSpacingModel = new SpinnerNumberModel(value, min, max, step);
-        final JSpinner spinner = new JSpinner(gridSpacingModel);
-
-        final JLabel label = new JLabel("Grid Spacing");
-        final JPanel panel = new JPanel(new BorderLayout());
-        panel.add(label, BorderLayout.WEST);
-        panel.add(spinner, BorderLayout.CENTER);
-
-        root.add(panel);
+        addSpinner(root, timeStepModel = new SpinnerNumberModel(new Integer(15), new Integer(1), new Integer(180), new Integer(15)), "Grid Spacing");
     }
 
     private void addSimulationTimeStep(final JPanel root)
     {
-        final Integer value = new Integer(1440);
-        final Integer min = new Integer(1);
-        final Integer max = new Integer(525600);
-        final Integer step = new Integer(60);
-        timeStepModel = new SpinnerNumberModel(value, min, max, step);
-        final JSpinner spinner = new JSpinner(timeStepModel);
-
-        final JLabel label = new JLabel("Time Step");
-        final JPanel panel = new JPanel(new BorderLayout());
-        panel.add(label, BorderLayout.WEST);
-        panel.add(spinner, BorderLayout.CENTER);
-
-        root.add(panel);
+        addSpinner(root, timeStepModel = new SpinnerNumberModel(new Integer(1440), new Integer(1), new Integer(525600), new Integer(60)), "Time Step");
     }
 
-    private void addVisRate(final JPanel root)
+    private void addRefreshRate(final JPanel root)
     {
-        final Integer value = new Integer(1);
-        final Integer min = new Integer(1);
-        final Integer max = new Integer(100);
-        final Integer step = new Integer(1);
-        final SpinnerNumberModel refreshRate = new SpinnerNumberModel(value, min, max, step);
-        final JSpinner spinner = new JSpinner(refreshRate);
-
-        final JLabel label = new JLabel("Refresh Rate");
-        final JPanel panel = new JPanel(new BorderLayout());
-        panel.add(label, BorderLayout.WEST);
-        panel.add(spinner, BorderLayout.CENTER);
-
-        root.add(panel);
+        addSpinner(root, refreshRateModel = new SpinnerNumberModel(new Integer(1), new Integer(1), new Integer(100), new Integer(1)), "Refresh Rate");
     }
 
     private void addSimLength(final JPanel root)
     {
-        final Integer value = new Integer(12);
-        final Integer min = new Integer(1);
-        final Integer max = new Integer(1200);
-        final Integer step = new Integer(12);
-        final SpinnerNumberModel simulationLength = new SpinnerNumberModel(value, min, max, step);
-        final JSpinner spinner = new JSpinner(simulationLength);
+        addSpinner(root, refreshRateModel = new SpinnerNumberModel(new Integer(12), new Integer(1), new Integer(1200), new Integer(12)), "Simulation Length");
+    }
 
-        final JLabel label = new JLabel("Simulation Length");
+    private void addSpinner(final JPanel root, final SpinnerNumberModel model, final String label)
+    {
         final JPanel panel = new JPanel(new BorderLayout());
-        panel.add(label, BorderLayout.WEST);
-        panel.add(spinner, BorderLayout.CENTER);
+        panel.add(new JLabel(label), BorderLayout.WEST);
+        panel.add(new JSpinner(model), BorderLayout.CENTER);
 
         root.add(panel);
     }
@@ -401,6 +394,13 @@ public class UserControlPanel extends JPanel
             };
         };
 
+        setActionListener(button);
+        setButtonImage(buttonID, button);
+        return button;
+    }
+
+    private void setActionListener(final JButton button)
+    {
         button.addActionListener(new ActionListener()
         {
             @Override
@@ -434,7 +434,10 @@ public class UserControlPanel extends JPanel
             }
 
         });
+    }
 
+    private void setButtonImage(final String buttonID, final JButton button)
+    {
         try
         {
             final Image defaultImg = ImageIO.read(getClass().getResource(buttonID + ".png"));
@@ -451,7 +454,6 @@ public class UserControlPanel extends JPanel
         catch (final IOException ex)
         {
         }
-        return button;
     }
 
     private void resetImage(final JButton selectedButton)
@@ -465,5 +467,65 @@ public class UserControlPanel extends JPanel
                 button.setIcon(new ImageIcon(defaultImages.get(button)));
             }
         }
+    }
+
+    private SimulationSettings cloneSettings(final SimulationSettings settings)
+    {
+        final SimulationSettings cloneSettings;
+        try
+        {
+            cloneSettings = settings.clone();
+            cloneDateSettings(cloneSettings);
+            cloneSimulationSettings(cloneSettings);
+            cloneLocationSettings(cloneSettings);
+            cloneAccuracySettings(cloneSettings);
+
+            cloneSettings.setGridSpacing(gridSpacingModel.getNumber().intValue());
+            cloneSettings.setSimulationTimeStepMinutes(timeStepModel.getNumber().intValue());
+            cloneSettings.setUIRefreshRate(refreshRateModel.getNumber().intValue());
+            return cloneSettings;
+        }
+        catch (final CloneNotSupportedException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void cloneAccuracySettings(final SimulationSettings settings)
+    {
+        settings.setGeographicPrecision(convertTextToInt(geoAccuracy.getText()));
+        settings.setTemporalPrecision(convertTextToInt(temporalAccuracy.getText()));
+    }
+
+    private void cloneSimulationSettings(final SimulationSettings settings)
+    {
+        settings.setSimulationName(simulationName.getSelectedItem().toString());
+        settings.setPlanetsOrbitalEccentricity(convertTextToInt(eccentricity.getText()));
+        settings.setPlanetsAxialTilt(convertTextToInt(tilt.getText()));
+        settings.setTemporalPrecision(convertTextToInt(precision.getText()));
+    }
+
+    private void cloneDateSettings(final SimulationSettings cloneSettings)
+    {
+        final Calendar startDate = Calendar.getInstance();
+        startDate.setTime(fromDateModel.getValue());
+        cloneSettings.setSimulationStartDate(startDate);
+
+        final Calendar endDate = Calendar.getInstance();
+        endDate.setTime(toDateModel.getValue());
+        cloneSettings.setSimulationEndDate(endDate);
+    }
+
+    private void cloneLocationSettings(final SimulationSettings settings)
+    {
+        settings.setLatitudeTop(convertTextToInt(tlat.getText()));
+        settings.setLatitudeBottom(convertTextToInt(blat.getText()));
+        settings.setLongitudeLeft(convertTextToInt(llong.getText()));
+        settings.setLongitudeRight(convertTextToInt(rlong.getText()));
+    }
+
+    private int convertTextToInt(final String value)
+    {
+        return ((value != null) && (value.length() > 0)) ? Integer.parseInt(value) : 0;
     }
 }

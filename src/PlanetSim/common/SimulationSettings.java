@@ -77,12 +77,17 @@ public class SimulationSettings implements Cloneable
     private int             gridSpacing                    = 15;
 
     private final Calendar  simulationTimestamp;
+    private Calendar        simulationStartDate;
+    private Calendar        simulationEndDate;
+
     private int             simulationTimeMinutes;
 
     private Sun             sun;
     private Planet          planet;
 
     private GridSettings    gridSettings;
+
+    private int             uiRfreshRate;
 
     public SimulationSettings()
     {
@@ -385,11 +390,41 @@ public class SimulationSettings implements Cloneable
 
     private int calculateMonthsPassed()
     {
-        return simulationTimeMinutes != 0 ? (MINUTES_IN_A_MONTH / simulationTimeMinutes) : 0;
+        return simulationTimeMinutes != 0 ? (simulationTimeMinutes / MINUTES_IN_A_MONTH) : 0;
     }
 
     public Calendar getSimulationTimestamp()
     {
         return simulationTimestamp;
+    }
+
+    public Calendar getSimulationStartDate()
+    {
+        return simulationStartDate;
+    }
+
+    public void setSimulationStartDate(final Calendar simulationStartDate)
+    {
+        this.simulationStartDate = simulationStartDate;
+    }
+
+    public Calendar getSimulationEndDate()
+    {
+        return simulationEndDate;
+    }
+
+    public void setSimulationEndDate(final Calendar simulationEndDate)
+    {
+        this.simulationEndDate = simulationEndDate;
+    }
+
+    public void setUIRefreshRate(final int uiRefreshRate)
+    {
+        this.uiRfreshRate = uiRefreshRate;
+    }
+
+    public int getUIRefreshRate()
+    {
+        return uiRfreshRate;
     }
 }
