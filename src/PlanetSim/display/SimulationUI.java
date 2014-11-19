@@ -15,6 +15,15 @@ public class SimulationUI extends JFrame
 
     private final SimulationSettings settings;
     private final EventBus           eventBus;
+    
+    {
+        try {
+          javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager
+              .getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
 
     public SimulationUI(final EventBus eventBus, final SimulationSettings settings)
     {
