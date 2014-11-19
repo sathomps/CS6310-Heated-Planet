@@ -69,6 +69,7 @@ public class MySqlConnection
     String password = "root";
 
     // db heavy lifting
+    Connection con = null; 
     public MySqlConnection()
     {
 
@@ -96,17 +97,18 @@ public class MySqlConnection
         {
             sql += String.format(" AND name = '%s'", name);
         }
-        if (timeStep > 0)
-        {
-            sql += String.format(" AND simulation_time_spacing = %d", timeStep);
-        }
+        //piazza 497
+//        if (timeStep > 0)
+//        {
+//            sql += String.format(" AND simulation_time_step = %d", timeStep);
+//        }
         if (axialTilt > 0)
         {
-            sql += String.format(" AND axial_tilt = %d", axialTilt);
+            sql += String.format(" AND axial_tilt = %f", axialTilt);
         }
         if (orbitalEccentricity > 0)
         {
-            sql += String.format(" AND orbital_eccentricity = %d", orbitalEccentricity);
+            sql += String.format(" AND orbital_eccentricity = %f", orbitalEccentricity);
         }
 
         final Connection con = DriverManager.getConnection(url, user, password);
@@ -125,8 +127,9 @@ public class MySqlConnection
             ss.setTemporalPrecision(rs.getInt("temporal_precision"));
             result.add(ss);
         }
+        con.close();
         return result;
-            }
+	}
 
     public ArrayList<String> listSimulationNames() throws SQLException
     {
@@ -160,8 +163,9 @@ public class MySqlConnection
         if (rs.next())
         {
             final GridSettings gs = new GridSettings(settings);
-            rs = st.executeQuery(String.format("SELECT row_position, column_position, temperature, reading_date, reading_time"
-                    + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom " + " FROM simulation_grid WHERE name = '%s'", settings.getSimulationName()));
+            rs = st.executeQuery(String.format("SELECT row_position, column_position, temperature, reading_date"
+                    + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom " + 
+            		" FROM simulation_grid_data WHERE simulation_name = '%s'", settings.getSimulationName()));
             while (rs.next())
             {
                 // final int read_tm = rs.getInt("reading_time");
@@ -180,7 +184,7 @@ public class MySqlConnection
                     gs.addCell(row_pos, col_pos, settings.getGridSpacing(), temp, longLeft, latTop, longRight, latBottom, read_dt);
                 }
             }
-
+            con.close();
             return gs;
         }
         else
@@ -192,13 +196,14 @@ public class MySqlConnection
     }
 
     public void saveHeader(final String simName, final int gridSpacing, final double orbitalEcc, final double axialTilt, final int simLength,
-            final int simTimeStep, final int dsPrecision, final int geoPrecision, final double temporalPrecision) throws SQLException
+            final int simTimeStep, final int dsPrecision, final int geoPrecision, final int temporalPrecision) throws SQLException
     {
         final Connection con = DriverManager.getConnection(url, user, password);
         final Statement st = con.createStatement();
-        final String sql = "INSERT INTO simulations (name, grid_spacing, simulation_time_step, simulation_length"
+        final String sql = String.format("INSERT INTO simulations (name, grid_spacing, simulation_time_step, simulation_length"
                 + ", axial_tilt, orbital_eccentricity, temperature_precision, geographic_precision, temporal_precision) "
-                + "VALUES ('%s', %d, %d, %d, %f, %f, %d, %d, %d";
+                + "VALUES ('%s', %d, %d, %d, %f, %f, %d, %d, %d)"
+                , simName, gridSpacing, simTimeStep, simLength, axialTilt, orbitalEcc, dsPrecision, geoPrecision, temporalPrecision);
         st.execute(sql);
     }
 
@@ -207,37 +212,33 @@ public class MySqlConnection
     }
 
     public void saveCell(final String simName, final int row, final int cell, final double d, final double e, final double f, final double g, final double h,
-            final int date, final int time, final int dsPrecision) throws SQLException
+            final long date, final int dsPrecision) throws SQLException
     {
-        final Connection con = DriverManager.getConnection(url, user, password);
+        //final Connection con = DriverManager.getConnection(url, user, password);
+    	boolean localCon = false;
+    	if (con == null)
+    	{
+    		con = DriverManager.getConnection(url, user, password);
+    		localCon = true;
+    	}
         final Statement st = con.createStatement();
-        final String sql = "INSERT INTO simulation_grid_data (name, row_position, column_position, temperature, reading_date"
-                + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom) VALUES ('%s', %d, %d" + ", %." + dsPrecision + "f" + // how
-                // many
-                // decimals
-                // to
-                // store,
-                // kinda
-                // dorky
-                // but
-                // but
-                // i
-                // can't
-                // figure
-                // how
-                // to
-                // round
-                // to
-                // x
-                // places.
-                ", %d, %d, %f, %f, %f, %f)";
+        final String sql = "INSERT INTO simulation_grid_data (simulation_name, row_position, column_position, temperature, reading_date"
+        		// how many decimals to store, kinda dorky but i can't figure how to round to x round places.
+                + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom) " +
+                " VALUES ('%s', %d, %d" + ", %." + dsPrecision + "f" + 
+                ", %d, %f, %f, %f, %f)";
         st.execute(String.format(sql, simName, row, cell, d, date, f, h, e, g));
+        if (localCon)
+        {
+        	con.close();
+        	con = null;
+        }
     }
 
-    public long getDatabaseSize()
+    public long getDatabaseSize() throws SQLException
     {
         final String sql = "SELECT sum( data_length + index_length ) FROM information_schema.TABLES  WHERE table_schema = 'heated_planet'";
-        Connection con;
+        Connection con = null;
         try
         {
             con = DriverManager.getConnection(url, user, password);
@@ -250,6 +251,32 @@ public class MySqlConnection
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        finally
+        {
+        	if (con!=null) con.close();
+        }
         return -1;
     }
+
+	public void startTransaction() throws SQLException {
+		if (con != null)
+			con.setAutoCommit(false);
+		
+	}
+
+	public void commitTransaction() throws SQLException {
+		if (con != null)
+		{
+			con.commit();
+			con.close();
+		}
+	}
+
+	public void rollbackTransaction() throws SQLException {
+		if (con != null)
+		{
+			con.rollback();
+			con.close();
+		}		
+	}
 }
