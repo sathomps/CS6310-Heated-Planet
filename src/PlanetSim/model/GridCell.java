@@ -227,8 +227,52 @@ public class GridCell
     @Override
     public String toString()
     {
-        return "GridCell [width=" + width + ", height=" + height + ", latitudeTop=" + latitudeTop + ", latitudeBottom=" + latitudeBottom + ", longitudeLeft="
-                + longitudeLeft + ", longitudeRight=" + longitudeRight + ", surfaceArea=" + surfaceArea + ", temp=" + temp + ", north=" + north + ", south="
-                + south + ", west=" + west + ", east=" + east + ", readDate=" + readDate + ", readTime=" + readTime + "]";
+        final StringBuilder builder = new StringBuilder();
+        builder.append("GridCell [getNorth()=");
+        // builder.append(getNorth());
+        builder.append(", getSouth()=");
+        // builder.append(getSouth());
+        builder.append(", getWest()=");
+        // builder.append(getWest());
+        builder.append(", getEast()=");
+        // builder.append(getEast());
+        builder.append(", getTop()=");
+        // builder.append(getTop());
+        builder.append(", getBottom()=");
+        // builder.append(getBottom());
+        builder.append(", getLeft()=");
+        // builder.append(getLeft());
+        builder.append(", getRight()=");
+        // builder.append(getRight());
+        builder.append(", getLatitudeTop()=");
+        builder.append(getLatitudeTop());
+        builder.append(", getLatitudeBottom()=");
+        builder.append(getLatitudeBottom());
+        builder.append(", getLongitudeLeft()=");
+        builder.append(getLongitudeLeft());
+        builder.append(", getLongitudeRight()=");
+        builder.append(getLongitudeRight());
+        builder.append(", getSurfaceArea()=");
+        builder.append(getSurfaceArea());
+        builder.append(", getTemp()=");
+        builder.append(getTemp());
+        builder.append(", getWestTemp()=");
+        builder.append(getWestTemp());
+        builder.append(", getEastTemp()=");
+        builder.append(getEastTemp());
+        builder.append(", getSouthTemp()=");
+        builder.append(getSouthTemp());
+        builder.append(", getNorthTemp()=");
+        builder.append(getNorthTemp());
+        builder.append(", getHeight()=");
+        builder.append(getHeight());
+        builder.append(", getWidth()=");
+        builder.append(getWidth());
+        builder.append(", getDate()=");
+        builder.append(getDate());
+        builder.append(", getTime()=");
+        builder.append(getTime());
+        builder.append("]");
+        return builder.toString();
     }
 }

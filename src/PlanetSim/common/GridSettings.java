@@ -16,7 +16,6 @@ public class GridSettings
     private static final double                    LONGITUDE_LEFT  = 180;
     private static final double                    LONGITUDE_RIGHT = -180;
 
-    private int                                    height;
     private final LinkedList<LinkedList<GridCell>> grid            = new LinkedList<LinkedList<GridCell>>();
 
     private final SimulationSettings               settings;
@@ -65,7 +64,7 @@ public class GridSettings
             cell.setLatitudeBottom(((LATITUDE_TOP / spacing) % 1) == 0 ? (cell.getLatitudeTop() - spacing)
                     : (cell.getLatitudeTop() - (spacing * ((LATITUDE_TOP / spacing) % 1))));
         }
-        else if ((col > 0) && (col < (height - 1)))
+        else if ((col > 0) && (col < (calculateGridHeight() - 1)))
         {
             cell.setLatitudeTop(getCellByRowCol(row, col - 1).getLatitudeBottom());
             cell.setLatitudeBottom(cell.getLatitudeTop() - spacing);
@@ -73,7 +72,7 @@ public class GridSettings
             cell.setTop(getCellByRowCol(row, col - 1));
             getCellByRowCol(row, col - 1).setBottom(cell);
         }
-        else if (col == (height - 1))
+        else if (col == (calculateGridHeight() - 1))
         {
             cell.setLatitudeTop(getCellByRowCol(row, col - 1).getLatitudeBottom());
             cell.setLatitudeBottom(LATITUDE_BOTTOM);
@@ -130,6 +129,11 @@ public class GridSettings
 
         cell.setHeight((int) Math.abs(calculateDistanceToEquator(cell.getLatitudeTop(), earthRadius)
                 - calculateDistanceToEquator(cell.getLatitudeBottom(), earthRadius)));
+    }
+
+    private int calculateGridHeight()
+    {
+        return settings.getPlanetRadius() * 2;
     }
 
     private void calculateGeometry(final GridCell cell)

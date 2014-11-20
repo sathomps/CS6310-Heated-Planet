@@ -55,6 +55,8 @@ public class Planet extends JPanel
             {
                 final GridCell cell = cells.get(y);
                 g.setColor(getColor(cell.getTemp()));
+                System.out.println(cell);
+
                 g.fillRect(cellX, cellY, cell.getWidth(), cell.getHeight());
                 cellY += cell.getHeight();
             }
