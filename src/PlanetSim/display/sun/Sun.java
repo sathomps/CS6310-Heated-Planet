@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import javax.swing.JPanel;
 
 import PlanetSim.common.SimulationSettings;
+import PlanetSim.common.event.EventBus;
 import PlanetSim.common.event.StopEvent;
 import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.DisplayEvent;
@@ -27,17 +28,14 @@ public class Sun extends JPanel
 
     private SimulationSettings settings;
 
-    public Sun(final SimulationSettings settings)
+    public Sun(final EventBus eventBus, final SimulationSettings settings)
     {
         this.settings = settings;
-    }
-
-    public void init()
-    {
+        eventBus.subscribe(this);
         drawSunPath();
     }
 
-    public void drawSunPath()
+    private void drawSunPath()
     {
         this.pathLength = settings.getPlanetWidth();
 
@@ -84,7 +82,7 @@ public class Sun extends JPanel
     public void process(final DisplayEvent displayEvent)
     {
         settings = displayEvent.getSettings();
-        repaint();
+        // repaint();
     }
 
 }

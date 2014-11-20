@@ -21,6 +21,9 @@ public class GridCell
     private GridCell         west;
     private GridCell         east;
 
+    private long             readDate                         = 0;
+    private long             readTime                         = 0;
+
     public GridCell getNorth()
     {
         return north;
@@ -201,20 +204,17 @@ public class GridCell
         this.width = width;
     }
 
-    private int readDate = 0;
-    private int readTime = 0;
-
-    public int getDate()
+    public long getDate()
     {
         return readDate;
     }
 
-    public void setDate(final int readDate)
+    public void setDate(final long readDate)
     {
         this.readDate = readDate;
     }
 
-    public int getTime()
+    public long getTime()
     {
         return readTime;
     }

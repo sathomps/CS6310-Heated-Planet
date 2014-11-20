@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 
 import PlanetSim.common.GridSettings;
 import PlanetSim.common.SimulationSettings;
+import PlanetSim.common.event.EventBus;
 import PlanetSim.common.event.StopEvent;
 import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.DisplayEvent;
@@ -20,16 +21,6 @@ public class Planet extends JPanel
 {
     private static final long  serialVersionUID = 1L;
 
-    private static final int   WIDTH            = 800;
-    private static final int   HEIGHT           = 400;
-
-    private int                pixelsPerCellX;
-    private int                pixelsPerCellY;
-    private int                imgWidth;
-    private int                imgHeight;
-    private int                numCellsX;
-    private int                numCellsY;
-    private int                radius;
     private SimulationSettings settings;
     private GridSettings       gridSettings;
 
@@ -38,31 +29,10 @@ public class Planet extends JPanel
      * 
      * @param settings
      */
-    public Planet(final SimulationSettings settings)
+    public Planet(final EventBus eventBus, final SimulationSettings settings)
     {
         this.settings = settings;
-    }
-
-    public void init()
-    {
-        gridSettings = new GridSettings(settings);
-        calculateGridGranularity();
-        setIgnoreRepaint(true);
-        createGrid();
-    }
-
-    private void calculateGridGranularity()
-    {
-        numCellsX = 360 / settings.getGridSpacing();
-        pixelsPerCellX = WIDTH / numCellsX;
-        imgWidth = numCellsX * pixelsPerCellX;
-
-        numCellsY = 180 / settings.getGridSpacing();
-        pixelsPerCellY = HEIGHT / numCellsY;
-        imgHeight = numCellsY * pixelsPerCellY;
-        radius = imgHeight / 2;
-
-        gridSettings.setHeight(imgHeight).setWidth(imgWidth);
+        eventBus.subscribe(this);
     }
 
     @Override
@@ -72,30 +42,13 @@ public class Planet extends JPanel
         drawGrid(g);
     }
 
-    @Override
-    public int getWidth()
-    {
-        return imgWidth;
-    }
-
-    private void createGrid()
-    {
-        for (int row = 0; row < numCellsX; row++)
-        {
-            for (int col = 0; col < numCellsY; col++)
-            {
-                gridSettings.addCell(row, col, pixelsPerCellX);
-            }
-        }
-    }
-
     private void fillCellColors(final Graphics g)
     {
         final LinkedList<LinkedList<GridCell>> grid = gridSettings.getGrid();
 
         int cellX = 0;
         int cellY = 0;
-        final int cellWidth = pixelsPerCellX;
+        final int cellWidth = settings.getPixelsPerCellX();
 
         for (int x = 0; x < grid.size(); x++)
         {
@@ -126,32 +79,33 @@ public class Planet extends JPanel
     private void drawPrimeMeridianEquator(final Graphics g)
     {
         g.setColor(Color.blue);
-        g.drawLine(imgWidth / 2, 0, imgWidth / 2, imgHeight); // prime meridian
-        g.drawLine(0, imgHeight / 2, imgWidth, imgHeight / 2); // equator
+        // prime meridian
+        g.drawLine(settings.getPlanetWidth() / 2, 0, settings.getPlanetWidth() / 2, settings.getPlanetHeight());
+        // equator
+        g.drawLine(0, settings.getPlanetHeight() / 2, settings.getPlanetWidth(), settings.getPlanetHeight() / 2);
     }
 
     private void drawLatitudeLines(final Graphics g)
     {
         for (int lat = 0; lat <= 90; lat += settings.getGridSpacing())
         {
-            final int y = (int) calculateDistanceToEquator(lat, radius);
-            g.drawLine(0, radius - y, imgWidth, radius - y);
-            g.drawLine(0, radius + y, imgWidth, radius + y);
+            final int y = (int) calculateDistanceToEquator(lat, settings.getPlanetRadius());
+            g.drawLine(0, settings.getPlanetRadius() - y, settings.getPlanetWidth(), settings.getPlanetRadius() - y);
+            g.drawLine(0, settings.getPlanetRadius() + y, settings.getPlanetWidth(), settings.getPlanetRadius() + y);
         }
     }
 
     private void drawLongitudeLines(final Graphics g)
     {
-        for (int x = 0; x <= imgWidth; x += pixelsPerCellX)
+        for (int x = 0; x <= settings.getPlanetWidth(); x += settings.getPixelsPerCellX())
         {
-            g.drawLine(x, 0, x, imgHeight);
+            g.drawLine(x, 0, x, settings.getPlanetHeight());
         }
     }
 
     @Subscribe
     public void reset(final StopEvent event)
     {
-        init();
     }
 
     @Subscribe
@@ -159,10 +113,5 @@ public class Planet extends JPanel
     {
         settings = displayEvent.getSettings();
         repaint();
-    }
-
-    public int getRadius()
-    {
-        return radius;
     }
 }

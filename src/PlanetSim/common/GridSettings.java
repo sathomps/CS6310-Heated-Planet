@@ -16,7 +16,6 @@ public class GridSettings
     private static final double                    LONGITUDE_LEFT  = 180;
     private static final double                    LONGITUDE_RIGHT = -180;
 
-    private int                                    width;
     private int                                    height;
     private final LinkedList<LinkedList<GridCell>> grid            = new LinkedList<LinkedList<GridCell>>();
 
@@ -25,7 +24,6 @@ public class GridSettings
     public GridSettings(final SimulationSettings settings)
     {
         this.settings = settings;
-        settings.setGridSettings(this);
     }
 
     public LinkedList<LinkedList<GridCell>> getGrid()
@@ -33,53 +31,11 @@ public class GridSettings
         return grid;
     }
 
-    public GridSettings setWidth(final int width)
-    {
-        this.width = width;
-        return this;
-    }
-
-    public int getWidth()
-    {
-        return width;
-    }
-
-    public GridSettings setHeight(final int height)
-    {
-        this.height = height;
-        return this;
-    }
-
-    public int getHeight()
-    {
-        return height;
-    }
-
-	public void addCell(final int row, final int col, final int width)
-	{
-		final GridCell cell = new GridCell();
-		cell.setWidth(width);
-		LinkedList<GridCell> cols;
-		try
-		{
-			cols = grid.get(row);
-		}
-		catch (final IndexOutOfBoundsException ex)
-		{
-			cols = new LinkedList<GridCell>();
-			grid.add(cols);
-		}
-		cols.add(cell);
-		calculateCoordinates(row, col, cell);
-		calculateGeometry(cell);
-	}
-    public void addCell(final int row, final int col, final int width, double temp, float longLeft, float latTop, float longRight, float latBottom, long read_dt)
+    public void addCell(final int row, final int col)
     {
         final GridCell cell = new GridCell();
-        cell.setWidth(width);
-
+        cell.setWidth(settings.getPixelsPerCellX());
         LinkedList<GridCell> cols;
-
         try
         {
             cols = grid.get(row);
@@ -132,7 +88,7 @@ public class GridSettings
             cell.setLongitudeRight((((LONGITUDE_LEFT / spacing) % 1) == 0) ? (cell.getLongitudeLeft() - spacing)
                     : (cell.getLongitudeLeft() - (spacing * ((LONGITUDE_LEFT / spacing) % 1))));
         }
-        else if ((row > 0) && (row < (width - 1)))
+        else if ((row > 0) && (row < (settings.getPixelsPerCellX() - 1)))
         {
             cell.setLongitudeLeft(getCellByRowCol(row - 1, col).getLongitudeRight());
             cell.setLongitudeRight(cell.getLongitudeLeft() - spacing);
@@ -140,7 +96,7 @@ public class GridSettings
             cell.setLeft(getCellByRowCol(row - 1, col));
             getCellByRowCol(row - 1, col).setRight(cell);
         }
-        else if (row == (width - 1))
+        else if (row == (settings.getPixelsPerCellX() - 1))
         {
             cell.setLongitudeLeft(getCellByRowCol(row - 1, col).getLongitudeRight());
             cell.setLongitudeRight(LONGITUDE_RIGHT);
@@ -183,10 +139,10 @@ public class GridSettings
     }
 
     public void addCell(final int row, final int col, final int gridSpacing, final double temp, final double longLeft, final double latTop,
-            final double longRight, final double latBottom, final int read_dt, final int read_tm)
+            final double longRight, final double latBottom, final long read_dt, final int read_tm)
     {
         final GridCell cell = new GridCell();
-        cell.setWidth(width);
+        cell.setWidth(settings.getPixelsPerCellX());
         cell.setTemp((int) temp);
         cell.setLatitudeBottom(latBottom);
         cell.setLatitudeTop(latTop);

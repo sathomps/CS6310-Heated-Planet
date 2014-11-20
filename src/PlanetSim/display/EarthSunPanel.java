@@ -8,7 +8,6 @@ import javax.swing.JPanel;
 
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
-import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.planet.Planet;
 import PlanetSim.display.sun.Sun;
 
@@ -19,7 +18,7 @@ public class EarthSunPanel extends JPanel
     private static final Dimension   PREFERRED_SIZE   = new Dimension(800, 400);
 
     private Sun                      sun;
-    private Planet                    earth;
+    private Planet                   planet;
 
     private final SimulationSettings settings;
     private final EventBus           eventBus;
@@ -31,17 +30,17 @@ public class EarthSunPanel extends JPanel
 
         eventBus.subscribe(this);
         initLayout();
-        initEarth();
+        initPlanet();
         initSun();
 
-        addSunAndEarth();
-        drawGrid();
+        addSunAndPlanet();
+        repaint();
     }
 
-    private void addSunAndEarth()
+    private void addSunAndPlanet()
     {
         add(sun);
-        add(earth);
+        add(planet);
     }
 
     private void initLayout()
@@ -52,29 +51,15 @@ public class EarthSunPanel extends JPanel
         setPreferredSize(PREFERRED_SIZE);
     }
 
-    private void initEarth()
+    private void initPlanet()
     {
-        earth = new Planet(settings);
-        earth.setAlignmentX(Component.LEFT_ALIGNMENT);
-        earth.init();
+        planet = new Planet(eventBus, settings);
+        planet.setAlignmentX(Component.LEFT_ALIGNMENT);
     }
 
     private void initSun()
     {
-        sun = new Sun(settings);
+        sun = new Sun(eventBus, settings);
         sun.setAlignmentX(Component.LEFT_ALIGNMENT);
-        sun.init();
-    }
-
-    private void drawGrid()
-    {
-        sun.drawSunPath();
-        repaint();
-    }
-
-    @Subscribe
-    public void process(final DisplayEvent displayEvent)
-    {
-        repaint();
     }
 }
