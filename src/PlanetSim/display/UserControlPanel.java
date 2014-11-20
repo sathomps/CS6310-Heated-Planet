@@ -118,9 +118,20 @@ public class UserControlPanel extends JPanel
         add(getOutputOptions());
         add(getSimTimePanel());
         add(getControlButtons());
+        
+        initSettings();
     }
 
-    private JPanel addConfigPanel()
+    private void initSettings() {
+    	tlat.setText(String.valueOf(settings.getLatitudeTop()));
+    	blat.setText(String.valueOf(settings.getLatitudeBottom()));
+    	llong.setText(String.valueOf(settings.getLongitudeLeft()));
+    	rlong.setText(String.valueOf(settings.getLongitudeRight()));
+    	eccentricity.setText(String.valueOf(settings.getPlanetsOrbitalEccentricity()));
+    	tilt.setText(String.valueOf(settings.getPlanetsAxialTilt()));
+	}
+
+	private JPanel addConfigPanel()
     {
         final JPanel config = new JPanel();
         config.setLayout(new BoxLayout(config, BoxLayout.X_AXIS));
@@ -262,6 +273,13 @@ public class UserControlPanel extends JPanel
         final JCheckBox meanT = new JCheckBox("Mean(Time)");
         final JCheckBox meanR = new JCheckBox("Mean(Region)");
         final JCheckBox showAnimation = new JCheckBox("Show Animation");
+        
+        max.setSelected(true);
+        min.setSelected(true);
+        meanT.setSelected(true);
+        meanR.setSelected(true);
+        showAnimation.setSelected(true);
+        
         final JPanel outPutPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         outPutPanel.add(max);
         outPutPanel.add(min);
@@ -298,6 +316,8 @@ public class UserControlPanel extends JPanel
     {
         final JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
         simulationName = new JComboBox();
+        String initialName = "Sim" + Calendar.getInstance().getTimeInMillis();
+        simulationName.addItem(initialName);
         simulationName.setEditable(true);
         row.add(new JLabel("Name:"));
         row.add(simulationName);
