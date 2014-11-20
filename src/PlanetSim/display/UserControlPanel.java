@@ -87,6 +87,7 @@ public class UserControlPanel extends JPanel
     private JTextField                temporalAccuracy;
 
     private SpinnerNumberModel        refreshRateModel;
+    private SpinnerNumberModel        simLengthModel;
     
 	private MyDateTimeSpinner            startDateTimeSpinner;
 	private MyDateTimeSpinner            endDateTimeSpinner;
@@ -346,7 +347,7 @@ public class UserControlPanel extends JPanel
 
     private void addGridSpacing(final JPanel root)
     {
-        addSpinner(root, timeStepModel = new SpinnerNumberModel(new Integer(15), new Integer(1), new Integer(180), new Integer(15)), "Grid Spacing");
+        addSpinner(root, gridSpacingModel = new SpinnerNumberModel(new Integer(15), new Integer(1), new Integer(180), new Integer(15)), "Grid Spacing");
     }
 
     private void addSimulationTimeStep(final JPanel root)
@@ -361,7 +362,7 @@ public class UserControlPanel extends JPanel
 
     private void addSimLength(final JPanel root)
     {
-        addSpinner(root, refreshRateModel = new SpinnerNumberModel(new Integer(12), new Integer(1), new Integer(1200), new Integer(12)), "Simulation Length");
+        addSpinner(root, simLengthModel = new SpinnerNumberModel(new Integer(12), new Integer(1), new Integer(1200), new Integer(12)), "Simulation Length");
     }
 
     private void addSpinner(final JPanel root, final SpinnerNumberModel model, final String label)
@@ -407,13 +408,7 @@ public class UserControlPanel extends JPanel
             {
                 if (STATUS_RUN.equalsIgnoreCase(button.getActionCommand()))
                 {
-                    try
-                    {
-                        eventBus.publish(new RunEvent(settings.clone()));
-                    }
-                    catch (final CloneNotSupportedException e)
-                    {
-                    }
+                   eventBus.publish(new RunEvent(cloneSettings(settings)));
                 }
                 else if (STATUS_STOP.equalsIgnoreCase(button.getActionCommand()))
                 {
@@ -470,11 +465,12 @@ public class UserControlPanel extends JPanel
             cloneDateSettings(cloneSettings);
             cloneSimulationSettings(cloneSettings);
             cloneLocationSettings(cloneSettings);
-            cloneAccuracySettings(cloneSettings);
+            //cloneAccuracySettings(cloneSettings);
 
             cloneSettings.setGridSpacing(gridSpacingModel.getNumber().intValue());
             cloneSettings.setSimulationTimeStepMinutes(timeStepModel.getNumber().intValue());
             cloneSettings.setUIRefreshRate(refreshRateModel.getNumber().intValue());
+            cloneSettings.setSimulationLength(simLengthModel.getNumber().intValue());
             return cloneSettings;
         }
         catch (final CloneNotSupportedException ex)
@@ -492,9 +488,9 @@ public class UserControlPanel extends JPanel
     private void cloneSimulationSettings(final SimulationSettings settings)
     {
         settings.setSimulationName(simulationName.getSelectedItem().toString());
-        settings.setPlanetsOrbitalEccentricity(convertTextToInt(eccentricity.getText()));
-        settings.setPlanetsAxialTilt(convertTextToInt(tilt.getText()));
-        settings.setTemporalPrecision(convertTextToInt(precision.getText()));
+        settings.setPlanetsOrbitalEccentricity(convertTextToDbl(eccentricity.getText()));
+        settings.setPlanetsAxialTilt(convertTextToDbl(tilt.getText()));
+        //settings.setTemporalPrecision(convertTextToInt(precision.getText()));
     }
 
     private void cloneDateSettings(final SimulationSettings cloneSettings)
@@ -512,14 +508,19 @@ public class UserControlPanel extends JPanel
 
     private void cloneLocationSettings(final SimulationSettings settings)
     {
-        settings.setLatitudeTop(convertTextToInt(tlat.getText()));
-        settings.setLatitudeBottom(convertTextToInt(blat.getText()));
-        settings.setLongitudeLeft(convertTextToInt(llong.getText()));
-        settings.setLongitudeRight(convertTextToInt(rlong.getText()));
+        settings.setLatitudeTop(convertTextToDbl(tlat.getText()));
+        settings.setLatitudeBottom(convertTextToDbl(blat.getText()));
+        settings.setLongitudeLeft(convertTextToDbl(llong.getText()));
+        settings.setLongitudeRight(convertTextToDbl(rlong.getText()));
     }
 
     private int convertTextToInt(final String value)
     {
         return ((value != null) && (value.length() > 0)) ? Integer.parseInt(value) : 0;
+    }
+    
+    private double convertTextToDbl(final String value)
+    {
+        return ((value != null) && (value.length() > 0.)) ? Double.parseDouble(value) : 0.;
     }
 }
