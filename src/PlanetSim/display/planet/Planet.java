@@ -9,7 +9,6 @@ import java.util.LinkedList;
 
 import javax.swing.JPanel;
 
-import PlanetSim.common.GridSettings;
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
 import PlanetSim.common.event.StopEvent;
@@ -22,7 +21,6 @@ public class Planet extends JPanel
     private static final long  serialVersionUID = 1L;
 
     private SimulationSettings settings;
-    private GridSettings       gridSettings;
 
     /**
      * Constructs a display grid with a default grid spacing.
@@ -44,7 +42,7 @@ public class Planet extends JPanel
 
     private void fillCellColors(final Graphics g)
     {
-        final LinkedList<LinkedList<GridCell>> grid = gridSettings.getGrid();
+        final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
 
         int cellX = 0;
         int cellY = 0;
