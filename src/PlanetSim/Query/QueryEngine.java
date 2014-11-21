@@ -2,6 +2,7 @@ package PlanetSim.Query;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedList;
 
 import PlanetSim.Query.db.MySqlConnection;
@@ -11,8 +12,9 @@ import PlanetSim.common.event.EventBus;
 import PlanetSim.common.event.RunEvent;
 import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.DisplayEvent;
+import PlanetSim.display.GetSimulationNamesEvent;
 import PlanetSim.model.GridCell;
-
+import PlanetSim.metrics.MetricProducedEvent;
 public class QueryEngine
 {
     // used by save method so it can keep up with transactions.
@@ -71,9 +73,13 @@ public class QueryEngine
      *         if nothing existed
      * @throws SQLException
      */
-    public ArrayList<String> listSimulationNames()
+    @Subscribe
+    public ArrayList<String> listSimulationNames(final GetSimulationNamesEvent event)
     {
-        return con.listSimulationNames();
+    	ArrayList<String> names = con.listSimulationNames();
+    	if (event != null)
+    		eventBus.publish(new GetSimulationNamesEvent(names));
+        return names;
     }
 
     @Subscribe
@@ -113,6 +119,7 @@ public class QueryEngine
     {
         try
         {
+        	Calendar c = Calendar.getInstance();
             final MySqlConnection con = new MySqlConnection();
             final ArrayList<SimulationSettings> ss = con.queryHeader(settings.getSimulationName(), settings.getGridSpacing(),
                     settings.getSimulationTimeStepMinutes(), settings.getSimulationLength(), settings.getPlanetsAxialTilt(),
@@ -228,7 +235,7 @@ public class QueryEngine
             // nothing in the list so a simulation has to be run
             else if (s1.size() == 0)
             {
-                return null;
+            	chosenOne = null;
             }
             // only one in the list so get it and determine the correct value of
             // interpolate
@@ -241,10 +248,13 @@ public class QueryEngine
                         && (settings.getGridSpacing() == chosenOne.getGridSpacing()) && (settings.getSimulationTimeStepMinutes() == chosenOne
                         .getSimulationTimeStepMinutes()));
             }
-
-            final GridSettings gs = con.query(chosenOne);
-            chosenOne.setGridSettings(gs);
-            chosenOne.setDataSourceProcess(interpolate ? SimulationSettings.DATASOURCE_PROCESS_INTERPOLATE : SimulationSettings.DATASOURCE_PROCESS_QUERY);
+            if (chosenOne != null)
+            {
+	            final GridSettings gs = con.query(chosenOne);
+	            chosenOne.setGridSettings(gs);
+	            chosenOne.setDataSourceProcess(interpolate ? SimulationSettings.DATASOURCE_PROCESS_INTERPOLATE : SimulationSettings.DATASOURCE_PROCESS_QUERY);
+            }
+            this.eventBus.publish(new MetricProducedEvent("QE.query",  Calendar.getInstance().getTimeInMillis() - c.getTimeInMillis()));
             return chosenOne;
         }
         catch (final Exception e)
@@ -288,8 +298,12 @@ public class QueryEngine
      * @return - long value that is the database size in bytes
      * @throws SQLException
      */
-    public long getDataStoreSize()
+    @Subscribe
+    public long getDataStoreSize(MetricProducedEvent event)
     {
-        return con.getDatabaseSize();
+    	long size = con.getDatabaseSize();
+    	if (event != null)
+    		eventBus.publish(new MetricProducedEvent("QE.dbsize", size));
+        return size;
     }
 }

@@ -2,9 +2,11 @@ package PlanetSim.metrics;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.text.SimpleDateFormat;
@@ -15,7 +17,7 @@ import java.util.TimerTask;
 import PlanetSim.common.event.EventBus;
 
 import com.sun.management.OperatingSystemMXBean;
-
+import PlanetSim.common.event.Subscribe;
 public class MetricsEngine implements Runnable
 {
     private static final SimpleDateFormat SDF      = new SimpleDateFormat("hh:mm:ss.SSS");
@@ -26,6 +28,7 @@ public class MetricsEngine implements Runnable
     public MetricsEngine(final EventBus eventBus)
     {
         this.eventBus = eventBus;
+        this.eventBus.subscribe(this);
     }
 
     @Override
@@ -33,7 +36,36 @@ public class MetricsEngine implements Runnable
     {
         new MetricsTimer();
     }
+    @Subscribe
+    public void consume(MetricProducedEvent event)
+    {
+    	Writer writer = null;
+    	try {
+			writer = new OutputStreamWriter(new FileOutputStream(event.getSource() + ".csv"), "utf-8");
+			writer.append(String.valueOf(event.getValue()));
+			writer.append(LINE_SEP);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	finally
+    	{
+            try
+            {
+                writer.close();
+            }
+            catch (final IOException e)
+            {
+            }    		
+    	}
 
+    }
     private void outputMetricsHeader(final Writer writer) throws IOException
     {
         final StringBuilder line = new StringBuilder();
