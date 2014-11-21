@@ -1,5 +1,6 @@
 package PlanetSim.common.util;
 
+import static PlanetSim.common.util.JulianCalendarUtil.julianCentury;
 import static PlanetSim.common.util.JulianCalendarUtil.julianDay;
 
 import java.util.Calendar;
@@ -59,6 +60,11 @@ public final class SunPositionUtil
         double L0 = 280.46646 + (t * (36000.76983 + (0.0003032 * t)));
         L0 = L0 - (360 * Math.floor(L0 / 360));
         return L0;
+    }
+
+    public static double sunGeometricMeanLongitude(final Calendar t)
+    {
+        return sunGeometricMeanLongitude(julianCentury(t));
     }
 
     /**
@@ -255,9 +261,9 @@ public final class SunPositionUtil
      * Calculates solar position for the current date, time and location.
      * Results are reported in azimuth and elevation in degrees.
      */
-    public static SunPosition compute(final GridCell gridCell, final Calendar date, final double planetsOrbitalEccentrity, final double planetsAxialTilt)
+    public static SunPosition calculateSunPosition(final GridCell gridCell, final Calendar date, final double planetsOrbitalEccentrity,
+            final double planetsAxialTilt)
     {
-        final long time = date.getTimeInMillis();
         final SunPosition sunPosition = new SunPosition();
         double latitude = gridCell.getLatitudeTop();
         double longitude = gridCell.getLongitudeRight();
@@ -269,10 +275,10 @@ public final class SunPositionUtil
         // Compute: 1) Julian day (days ellapsed since January 1, 4723 BC at
         // 12:00 GMT).
         // 2) Time as the centuries ellapsed since January 1, 2000 at 12:00 GMT.
-        final double julianDay = julianDay(time);
+        final double julianDay = julianDay(date);
 
-        double solarDec = sunDeclination(planetsAxialTilt, time);
-        final double eqTime = equationOfTime(planetsOrbitalEccentrity, planetsAxialTilt, time);
+        double solarDec = sunDeclination(planetsAxialTilt, julianCentury(date));
+        final double eqTime = equationOfTime(planetsOrbitalEccentrity, planetsAxialTilt, julianCentury(date));
 
         // Formula below use longitude in degrees. Steps are:
         // 1) Extract the time part of the date, in minutes.
@@ -352,7 +358,7 @@ public final class SunPositionUtil
         sunPosition.setElevation(elevation);
         sunPosition.setLatitude(latitude);
         sunPosition.setLongitude(longitude);
-        sunPosition.setDistanceToSun(distanceToSun(planetsOrbitalEccentrity, time));
+        sunPosition.setDistanceToSun(distanceToSun(planetsOrbitalEccentrity, julianCentury(date)));
 
         return sunPosition;
     }

@@ -1,5 +1,7 @@
 package PlanetSim.display.sun;
 
+import static PlanetSim.common.util.SunPositionUtil.sunGeometricMeanLongitude;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -8,7 +10,6 @@ import javax.swing.JPanel;
 
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
-import PlanetSim.common.event.StopEvent;
 import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.DisplayEvent;
 
@@ -22,10 +23,6 @@ public class Sun extends JPanel
 
     private final Color        sunColor         = Color.yellow;
     private final int          sunDiameter      = 10;
-
-    private double             degreePosition   = 180f;
-    private int                pixelPosition;
-
     private SimulationSettings settings;
 
     public Sun(final EventBus eventBus, final SimulationSettings settings)
@@ -38,9 +35,6 @@ public class Sun extends JPanel
     private void drawSunPath()
     {
         this.pathLength = settings.getPlanetWidth();
-
-        final float pixelsPerDegree = pathLength / 360f;
-
         final Dimension dim = new Dimension(pathLength, dimHeight);
         setPreferredSize(dim);
         setMaximumSize(dim);
@@ -58,31 +52,14 @@ public class Sun extends JPanel
 
         // draw the sun
         g.setColor(sunColor);
-        g.fillOval(pixelPosition, lineOffsetY / 2, sunDiameter, sunDiameter);
-    }
-
-    public void movePosition(final double rotationalDegree)
-    {
-        degreePosition -= rotationalDegree;
-        if (degreePosition < 0)
-        {
-            degreePosition += 360;
-        }
-    }
-
-    @Subscribe
-    public void reset(final StopEvent event)
-    {
-        degreePosition = 180f;
-        pixelPosition = 0;
-        paint(this.getGraphics());
+        g.fillOval((int) sunGeometricMeanLongitude(settings.getSimulationTimestamp()), lineOffsetY / 2, sunDiameter, sunDiameter);
     }
 
     @Subscribe
     public void process(final DisplayEvent displayEvent)
     {
         settings = displayEvent.getSettings();
-        // repaint();
+        System.out.println(settings.getSimulationTimestamp());
+        repaint();
     }
-
 }

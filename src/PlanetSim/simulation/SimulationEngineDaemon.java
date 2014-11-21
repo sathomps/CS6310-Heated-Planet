@@ -50,8 +50,8 @@ public class SimulationEngineDaemon
         if (engine == null)
         {
             engine = new SimulationEngine(event.getSettings());
-            run();
         }
+        run();
     }
 
     @Subscribe

@@ -11,7 +11,6 @@ import javax.swing.JPanel;
 
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
-import PlanetSim.common.event.StopEvent;
 import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.DisplayEvent;
 import PlanetSim.model.GridCell;
@@ -55,8 +54,6 @@ public class Planet extends JPanel
             {
                 final GridCell cell = cells.get(y);
                 g.setColor(getColor(cell.getTemp()));
-                System.out.println(cell);
-
                 g.fillRect(cellX, cellY, cell.getWidth(), cell.getHeight());
                 cellY += cell.getHeight();
             }
@@ -101,11 +98,6 @@ public class Planet extends JPanel
         {
             g.drawLine(x, 0, x, settings.getPlanetHeight());
         }
-    }
-
-    @Subscribe
-    public void reset(final StopEvent event)
-    {
     }
 
     @Subscribe

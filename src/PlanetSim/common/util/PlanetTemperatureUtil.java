@@ -1,5 +1,7 @@
 package PlanetSim.common.util;
 
+import static PlanetSim.common.util.SunPositionUtil.calculateSunPosition;
+
 import java.awt.Color;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -74,7 +76,7 @@ public final class PlanetTemperatureUtil
     private static void calculatePlanetCellTemperature(final GridCell gridCell, final Calendar date, final double planetsOrbitalEccentrity,
             final double planetsAxialTilt)
     {
-        final SunPosition sunPosition = SunPositionUtil.compute(gridCell, date, planetsOrbitalEccentrity, planetsAxialTilt);
+        final SunPosition sunPosition = calculateSunPosition(gridCell, date, planetsOrbitalEccentrity, planetsAxialTilt);
         final double sunTemp = caclulateEffectiveTemperature(gridCell, sunPosition, date);
         final double initialTemp = gridCell.getTemp();
         final double coolingTemp = 0;// calculateTemperatureDueToCooling(cell);

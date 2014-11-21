@@ -47,7 +47,7 @@ public class UserControlPanel extends JPanel
     private static final long         serialVersionUID = 1L;
 
     private static final Dimension    PREFERRED_SIZE   = new Dimension(800, 380);
-    private static final Dimension    MIN_SIZE   = new Dimension(800, 350);
+    private static final Dimension    MIN_SIZE         = new Dimension(800, 350);
 
     private final SimulationSettings  settings;
 
@@ -80,17 +80,13 @@ public class UserControlPanel extends JPanel
 
     private JTextField                tilt;
 
-    private JTextField                precision;
-
-    private JTextField                geoAccuracy;
-
-    private JTextField                temporalAccuracy;
-
     private SpinnerNumberModel        refreshRateModel;
     private SpinnerNumberModel        simLengthModel;
-    
-	private MyDateTimeSpinner            startDateTimeSpinner;
-	private MyDateTimeSpinner            endDateTimeSpinner;
+
+    private MyDateTimeSpinner         startDateTimeSpinner;
+    private MyDateTimeSpinner         endDateTimeSpinner;
+
+    private String                    lastButtonPushed = "";
 
     public UserControlPanel(final EventBus eventBus, final SimulationSettings settings)
     {
@@ -105,9 +101,8 @@ public class UserControlPanel extends JPanel
         addSettingsPanel(panel);
 
         addlocationPanel(panel);
-        
+
         addTimePanel(panel);
-       
 
         final JPanel config = addConfigPanel();
 
@@ -115,24 +110,25 @@ public class UserControlPanel extends JPanel
         addSimulationTimeStep(config);
         addRefreshRate(config);
         addSimLength(config);
-        
+
         add(getOutputOptions());
         add(getSimTimePanel());
         add(getControlButtons());
-        
+
         initSettings();
     }
 
-    private void initSettings() {
-    	tlat.setText(String.valueOf(settings.getLatitudeTop()));
-    	blat.setText(String.valueOf(settings.getLatitudeBottom()));
-    	llong.setText(String.valueOf(settings.getLongitudeLeft()));
-    	rlong.setText(String.valueOf(settings.getLongitudeRight()));
-    	eccentricity.setText(String.valueOf(settings.getPlanetsOrbitalEccentricity()));
-    	tilt.setText(String.valueOf(settings.getPlanetsAxialTilt()));
-	}
+    private void initSettings()
+    {
+        tlat.setText(String.valueOf(settings.getLatitudeTop()));
+        blat.setText(String.valueOf(settings.getLatitudeBottom()));
+        llong.setText(String.valueOf(settings.getLongitudeLeft()));
+        rlong.setText(String.valueOf(settings.getLongitudeRight()));
+        eccentricity.setText(String.valueOf(settings.getPlanetsOrbitalEccentricity()));
+        tilt.setText(String.valueOf(settings.getPlanetsAxialTilt()));
+    }
 
-	private JPanel addConfigPanel()
+    private JPanel addConfigPanel()
     {
         final JPanel config = new JPanel();
         config.setLayout(new BoxLayout(config, BoxLayout.X_AXIS));
@@ -149,7 +145,7 @@ public class UserControlPanel extends JPanel
         addLocationFields(sPanel2);
         panel.add(sPanel2);
     }
-    
+
     private void addTimePanel(final Panel panel)
     {
         final JPanel sPanel3 = new JPanel();
@@ -167,88 +163,90 @@ public class UserControlPanel extends JPanel
         addSettingsFields(sPanel1);
         sPanel.add(sPanel1);
     }
-    
-    public static Calendar getDefaultStartDateTime() {
-        Calendar calendar = Calendar.getInstance();
-        try {
-          calendar.set(2000, 0, 4, 0, 0, 0);
-          calendar.set(Calendar.MILLISECOND, 0);
-          DateFormat formatter = new SimpleDateFormat(
-                  "hh:mm a, MMM dd, yyyy");
-          calendar.setTime(formatter.parse(formatter.format(calendar.getTime())));
-        } catch (ParseException e) {
-          e.printStackTrace();
+
+    public static Calendar getDefaultStartDateTime()
+    {
+        final Calendar calendar = Calendar.getInstance();
+        try
+        {
+            calendar.set(2000, 0, 4, 0, 0, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            final DateFormat formatter = new SimpleDateFormat("hh:mm a, MMM dd, yyyy");
+            calendar.setTime(formatter.parse(formatter.format(calendar.getTime())));
+        }
+        catch (final ParseException e)
+        {
+            e.printStackTrace();
         }
         return calendar;
-      }
+    }
 
-      public static Calendar getDefaultEndDateTime() {
-        Calendar calendar = getDefaultStartDateTime();
+    public static Calendar getDefaultEndDateTime()
+    {
+        final Calendar calendar = getDefaultStartDateTime();
         calendar.setTime(getDefaultStartDateTime().getTime());
         calendar.add(Calendar.MINUTE, 30 * 12 * 24 * 60);
         return calendar;
-      }
-    
-    
-    private Component addTimeFields(JPanel datePanel) {
-    	
-    	TableLayout datePanelLayout = new TableLayout(new double[][] {
-    	        { TableLayout.FILL, 50.0, 170.0, TableLayout.FILL },
-    	        { 30.0, 30.0, 30.0, 30.0 } });
-    	    datePanelLayout.setHGap(10);
-    	    datePanelLayout.setVGap(10);
-    	    datePanel.setLayout(datePanelLayout);
+    }
+
+    private Component addTimeFields(final JPanel datePanel)
+    {
+
+        final TableLayout datePanelLayout = new TableLayout(new double[][] { { TableLayout.FILL, 50.0, 170.0, TableLayout.FILL }, { 30.0, 30.0, 30.0, 30.0 } });
+        datePanelLayout.setHGap(10);
+        datePanelLayout.setVGap(10);
+        datePanel.setLayout(datePanelLayout);
         {
-          JLabel startDateLabel = new JLabel();
-          datePanel.add(startDateLabel, "1, 0");
-          startDateLabel.setText("Start");
-          startDateLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+            final JLabel startDateLabel = new JLabel();
+            datePanel.add(startDateLabel, "1, 0");
+            startDateLabel.setText("Start");
+            startDateLabel.setHorizontalAlignment(SwingConstants.TRAILING);
         }
         {
-          JLabel endDateLabel = new JLabel();
-          datePanel.add(endDateLabel, "1, 1");
-          endDateLabel.setText("End");
-          endDateLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+            final JLabel endDateLabel = new JLabel();
+            datePanel.add(endDateLabel, "1, 1");
+            endDateLabel.setText("End");
+            endDateLabel.setHorizontalAlignment(SwingConstants.TRAILING);
         }
         {
-          SpinnerDateModel startDateTimeModel;
-          startDateTimeModel = new SpinnerDateModel(getDefaultStartDateTime().getTime(), null, null,
-              Calendar.DAY_OF_MONTH);
-          startDateTimeSpinner = new MyDateTimeSpinner(startDateTimeModel);
+            SpinnerDateModel startDateTimeModel;
+            startDateTimeModel = new SpinnerDateModel(getDefaultStartDateTime().getTime(), null, null, Calendar.DAY_OF_MONTH);
+            startDateTimeSpinner = new MyDateTimeSpinner(startDateTimeModel);
 
-          JSpinner.DateEditor startDateTimeEditor = new JSpinner.DateEditor(
-              startDateTimeSpinner, "hh:mm a, MMM dd, yyyy");
-          startDateTimeSpinner.setEditor(startDateTimeEditor);
-          startDateTimeSpinner.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-              startDateTimeSpinner.notifyActionListeners(e.hashCode());
-            }
+            final JSpinner.DateEditor startDateTimeEditor = new JSpinner.DateEditor(startDateTimeSpinner, "hh:mm a, MMM dd, yyyy");
+            startDateTimeSpinner.setEditor(startDateTimeEditor);
+            startDateTimeSpinner.addChangeListener(new ChangeListener()
+            {
+                @Override
+                public void stateChanged(final ChangeEvent e)
+                {
+                    startDateTimeSpinner.notifyActionListeners(e.hashCode());
+                }
 
-          });
-          datePanel.add(startDateTimeSpinner, "2, 0");
+            });
+            datePanel.add(startDateTimeSpinner, "2, 0");
         }
         {
-          SpinnerDateModel endDateTimeModel;
-          endDateTimeModel = new SpinnerDateModel(
-              getDefaultEndDateTime().getTime(), null, null, Calendar.DAY_OF_MONTH);
-          endDateTimeSpinner = new MyDateTimeSpinner(endDateTimeModel);
-          JSpinner.DateEditor endDateTimeEditor = new JSpinner.DateEditor(
-              endDateTimeSpinner, "hh:mm a, MMM dd, yyyy");
-          endDateTimeSpinner.setEditor(endDateTimeEditor);
-          endDateTimeSpinner.addChangeListener(new ChangeListener() {
+            SpinnerDateModel endDateTimeModel;
+            endDateTimeModel = new SpinnerDateModel(getDefaultEndDateTime().getTime(), null, null, Calendar.DAY_OF_MONTH);
+            endDateTimeSpinner = new MyDateTimeSpinner(endDateTimeModel);
+            final JSpinner.DateEditor endDateTimeEditor = new JSpinner.DateEditor(endDateTimeSpinner, "hh:mm a, MMM dd, yyyy");
+            endDateTimeSpinner.setEditor(endDateTimeEditor);
+            endDateTimeSpinner.addChangeListener(new ChangeListener()
+            {
 
-            @Override
-            public void stateChanged(ChangeEvent e) {
-              endDateTimeSpinner.notifyActionListeners(e.hashCode());
-            }
+                @Override
+                public void stateChanged(final ChangeEvent e)
+                {
+                    endDateTimeSpinner.notifyActionListeners(e.hashCode());
+                }
 
-          });
-          datePanel.add(endDateTimeSpinner, "2, 1");
+            });
+            datePanel.add(endDateTimeSpinner, "2, 1");
         }
         return datePanel;
-      }
-    
+    }
+
     private void initLayout()
     {
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -274,13 +272,13 @@ public class UserControlPanel extends JPanel
         final JCheckBox meanT = new JCheckBox("Mean(Time)");
         final JCheckBox meanR = new JCheckBox("Mean(Region)");
         final JCheckBox showAnimation = new JCheckBox("Show Animation");
-        
+
         max.setSelected(true);
         min.setSelected(true);
         meanT.setSelected(true);
         meanR.setSelected(true);
         showAnimation.setSelected(true);
-        
+
         final JPanel outPutPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         outPutPanel.add(max);
         outPutPanel.add(min);
@@ -317,7 +315,7 @@ public class UserControlPanel extends JPanel
     {
         final JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
         simulationName = new JComboBox();
-        String initialName = "Sim" + Calendar.getInstance().getTimeInMillis();
+        final String initialName = "Sim" + Calendar.getInstance().getTimeInMillis();
         simulationName.addItem(initialName);
         simulationName.setEditable(true);
         row.add(new JLabel("Name:"));
@@ -326,7 +324,7 @@ public class UserControlPanel extends JPanel
 
         addField(root, eccentricity = new JTextField(5), "Eccentricity:");
         addField(root, tilt = new JTextField(5), "Tilt:");
-        //addField(root, precision = new JTextField(5), "Precision:");
+        // addField(root, precision = new JTextField(5), "Precision:");
     }
 
     private void addLocationFields(final JPanel root)
@@ -406,20 +404,24 @@ public class UserControlPanel extends JPanel
 
             private void controlSimulation(final JButton button)
             {
-                if (STATUS_RUN.equalsIgnoreCase(button.getActionCommand()))
+                if (!lastButtonPushed.equalsIgnoreCase(button.getActionCommand()))
                 {
-                   eventBus.publish(new RunEvent(cloneSettings(settings)));
-                }
-                else if (STATUS_STOP.equalsIgnoreCase(button.getActionCommand()))
-                {
-                    eventBus.publish(new StopEvent());
-                }
-                else if (STATUS_PAUSE.equalsIgnoreCase(button.getActionCommand()))
-                {
-                    eventBus.publish(new PauseEvent());
+                    if (STATUS_RUN.equalsIgnoreCase(button.getActionCommand()))
+                    {
+                        eventBus.publish(new RunEvent(cloneSettings()));
+                    }
+                    else if (STATUS_STOP.equalsIgnoreCase(button.getActionCommand()))
+                    {
+                        eventBus.publish(new StopEvent());
+                        eventBus.publish(new DisplayEvent(cloneSettings()));
+                    }
+                    else if (STATUS_PAUSE.equalsIgnoreCase(button.getActionCommand()))
+                    {
+                        eventBus.publish(new PauseEvent());
+                    }
+                    lastButtonPushed = button.getActionCommand();
                 }
             }
-
         });
     }
 
@@ -456,69 +458,53 @@ public class UserControlPanel extends JPanel
         }
     }
 
-    private SimulationSettings cloneSettings(final SimulationSettings settings)
+    private SimulationSettings cloneSettings()
     {
         final SimulationSettings cloneSettings;
-        try
-        {
-            cloneSettings = settings.clone();
-            cloneDateSettings(cloneSettings);
-            cloneSimulationSettings(cloneSettings);
-            cloneLocationSettings(cloneSettings);
-            //cloneAccuracySettings(cloneSettings);
-
-            cloneSettings.setGridSpacing(gridSpacingModel.getNumber().intValue());
-            cloneSettings.setSimulationTimeStepMinutes(timeStepModel.getNumber().intValue());
-            cloneSettings.setUIRefreshRate(refreshRateModel.getNumber().intValue());
-            cloneSettings.setSimulationLength(simLengthModel.getNumber().intValue());
-            return cloneSettings;
-        }
-        catch (final CloneNotSupportedException ex)
-        {
-            throw new RuntimeException(ex);
-        }
+        cloneSettings = new SimulationSettings();
+        cloneDateSettings(cloneSettings);
+        cloneSimulationSettings(cloneSettings);
+        cloneLocationSettings(cloneSettings);
+        cloneCommandLineSettings(settings);
+        cloneSettings.setGridSpacing(gridSpacingModel.getNumber().intValue());
+        cloneSettings.setSimulationTimeStepMinutes(timeStepModel.getNumber().intValue());
+        cloneSettings.setUIRefreshRate(refreshRateModel.getNumber().intValue());
+        cloneSettings.setSimulationLength(simLengthModel.getNumber().intValue());
+        return cloneSettings;
     }
 
-    private void cloneAccuracySettings(final SimulationSettings settings)
+    private void cloneCommandLineSettings(final SimulationSettings cloneSettings)
     {
-        settings.setGeographicPrecision(convertTextToInt(geoAccuracy.getText()));
-        settings.setTemporalPrecision(convertTextToInt(temporalAccuracy.getText()));
+        cloneSettings.setTemporalPrecision(settings.getTemporalPrecision());
+        cloneSettings.setGeographicPrecision(settings.getGeographicPrecision());
+        cloneSettings.setDatastoragePrecision(settings.getDatastoragePrecision());
     }
 
-    private void cloneSimulationSettings(final SimulationSettings settings)
+    private void cloneSimulationSettings(final SimulationSettings cloneSettings)
     {
-        settings.setSimulationName(simulationName.getSelectedItem().toString());
-        settings.setPlanetsOrbitalEccentricity(convertTextToDbl(eccentricity.getText()));
-        settings.setPlanetsAxialTilt(convertTextToDbl(tilt.getText()));
-        //settings.setTemporalPrecision(convertTextToInt(precision.getText()));
+        cloneSettings.setSimulationName(simulationName.getSelectedItem().toString());
+        cloneSettings.setPlanetsOrbitalEccentricity(convertTextToDbl(eccentricity.getText()));
+        cloneSettings.setPlanetsAxialTilt(convertTextToDbl(tilt.getText()));
     }
 
     private void cloneDateSettings(final SimulationSettings cloneSettings)
     {
         final Calendar startDate = Calendar.getInstance();
-        startDate.setTime(((SpinnerDateModel) startDateTimeSpinner.getModel())
-                .getDate());
+        startDate.setTime(((SpinnerDateModel) startDateTimeSpinner.getModel()).getDate());
         cloneSettings.setSimulationStartDate(startDate);
 
         final Calendar endDate = Calendar.getInstance();
-        endDate.setTime(((SpinnerDateModel) endDateTimeSpinner.getModel())
-                .getDate());;
+        endDate.setTime(((SpinnerDateModel) endDateTimeSpinner.getModel()).getDate());
         cloneSettings.setSimulationEndDate(endDate);
     }
 
-    private void cloneLocationSettings(final SimulationSettings settings)
+    private void cloneLocationSettings(final SimulationSettings cloneSettings)
     {
-        settings.setLatitudeTop(convertTextToDbl(tlat.getText()));
-        settings.setLatitudeBottom(convertTextToDbl(blat.getText()));
-        settings.setLongitudeLeft(convertTextToDbl(llong.getText()));
-        settings.setLongitudeRight(convertTextToDbl(rlong.getText()));
+        cloneSettings.setLatitudeTop(convertTextToDbl(tlat.getText()));
+        cloneSettings.setLatitudeBottom(convertTextToDbl(blat.getText()));
+        cloneSettings.setLongitudeLeft(convertTextToDbl(llong.getText()));
     }
 
-    private int convertTextToInt(final String value)
-    {
-        return ((value != null) && (value.length() > 0)) ? Integer.parseInt(value) : 0;
-    }
-    
     private double convertTextToDbl(final String value)
     {
         return ((value != null) && (value.length() > 0.)) ? Double.parseDouble(value) : 0.;

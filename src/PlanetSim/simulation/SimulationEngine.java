@@ -28,5 +28,4 @@ public class SimulationEngine
     {
         return settings;
     }
-
 }

@@ -170,7 +170,7 @@ public class SimulationSettings implements Cloneable
 
     public int getPlanetHeight()
     {
-        return PLANET_WIDTH;
+        return PLANET_HEIGHT;
     }
 
     public int getPlanetRadius()
