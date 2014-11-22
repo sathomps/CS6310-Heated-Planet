@@ -52,7 +52,7 @@ public class Demo
     	settings.setLatitudeBottom(90);
     	settings.setLongitudeLeft(-180);
     	settings.setLongitudeRight(180);
-    	settings.setPlanetsAxialTilt(23.0);
+    	settings.setPlanetsAxialTilt(23.44); //default from the project page
     	settings.setPlanetsOrbitalEccentricity(0.167);
     	settings.setSimulationTimeStepMinutes(1440);
     	settings.setSimulationLength(12);
