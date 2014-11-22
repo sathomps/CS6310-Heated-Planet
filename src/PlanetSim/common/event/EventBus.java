@@ -6,10 +6,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EventBus
+public final class EventBus
 {
+    private static final EventBus INSTANCE = new EventBus();
+
+    private EventBus()
+    {
+    }
+
     private final Map<Class<?>, List<Method>> eventsSubscriberMethods = new HashMap<Class<?>, List<Method>>();
     private final Map<Method, Object>         eventsSubscribers       = new HashMap<Method, Object>();
+
+    public static EventBus getInstance()
+    {
+        return INSTANCE;
+    }
 
     public void subscribe(final Object subscriber)
     {

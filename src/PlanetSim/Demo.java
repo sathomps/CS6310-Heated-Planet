@@ -44,19 +44,19 @@ public class Demo
             }
         }
     }
-    
+
     private static void initSettings()
     {
-    	settings.setGridSpacing(15);
-    	settings.setLatitudeTop(-90);
-    	settings.setLatitudeBottom(90);
-    	settings.setLongitudeLeft(-180);
-    	settings.setLongitudeRight(180);
-    	settings.setPlanetsAxialTilt(23.44); //default from the project page
-    	settings.setPlanetsOrbitalEccentricity(0.167);
-    	settings.setSimulationTimeStepMinutes(1440);
-    	settings.setSimulationLength(12);
-    	settings.setUIRefreshRate(1);
+        settings.setGridSpacing(15);
+        settings.setLatitudeTop(-90);
+        settings.setLatitudeBottom(90);
+        settings.setLongitudeLeft(-180);
+        settings.setLongitudeRight(180);
+        settings.setPlanetsAxialTilt(23.44); // default from the project page
+        settings.setPlanetsOrbitalEccentricity(0.167);
+        settings.setSimulationTimeStepMinutes(1440);
+        settings.setSimulationLength(12);
+        settings.setUIRefreshRate(1);
     }
 
     private static void createQueryEngine()
@@ -68,7 +68,7 @@ public class Demo
     private static void init()
     {
         settings = new SimulationSettings();
-        eventBus = new EventBus();
+        eventBus = EventBus.getInstance();
     }
 
     private static void startSimulation()
