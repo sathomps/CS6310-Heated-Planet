@@ -101,7 +101,10 @@ public class QueryEngine
         final int dsPrecision = settings.getDatastoragePrecision();
         final int geoPrecision = settings.getGeographicPrecision();
         final int temporalPrecision = settings.getTemporalPrecision();
-        con.saveHeader(simName, gridSpacing, orbitalEcc, axialTilt, simLength, simTimeStep, dsPrecision, geoPrecision, temporalPrecision);
+        //if the header already exists, then this is more grid data of an existing and likely concurrently running
+        //simulation.  Only save the grid data this time around.
+        if (con.queryHeader(settings.getSimulationName(), 0, 0, 0, 0, 0, 0, 0, 0).isEmpty())
+        	con.saveHeader(simName, gridSpacing, orbitalEcc, axialTilt, simLength, simTimeStep, dsPrecision, geoPrecision, temporalPrecision);
         final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
         for (int row = 0; row < grid.size(); row++)
         {
