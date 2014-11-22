@@ -46,8 +46,8 @@ public class UserControlPanel extends JPanel
 {
     private static final long         serialVersionUID = 1L;
 
-    private static final Dimension    PREFERRED_SIZE   = new Dimension(800, 380);
-    private static final Dimension    MIN_SIZE         = new Dimension(800, 350);
+    private static final Dimension    PREFERRED_SIZE   = new Dimension(800, 400);
+    private static final Dimension    MIN_SIZE         = new Dimension(800, 400);
 
     private final SimulationSettings  settings;
 

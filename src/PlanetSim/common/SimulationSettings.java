@@ -34,10 +34,10 @@ public class SimulationSettings implements Cloneable
     // the next four attributes are the bounding rectangle for the query engine.
     // only the cells within this box are
     // returned/interpolated/simulated/persisted
-    private double           latitudeTop;
-    private double           latitudeBottom;
-    private double           longitudeLeft;
-    private double           longitudeRight;
+    private double           latitudeTop = -90.;
+    private double           latitudeBottom = 90.;
+    private double           longitudeLeft = -180.;
+    private double           longitudeRight = 180.;
 
     private String           simulationName                 = "";
 
@@ -81,11 +81,11 @@ public class SimulationSettings implements Cloneable
     private Calendar         simulationStartDate;
     private Calendar         simulationEndDate;
 
-    private int              simulationTimeMinutes;
+    private int              simulationTimeMinutes = 1440;
 
     private GridSettings     gridSettings;
 
-    private int              uiRfreshRate;
+    private int              uiRfreshRate = 1;
 
     public SimulationSettings()
     {

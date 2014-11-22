@@ -20,6 +20,7 @@ public class Planet extends JPanel
     private static final long  serialVersionUID = 1L;
 
     private SimulationSettings settings;
+    private boolean drawGrid = true;
 
     /**
      * Constructs a display grid with a default grid spacing.
@@ -36,7 +37,9 @@ public class Planet extends JPanel
     public void paint(final Graphics g)
     {
         fillCellColors(g);
-        drawGrid(g);
+        
+        if (drawGrid == true)
+        	drawGrid(g);
     }
 
     private void fillCellColors(final Graphics g)
@@ -104,6 +107,8 @@ public class Planet extends JPanel
     public void process(final DisplayEvent displayEvent)
     {
         settings = displayEvent.getSettings();
+        drawGrid = false;
         repaint();
+        drawGrid = true;
     }
 }

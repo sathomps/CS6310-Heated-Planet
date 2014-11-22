@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
+import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.planet.Planet;
 import PlanetSim.display.sun.Sun;
 
@@ -61,5 +62,11 @@ public class EarthSunPanel extends JPanel
     {
         sun = new Sun(eventBus, settings);
         sun.setAlignmentX(Component.LEFT_ALIGNMENT);
+    }
+    
+    @Subscribe
+    public void process(final DisplayEvent displayEvent)
+    {
+        repaint();
     }
 }
