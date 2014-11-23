@@ -1,12 +1,30 @@
-CREATE TABLE IF NOT EXISTS simulations (
-  name varchar(50) NOT NULL,
-  grid_spacing int(11) NOT NULL,
-  simulation_time_step int(11) NOT NULL,
-  simulation_length int(11) NOT NULL,
-  axial_tilt double NOT NULL,
-  orbital_eccentricity double NOT NULL,
-  temperature_precision int(11) NOT NULL,
-  geographic_precision int(11) NOT NULL,
-  temporal_precision int(11) NOT NULL,
-  PRIMARY KEY (name)
-)
+
+CREATE TABLE IF NOT EXISTS simulation_grid_data (
+  simulation_name varchar(50)  NOT NULL,
+  temperature DOUBLE NOT NULL,
+  reading_date BIGINT NOT NULL,
+  row_position INT NOT NULL,
+  column_position INT NOT NULL,
+  longitudeLeft DOUBLE NOT NULL,
+  longitudeRight DOUBLE NOT NULL,
+  latitudeTop DOUBLE NOT NULL,
+  latitudeBottom DOUBLE NOT NULL,
+  PRIMARY KEY (simulation_name,reading_date,row_position,column_position)
+);
+
+CREATE TABLE IF NOT EXISTS simulation_grid_data (
+  simulation_name varchar(50)  NOT NULL,
+  temperature DOUBLE NOT NULL,
+  reading_date BIGINT NOT NULL,
+  row_position INT NOT NULL,
+  column_position INT NOT NULL,
+  longitudeLeft DOUBLE NOT NULL,
+  longitudeRight DOUBLE NOT NULL,
+  latitudeTop DOUBLE NOT NULL,
+  latitudeBottom DOUBLE NOT NULL,
+  PRIMARY KEY (simulation_name,reading_date,row_position,column_position)
+);
+
+ALTER TABLE simulation_grid_data
+  ADD CONSTRAINT simulation_grid_data_ibfk_2 FOREIGN KEY (simulation_name) REFERENCES simulations (name) ON DELETE CASCADE ON UPDATE CASCADE;
+
