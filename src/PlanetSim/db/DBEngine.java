@@ -192,12 +192,12 @@ public class DBEngine
                         chosenOne = s;
                         break;
                     }
-                    else
-                    {
-                        chosenOne = s;
-                        break;
-                    }
-
+                }
+                //didn't find one that matched so pick the first one in the list.  They all match by name
+                //and physical factors so this doesn't break that rule  
+                if (chosenOne == null)
+                {
+                    chosenOne = s1.get(0);
                 }
             }
             // nothing in the list so a simulation has to be run
