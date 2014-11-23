@@ -33,7 +33,7 @@ public class MetricsEngine
         this.eventBus.subscribe(this);
         try
         {
-            writer = new OutputStreamWriter(new FileOutputStream("metrics.csv"), "utf-8");
+            writer = new OutputStreamWriter(new FileOutputStream("metrics_" + new Date().getTime() + ".csv"), "utf-8");
             outputMetricsHeader();
         }
         catch (final Exception ex)

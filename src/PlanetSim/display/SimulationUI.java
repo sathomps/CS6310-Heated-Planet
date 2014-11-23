@@ -15,15 +15,18 @@ public class SimulationUI extends JFrame
 
     private final SimulationSettings settings;
     private final EventBus           eventBus;
-    
+
+    static
     {
-        try {
-          javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager
-              .getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-          e.printStackTrace();
+        try
+        {
+            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
         }
-      }
+        catch (final Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     public SimulationUI(final EventBus eventBus, final SimulationSettings settings)
     {
@@ -59,7 +62,7 @@ public class SimulationUI extends JFrame
         c.weighty = 1;
         c.gridx = 0;
         c.gridy = 1;
-        //c.anchor = GridBagConstraints.WEST;
+        // c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.NONE;
         gridbag.setConstraints(earthSunPanel, c);
         panel.add(earthSunPanel);
@@ -73,7 +76,7 @@ public class SimulationUI extends JFrame
         c.weightx = 0;
         c.gridx = 0;
         c.gridy = 0;
-        //c.anchor = GridBagConstraints.NORTHEAST;
+        // c.anchor = GridBagConstraints.NORTHEAST;
         c.fill = GridBagConstraints.NONE;
         gridbag.setConstraints(userControlPanel, c);
         panel.add(userControlPanel);
