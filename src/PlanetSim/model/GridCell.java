@@ -4,6 +4,9 @@ public class GridCell
 {
     private static final int DEFAULT_CELL_TEMPERATURE_CELCIUS = 85;
 
+    private int              row;
+    private int              column;
+
     private int              width;
     private int              height;
 
@@ -20,9 +23,6 @@ public class GridCell
     private GridCell         south;
     private GridCell         west;
     private GridCell         east;
-
-    private long             readDate                         = 0;
-    private long             readTime                         = 0;
 
     public GridCell getNorth()
     {
@@ -204,26 +204,6 @@ public class GridCell
         this.width = width;
     }
 
-    public long getDate()
-    {
-        return readDate;
-    }
-
-    public void setDate(final long readDate)
-    {
-        this.readDate = readDate;
-    }
-
-    public long getTime()
-    {
-        return readTime;
-    }
-
-    public void setTime(final int readTime)
-    {
-        this.readTime = readTime;
-    }
-
     @Override
     public String toString()
     {
@@ -268,11 +248,27 @@ public class GridCell
         builder.append(getHeight());
         builder.append(", getWidth()=");
         builder.append(getWidth());
-        builder.append(", getDate()=");
-        builder.append(getDate());
-        builder.append(", getTime()=");
-        builder.append(getTime());
         builder.append("]");
         return builder.toString();
+    }
+
+    public int getRow()
+    {
+        return row;
+    }
+
+    public void setRow(final int row)
+    {
+        this.row = row;
+    }
+
+    public int getColumn()
+    {
+        return column;
+    }
+
+    public void setColumn(final int column)
+    {
+        this.column = column;
     }
 }

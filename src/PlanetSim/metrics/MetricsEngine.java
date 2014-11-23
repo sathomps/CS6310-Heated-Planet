@@ -10,7 +10,10 @@ import java.util.Date;
 
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
+import PlanetSim.common.event.RunEvent;
 import PlanetSim.common.event.Subscribe;
+import PlanetSim.db.DBEngine;
+import PlanetSim.simulation.SimulationEngineDaemon;
 
 import com.sun.management.OperatingSystemMXBean;
 
@@ -20,9 +23,10 @@ public class MetricsEngine
     private static final String                LINE_SEP = System.getProperty("line.separator");
 
     private final EventBus                     eventBus;
-    private static final OperatingSystemMXBean OS_BEAN  = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
     private Writer                             writer;
+
+    private static final OperatingSystemMXBean OS_BEAN  = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
     public MetricsEngine(final EventBus eventBus)
     {
@@ -45,8 +49,6 @@ public class MetricsEngine
         line.append(",");
         line.append("DataSource");
         line.append(",");
-        line.append("SimulationTimestamp");
-        line.append(",");
         line.append("DataStoragePrecision");
         line.append(",");
         line.append("GeographicPrecision");
@@ -59,25 +61,14 @@ public class MetricsEngine
         line.append(",");
         line.append("DatabaseSize");
         line.append(",");
-        line.append("CommittedVirtualMemorySize");
+        line.append("UsedSystemMemory");
         line.append(",");
-        line.append("FreePhysicalMemorySize");
-        line.append(",");
-        line.append("FreeSwapSpaceSize");
-        line.append(",");
-        line.append("ProcessCpuLoad");
-        line.append(",");
-        line.append("ProcessCpuTime");
-        line.append(",");
-        line.append("SystemCpuLoad");
-        line.append(",");
-        line.append("TotalPhysicalMemorySize");
-        line.append(",");
-        line.append("TotalSwapSpaceSize");
+        line.append("CPU %");
         line.append(",");
         line.append("Date");
         writer.append(line);
         writer.append(LINE_SEP);
+        writer.flush();
     }
 
     @Subscribe
@@ -91,8 +82,6 @@ public class MetricsEngine
             line.append(",");
             line.append(settings.getDataSource());
             line.append(",");
-            line.append(SDF.format(settings.getSimulationTimestamp().getTime()));
-            line.append(",");
             line.append(settings.getDatastoragePrecision());
             line.append(",");
             line.append(settings.getGeographicPrecision());
@@ -105,28 +94,52 @@ public class MetricsEngine
             line.append(",");
             line.append(event.getDatabaseSize());
             line.append(",");
-            line.append(OS_BEAN.getCommittedVirtualMemorySize());
+            line.append(getMemUsed());
             line.append(",");
-            line.append(OS_BEAN.getFreePhysicalMemorySize());
-            line.append(",");
-            line.append(OS_BEAN.getFreeSwapSpaceSize());
-            line.append(",");
-            line.append(OS_BEAN.getProcessCpuLoad());
-            line.append(",");
-            line.append(OS_BEAN.getProcessCpuTime());
-            line.append(",");
-            line.append(OS_BEAN.getSystemCpuLoad());
-            line.append(",");
-            line.append(OS_BEAN.getTotalPhysicalMemorySize());
-            line.append(",");
-            line.append(OS_BEAN.getTotalSwapSpaceSize());
+            line.append(getCpuLoad());
             line.append(",");
             line.append(SDF.format(new Date()));
             writer.append(line);
             writer.append(LINE_SEP);
+            writer.flush();
         }
         catch (final Exception ex)
         {
         }
+    }
+
+    private double getMemUsed()
+    {
+        return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024;
+    }
+
+    private static double getCpuLoad()
+    {
+        try
+        {
+            final double value = OS_BEAN.getProcessCpuLoad();
+
+            if (value != -1.0)
+            {
+                return ((int) (value * 1000) / 10.0);
+            }
+        }
+        catch (final Exception e)
+        {
+        }
+        return 0.0;
+    }
+
+    public static void main(final String[] args)
+    {
+        final SimulationSettings settings = new SimulationSettings();
+        settings.setSimulationName("test_" + new Date().getTime());
+        final EventBus eventBus = EventBus.getInstance();
+        new DBEngine(eventBus);
+        new SimulationEngineDaemon(eventBus);
+        new MetricsEngine(eventBus);
+
+        final RunEvent event = new RunEvent(settings);
+        eventBus.publish(event);
     }
 }

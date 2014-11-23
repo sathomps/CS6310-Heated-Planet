@@ -56,6 +56,9 @@ public class GridSettings
 
     private void calculateCoordinates(final int row, final int col, final GridCell cell)
     {
+        cell.setRow(row);
+        cell.setColumn(col);
+
         final int spacing = settings.getGridSpacing();
 
         if (col == 0)
@@ -152,8 +155,8 @@ public class GridSettings
         cell.setLatitudeTop(latTop);
         cell.setLongitudeLeft(longLeft);
         cell.setLongitudeRight(longRight);
-        cell.setDate(read_dt);
-        cell.setTime(read_tm);
+        cell.setRow(row);
+        cell.setColumn(col);
         LinkedList<GridCell> cols;
 
         try
@@ -167,5 +170,10 @@ public class GridSettings
         }
         cols.add(cell);
         calculateGeometry(cell);
+    }
+
+    public int size()
+    {
+        return grid.size() * grid.get(0).size();
     }
 }

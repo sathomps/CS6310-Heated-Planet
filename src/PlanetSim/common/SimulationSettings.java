@@ -1,10 +1,12 @@
 package PlanetSim.common;
 
+import static PlanetSim.common.util.PlanetPositionUtil.calculatePlanetPosition;
 import static PlanetSim.db.DataSource.SIMULATION;
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MINUTE;
 import static java.util.Calendar.MONTH;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
@@ -15,72 +17,76 @@ import PlanetSim.model.PlanetPosition;
 
 public class SimulationSettings
 {
-    private static final int PLANET_WIDTH              = 800;
-    private static final int PLANET_HEIGHT             = 400;
+    private static final int              PLANET_WIDTH              = 800;
+    private static final int              PLANET_HEIGHT             = 400;
 
-    private static int       MINUTES_IN_A_MONTH        = 43829;
+    private static int                    MINUTES_IN_A_MONTH        = 43829;
 
     // the next four attributes are the bounding rectangle for the query engine.
     // only the cells within this box are
     // returned/interpolated/simulated/persisted
-    private double           latitudeTop               = -90.;
-    private double           latitudeBottom            = 90.;
-    private double           longitudeLeft             = -180.;
-    private double           longitudeRight            = 180.;
+    private double                        latitudeTop               = -90.;
+    private double                        latitudeBottom            = 90.;
+    private double                        longitudeLeft             = -180.;
+    private double                        longitudeRight            = 180.;
 
-    private String           simulationName            = "";
+    private String                        simulationName            = "";
 
-    private double           planetsAxialTilt          = 23.44;
+    private double                        planetsAxialTilt          = 23.44;
 
     // //Orbital eccentricity: non-negative real number less than one; default
     // is .0167.
-    private double           planetsOrbitalEccentrity  = 0.0167;
+    private double                        planetsOrbitalEccentrity  = 0.0167;
 
     // Simulation length: non-negative integer (Solar) months between 1 and
     // 1200; default 12 (one Solar year).
-    private int              simulationLength          = 12;
+    private int                           simulationLength          = 12;
 
     // -p #: The precision of the data to be stored, in decimal digits after the
     // decimal point. The default is to use the
     // number of digits storable in a normalized float variable. The maximum is
     // the number of digits storable in a
     // normalized double variable. The minimum is zero.
-    private int              datastoragePrecision      = 7;
+    private int                           datastoragePrecision      = 7;
 
     // -g #: The geographic precision (sampling rate) of the temperature data to
     // be stored, as an integer percentage of the
     // number of grid cells saved versus the number simulated. The default is
     // 100%; that is, a value is stored for each grid cell.
-    private int              geographicPrecision       = 100;
+    private int                           geographicPrecision       = 100;
 
     // -t #: The temporal precision of the temperature data to be stored, as an
     // integer percentage of the number of time periods
     // saved versus the number computed. The default is 100%; that is, all
     // computed values should be stored.
-    private int              temporalPrecision         = 100;
+    private int                           temporalPrecision         = 100;
 
-    private int              simulationTimeStepMinutes = 1;
-    private int              gridSpacing               = 15;
+    private int                           simulationTimeStepMinutes = 1;
+    private int                           gridSpacing               = 15;
 
-    private final Calendar   simulationTimestamp;
-    private Calendar         simulationStartDate;
-    private Calendar         simulationEndDate;
+    private final Calendar                simulationTimestamp;
+    private Calendar                      simulationStartDate;
+    private Calendar                      simulationEndDate;
 
-    private int              simulationTimeMinutes     = 1440;
+    private int                           simulationTimeMinutes     = 1440;
 
-    private GridSettings     gridSettings;
+    private GridSettings                  gridSettings;
 
-    private int              uiRfreshRate              = 1;
+    private int                           uiRfreshRate              = 1;
 
-    private PlanetPosition   planetPosition;
+    private PlanetPosition                planetPosition;
 
-    private DataSource       dataSource                = SIMULATION;
+    private static final SimpleDateFormat SDF                       = new SimpleDateFormat("hh:mm:ss.SSS");
+
+    private DataSource                    dataSource                = SIMULATION;
 
     public SimulationSettings()
     {
         simulationTimestamp = Calendar.getInstance();
         simulationTimestamp.set(MONTH, 1);
         simulationTimestamp.set(DAY_OF_MONTH, 4);
+        createGrid();
+        calculatePlanetPosition(this);
     }
 
     public LinkedList<LinkedList<GridCell>> getGrid()
@@ -181,7 +187,7 @@ public class SimulationSettings
 
     private void validateSimulationName()
     {
-        simulationName = ((simulationName != null) && (simulationName.length() > 0)) ? simulationName + "-" + new Date().toString() : new Date().toString();
+        simulationName = ((simulationName != null) && (simulationName.length() > 0)) ? simulationName : SDF.format(new Date());
     }
 
     public double getPlanetsAxialTilt()
@@ -291,12 +297,6 @@ public class SimulationSettings
         return gridSettings;
     }
 
-    @Override
-    public SimulationSettings clone() throws CloneNotSupportedException
-    {
-        return (SimulationSettings) super.clone();
-    }
-
     public double getLatitudeTop()
     {
         return latitudeTop;
@@ -340,7 +340,7 @@ public class SimulationSettings
     public void calculateSimulationTimestamp()
     {
         simulationTimeMinutes += getSimulationTimeStepMinutes();
-        simulationTimestamp.add(MINUTE, simulationTimeMinutes);
+        simulationTimestamp.add(MINUTE, getSimulationTimeStepMinutes());
     }
 
     public boolean hasSimulationFinished()
@@ -418,4 +418,13 @@ public class SimulationSettings
         this.dataSource = dataSource;
     }
 
+    public int getGridCellSampleInterval()
+    {
+        return (int) (geographicPrecision * .1);
+    }
+
+    public int getTimePeriodSampleInterval()
+    {
+        return (int) (temporalPrecision * .1);
+    }
 }

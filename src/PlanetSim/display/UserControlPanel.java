@@ -85,8 +85,8 @@ public class UserControlPanel extends JPanel
     private SpinnerNumberModel            refreshRateModel;
     private SpinnerNumberModel            simLengthModel;
 
-    private DateTimeSpinner             startDateTimeSpinner;
-    private DateTimeSpinner             endDateTimeSpinner;
+    private DateTimeSpinner               startDateTimeSpinner;
+    private DateTimeSpinner               endDateTimeSpinner;
 
     private String                        lastButtonPushed = "";
 
@@ -523,9 +523,9 @@ public class UserControlPanel extends JPanel
     @Subscribe
     public void display(final DisplayEvent event)
     {
-        final PlanetPosition planetPosition = event.getSettings().getPlanetPosition();
         simulationTime.setText(SDF.format(event.getSettings().getSimulationTimestamp().getTime()));
+        final PlanetPosition planetPosition = event.getSettings().getPlanetPosition();
+
         orbitalPosition.setText(String.format("(%s, %s)", planetPosition.getHelioLatitude(), planetPosition.getHelioLongitude()));
-        // rotationalPosition;
     }
 }

@@ -1,91 +1,48 @@
 package PlanetSim.db;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 
 import PlanetSim.common.GridSettings;
 import PlanetSim.common.SimulationSettings;
+import PlanetSim.model.GridCell;
 
-/*
- CREATE DATABASE `heated_planet` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
- USE `heated_planet`;
-
- -- --------------------------------------------------------
-
- --
- -- Table structure for table `simulation_grid_data`
- --
-
- CREATE TABLE IF NOT EXISTS `simulation_grid_data` (
- `simulation_name` varchar(50) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
- `temperature` double NOT NULL,
- `reading_date` bigint(20) NOT NULL,
- `row_position` int(11) NOT NULL,
- `column_position` int(11) NOT NULL,
- `longitudeLeft` float NOT NULL,
- `longitudeRight` float NOT NULL,
- `latitudeTop` float NOT NULL,
- `latitudeBottom` float NOT NULL,
- PRIMARY KEY (`simulation_name`,`reading_date`,`row_position`,`column_position`)
- ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
- -- --------------------------------------------------------
-
- --
- -- Table structure for table `simulations`
- --
-
- CREATE TABLE `simulations` (
- `name` varchar(50) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
- `grid_spacing` int(11) NOT NULL,
- `simulation_time_step` int(11) NOT NULL,
- `simulation_length` int(11) NOT NULL,
- `axial_tilt` double NOT NULL,
- `orbital_eccentricity` double NOT NULL,
- `temperature_precision` int(11) NOT NULL,
- `geographic_precision` int(11) NOT NULL,
- `temporal_precision` int(11) NOT NULL,
- PRIMARY KEY (`name`)
- ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
- --
- -- Constraints for dumped tables
- --
-
- --
- -- Constraints for table `simulation_grid_data`
- --
- ALTER TABLE `simulation_grid_data`
- ADD CONSTRAINT `simulation_grid_data_ibfk_2` FOREIGN KEY (`simulation_name`) REFERENCES `simulations` (`name`) ON DELETE CASCADE ON UPDATE CASCADE;
- */
 public class MySqlConnection
 {
-    private final String     url      = "jdbc:h2:file:~/heated_planet";
-    private final String     user     = "sa";
-    private final String     password = "";
+    private final String             url      = "jdbc:h2:file:~/heated_planet";
+    private final String             user     = "sa";
+    private final String             password = "";
 
-    final JdbcConnectionPool cp;
+    private final JdbcConnectionPool cp;
 
     public MySqlConnection()
     {
         cp = JdbcConnectionPool.create(url, user, password);
-        cp.setMaxConnections(25);
+        cp.setMaxConnections(50);
         createSchema();
     }
 
     private void createSchema()
     {
+        Connection con = null;
         try
         {
-            cp.getConnection().createStatement().execute("RUNSCRIPT FROM 'classpath:heated_planet.sql'");
+            con = cp.getConnection();
+            con.createStatement().execute("RUNSCRIPT FROM 'classpath:heated_planet.sql'");
         }
         catch (final SQLException ex)
         {
             ex.printStackTrace();
+        }
+        finally
+        {
+            close(con);
         }
     }
 
@@ -101,33 +58,37 @@ public class MySqlConnection
     public ArrayList<SimulationSettings> queryHeader(final String name, final int gridSpacing, final int timeStep, final int simLength, final double axialTilt,
             final double orbitalEccentricity, final int tempPrecision, final int geoPrecision, final int temporalPrecision)
     {
-        final ArrayList<SimulationSettings> result = new ArrayList<SimulationSettings>();
-        String sql = "SELECT * FROM simulations WHERE 1=1 "; // 1=1 is stupid
-        // trick to not
-        // have to figure
-        // out when an AND
-        // should be used.
-        if ((name != null) && (name.length() > 0))
-        {
-            sql += String.format(" AND name = '%s'", name);
-        }
-        // piazza 497
-        // if (timeStep > 0)
-        // {
-        // sql += String.format(" AND simulation_time_step = %d", timeStep);
-        // }
-        if (axialTilt > 0)
-        {
-            sql += String.format(" AND axial_tilt = %f", axialTilt);
-        }
-        if (orbitalEccentricity > 0)
-        {
-            sql += String.format(" AND orbital_eccentricity = %f", orbitalEccentricity);
-        }
+        Connection con = null;
 
         try
         {
-            final ResultSet rs = createResultSet(sql);
+            con = cp.getConnection();
+            final ArrayList<SimulationSettings> result = new ArrayList<SimulationSettings>();
+            String sql = "SELECT * FROM simulations WHERE 1=1 "; // 1=1 is
+            // stupid
+            // trick to not
+            // have to figure
+            // out when an AND
+            // should be used.
+            if ((name != null) && (name.length() > 0))
+            {
+                sql += String.format(" AND name = '%s'", name);
+            }
+            // piazza 497
+            // if (timeStep > 0)
+            // {
+            // sql += String.format(" AND simulation_time_step = %d", timeStep);
+            // }
+            if (axialTilt > 0)
+            {
+                sql += String.format(" AND axial_tilt = %f", axialTilt);
+            }
+            if (orbitalEccentricity > 0)
+            {
+                sql += String.format(" AND orbital_eccentricity = %f", orbitalEccentricity);
+            }
+
+            final ResultSet rs = createResultSet(con, sql);
 
             while (rs.next())
             {
@@ -148,14 +109,22 @@ public class MySqlConnection
         {
             throw new RuntimeException(ex);
         }
-    }
+        finally
+        {
+            close(con);
+        }
+            }
 
     public ArrayList<String> listSimulationNames()
     {
+        Connection con = null;
+
         final ArrayList<String> result = new ArrayList<String>();
         try
         {
-            final ResultSet rs = createResultSet("SELECT name FROM simulations");
+            con = cp.getConnection();
+
+            final ResultSet rs = createResultSet(con, "SELECT name FROM simulations");
             while (rs.next())
             {
                 result.add(rs.getString(0));
@@ -166,7 +135,10 @@ public class MySqlConnection
         {
             throw new RuntimeException(ex);
         }
-
+        finally
+        {
+            close(con);
+        }
     }
 
     private boolean isInRectangle(final double longitudeLeft, final double longitudeRight, final double latitudeTop, final double latitudeBottom,
@@ -186,14 +158,18 @@ public class MySqlConnection
 
     public GridSettings query(final SimulationSettings settings)
     {
+        Connection con = null;
+
         try
         {
-            final ResultSet simulationRS = createResultSet(String.format("SELECT * FROM simulations WHERE name = '%s'", settings.getSimulationName()));
+            con = cp.getConnection();
+
+            final ResultSet simulationRS = createResultSet(con, String.format("SELECT * FROM simulations WHERE name = '%s'", settings.getSimulationName()));
 
             if (simulationRS.next())
             {
                 final GridSettings gs = new GridSettings(settings);
-                final ResultSet settingsRS = createResultSet(String.format("SELECT row_position, column_position, temperature, reading_date"
+                final ResultSet settingsRS = createResultSet(con, String.format("SELECT row_position, column_position, temperature, reading_date"
                         + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom " + " FROM simulation_grid_data WHERE simulation_name = '%s'",
                         settings.getSimulationName()));
 
@@ -227,14 +203,30 @@ public class MySqlConnection
         {
             throw new RuntimeException(ex);
         }
-
+        finally
+        {
+            close(con);
+        }
     }
 
-    public void saveHeader(final String simName, final int gridSpacing, final double orbitalEcc, final double axialTilt, final int simLength,
-            final int simTimeStep, final int dsPrecision, final int geoPrecision, final int temporalPrecision)
+    public void saveHeader(final SimulationSettings settings)
     {
+        Connection con = null;
+
         try
         {
+            con = cp.getConnection();
+
+            final String simName = settings.getSimulationName();
+            final int gridSpacing = settings.getGridSpacing();
+            final double orbitalEcc = settings.getPlanetsOrbitalEccentricity();
+            final double axialTilt = settings.getPlanetsAxialTilt();
+            final int simLength = settings.getSimulationLength();
+            final int simTimeStep = settings.getSimulationTimeStepMinutes();
+            final int dsPrecision = settings.getDatastoragePrecision();
+            final int geoPrecision = settings.getGeographicPrecision();
+            final int temporalPrecision = settings.getTemporalPrecision();
+
             final Statement st = cp.getConnection().createStatement();
             final String sql = String.format("INSERT INTO simulations (name, grid_spacing, simulation_time_step, simulation_length"
                     + ", axial_tilt, orbital_eccentricity, temperature_precision, geographic_precision, temporal_precision) "
@@ -246,50 +238,114 @@ public class MySqlConnection
         {
             throw new RuntimeException(ex);
         }
-
+        finally
+        {
+            close(con);
+        }
     }
 
     public void save(final SimulationSettings settings)
     {
-    }
+        Connection con = null;
 
-    public void saveCell(final String simName, final int row, final int cell, final double d, final double e, final double f, final double g, final double h,
-            final long date, final int dsPrecision)
-    {
         try
         {
-            final Statement st = cp.getConnection().createStatement();
-            final String sql = "INSERT INTO simulation_grid_data (simulation_name, row_position, column_position, temperature, reading_date"
-                    // how many decimals to store, kinda dorky but i can't
-                    // figure
-                    // how to round to x round places.
-                    + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom) " + " VALUES ('%s', %d, %d" + ", %." + dsPrecision + "f"
-                    + ", %d, %f, %f, %f, %f)";
-            st.execute(String.format(sql, simName, row, cell, d, date, f, h, e, g));
+            con = cp.getConnection();
+
+            final Statement batch = con.createStatement();
+            final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
+
+            int numGridCell = 0;
+            for (int row = 0; row < grid.size(); row++)
+            {
+                for (int cell = 0; cell < grid.get(0).size(); cell++)
+                {
+                    numGridCell++;
+                    if (shouldPersist(numGridCell, settings))
+                    {
+                        final GridCell gridCell = grid.get(row).get(cell);
+                        saveCell(batch, settings, gridCell);
+                    }
+                }
+            }
+            batch.executeBatch();
         }
         catch (final SQLException ex)
         {
             throw new RuntimeException(ex);
         }
-
+        finally
+        {
+            close(con);
+        }
     }
 
+    private boolean shouldPersist(final int numGridCell, final SimulationSettings settings)
+    {
+        return (numGridCell % settings.getGridCellSampleInterval()) == 0;
+    }
+
+    private void saveCell(final Statement batch, final SimulationSettings settings, final GridCell gridCell) throws SQLException
+    {
+        final String sql = "INSERT INTO simulation_grid_data (simulation_name, row_position, column_position, temperature, reading_date"
+                // how many decimals to store, kinda dorky but i can't
+                // figure
+                // how to round to x round places.
+                + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom) " + " VALUES ('%s', %d, %d" + ", %." + settings.getDatastoragePrecision()
+                + "f" + ", %d, %f, %f, %f, %f)";
+        batch.addBatch(String.format(sql, settings.getSimulationName(), gridCell.getRow(), gridCell.getColumn(), gridCell.getTemp(), settings
+                .getSimulationTimestamp().getTimeInMillis(), gridCell.getLongitudeLeft(), gridCell.getLongitudeRight(), gridCell.getLatitudeTop(), gridCell
+                .getLatitudeBottom()));
+    }
+
+    /**
+     * XXX - This returns the number of rows, which while not a great indicator
+     * of actual database physical size, can be used to infer that metric. To
+     * get actual database size varies from db to db and can be a VERY costly
+     * query to perform.
+     * 
+     * @return
+     */
     public long getDatabaseSize()
     {
+        Connection con = null;
+
         try
         {
-            final String sql = "SELECT sum( data_length + index_length ) FROM information_schema.TABLES  WHERE table_schema = 'heated_planet'";
-            return createResultSet(sql).getLong(0);
+            con = cp.getConnection();
+
+            final String sql = "SELECT count(*) AS rowCount FROM simulation_grid_data";
+            final ResultSet result = createResultSet(con, sql);
+            if (result.next())
+            {
+                return result.getLong("rowCount");
+            }
         }
         catch (final SQLException ex)
         {
-            throw new RuntimeException(ex);
+            ex.printStackTrace();
+        }
+        finally
+        {
+            close(con);
+        }
+        return 0l;
+    }
+
+    private ResultSet createResultSet(final Connection con, final String sql) throws SQLException
+    {
+        return con.createStatement().executeQuery(sql);
+    }
+
+    private void close(final Connection con)
+    {
+        try
+        {
+            con.close();
+        }
+        catch (final Exception e)
+        {
         }
     }
 
-    private ResultSet createResultSet(final String sql) throws SQLException
-    {
-        final Statement st = cp.getConnection().createStatement();
-        return st.executeQuery(sql);
-    }
 }

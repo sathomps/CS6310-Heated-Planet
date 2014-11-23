@@ -26,5 +26,5 @@ CREATE TABLE IF NOT EXISTS simulation_grid_data (
 );
 
 ALTER TABLE simulation_grid_data
-  ADD CONSTRAINT simulation_grid_data_ibfk_2 FOREIGN KEY (simulation_name) REFERENCES simulations (name) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT IF NOT EXISTS simulation_grid_data_ibfk_2 FOREIGN KEY (simulation_name) REFERENCES simulations (name) ON DELETE CASCADE ON UPDATE CASCADE;
 

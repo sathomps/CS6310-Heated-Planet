@@ -13,17 +13,15 @@ public class Demo
 {
     private static SimulationSettings settings;
     private static EventBus           eventBus;
-    private static DBEngine        queryEngine;
 
     public static void main(final String[] args)
     {
         init();
         setCommandLineArgs(args);
-        initSettings();
-        startUI();
         startSimulation();
         startMetrics();
-        createQueryEngine();
+        startDBEngine();
+        startUI();
     }
 
     private static void setCommandLineArgs(final String[] args)
@@ -45,30 +43,15 @@ public class Demo
         }
     }
 
-    private static void initSettings()
-    {
-        settings.setGridSpacing(15);
-        settings.setLatitudeTop(-90);
-        settings.setLatitudeBottom(90);
-        settings.setLongitudeLeft(-180);
-        settings.setLongitudeRight(180);
-        settings.setPlanetsAxialTilt(23.44); // default from the project page
-        settings.setPlanetsOrbitalEccentricity(0.167);
-        settings.setSimulationTimeStepMinutes(1440);
-        settings.setSimulationLength(12);
-        settings.setUIRefreshRate(1);
-    }
-
-    private static void createQueryEngine()
-    {
-        queryEngine = new DBEngine(eventBus);
-
-    }
-
     private static void init()
     {
         settings = new SimulationSettings();
         eventBus = EventBus.getInstance();
+    }
+
+    private static void startDBEngine()
+    {
+        new DBEngine(eventBus);
     }
 
     private static void startSimulation()
@@ -94,5 +77,4 @@ public class Demo
     {
         new MetricsEngine(eventBus);
     }
-
 }

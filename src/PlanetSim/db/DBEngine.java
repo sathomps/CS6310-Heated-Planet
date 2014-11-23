@@ -5,7 +5,6 @@ import static PlanetSim.db.DataSource.QUERY;
 import static PlanetSim.db.DataSource.SIMULATION;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 import PlanetSim.common.GridSettings;
 import PlanetSim.common.SimulationSettings;
@@ -15,7 +14,6 @@ import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.DisplayEvent;
 import PlanetSim.display.GetSimulationNamesEvent;
 import PlanetSim.metrics.MetricEvent;
-import PlanetSim.model.GridCell;
 
 public class DBEngine
 {
@@ -47,38 +45,14 @@ public class DBEngine
     {
         final SimulationSettings settings = event.getSettings();
         // sanity checks
-        final String simName = settings.getSimulationName();
-        if ((simName == null) || (simName.length() == 0))
-        {
-            throw new IllegalArgumentException(); // this should be an event
-            // on the bus
-        }
-        final int gridSpacing = settings.getGridSpacing();
-        final double orbitalEcc = settings.getPlanetsOrbitalEccentricity();
-        final double axialTilt = settings.getPlanetsAxialTilt();
-        final int simLength = settings.getSimulationLength();
-        final int simTimeStep = settings.getSimulationTimeStepMinutes();
-        final int dsPrecision = settings.getDatastoragePrecision();
-        final int geoPrecision = settings.getGeographicPrecision();
-        final int temporalPrecision = settings.getTemporalPrecision();
         // if the header already exists, then this is more grid data of an
         // existing and likely concurrently running
         // simulation. Only save the grid data this time around.
         if (con.queryHeader(settings.getSimulationName(), 0, 0, 0, 0, 0, 0, 0, 0).isEmpty())
         {
-            con.saveHeader(simName, gridSpacing, orbitalEcc, axialTilt, simLength, simTimeStep, dsPrecision, geoPrecision, temporalPrecision);
+            con.saveHeader(settings);
         }
-        final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
-        for (int row = 0; row < grid.size(); row++)
-        {
-            for (int cell = 0; cell < grid.get(0).size(); cell++)
-            {
-                final GridCell c = grid.get(row).get(cell);
-                con.saveCell(simName, row, cell, c.getTemp(), c.getLatitudeTop(), c.getLongitudeLeft(), c.getLatitudeBottom(), c.getLongitudeRight(),
-                        c.getDate(), dsPrecision);
-
-            }
-        }
+        con.save(settings);
 
         eventBus.publish(new MetricEvent().setDatabaseSize(con.getDatabaseSize()).setSettings(settings));
     }
@@ -147,9 +121,9 @@ public class DBEngine
                         break;
                     }
                     else if (
-                    // settings.getGeographicPrecision() ==
-                    // s.getGeographicPrecision() &&
-                    (settings.getTemporalPrecision() == s.getTemporalPrecision()) && (settings.getDatastoragePrecision() == s.getDatastoragePrecision())
+                            // settings.getGeographicPrecision() ==
+                            // s.getGeographicPrecision() &&
+                            (settings.getTemporalPrecision() == s.getTemporalPrecision()) && (settings.getDatastoragePrecision() == s.getDatastoragePrecision())
                             && (settings.getGridSpacing() == s.getGridSpacing())
                             && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
                     {
@@ -157,37 +131,37 @@ public class DBEngine
                         break;
                     }
                     else if (
-                    // settings.getGeographicPrecision() ==
-                    // s.getGeographicPrecision() &&
-                    // settings.getTemporalPrecision() ==
-                    // s.getTemporalPrecision() &&
-                    (settings.getDatastoragePrecision() == s.getDatastoragePrecision()) && (settings.getGridSpacing() == s.getGridSpacing())
+                            // settings.getGeographicPrecision() ==
+                            // s.getGeographicPrecision() &&
+                            // settings.getTemporalPrecision() ==
+                            // s.getTemporalPrecision() &&
+                            (settings.getDatastoragePrecision() == s.getDatastoragePrecision()) && (settings.getGridSpacing() == s.getGridSpacing())
                             && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
                     {
                         chosenOne = s;
                         break;
                     }
                     else if (
-                    // settings.getGeographicPrecision() ==
-                    // s.getGeographicPrecision() &&
-                    // settings.getTemporalPrecision() ==
-                    // s.getTemporalPrecision() &&
-                    // settings.getDatastoragePrecision() ==
-                    // s.getDatastoragePrecision() &&
-                    (settings.getGridSpacing() == s.getGridSpacing()) && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
+                            // settings.getGeographicPrecision() ==
+                            // s.getGeographicPrecision() &&
+                            // settings.getTemporalPrecision() ==
+                            // s.getTemporalPrecision() &&
+                            // settings.getDatastoragePrecision() ==
+                            // s.getDatastoragePrecision() &&
+                            (settings.getGridSpacing() == s.getGridSpacing()) && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
                     {
                         chosenOne = s;
                         break;
                     }
                     else if (
-                    // settings.getGeographicPrecision() ==
-                    // s.getGeographicPrecision() &&
-                    // settings.getTemporalPrecision() ==
-                    // s.getTemporalPrecision() &&
-                    // settings.getDatastoragePrecision() ==
-                    // s.getDatastoragePrecision() &&
-                    // settings.getGridSpacing() == s.getGridSpacing() &&
-                    settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes())
+                            // settings.getGeographicPrecision() ==
+                            // s.getGeographicPrecision() &&
+                            // settings.getTemporalPrecision() ==
+                            // s.getTemporalPrecision() &&
+                            // settings.getDatastoragePrecision() ==
+                            // s.getDatastoragePrecision() &&
+                            // settings.getGridSpacing() == s.getGridSpacing() &&
+                            settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes())
                     {
                         chosenOne = s;
                         break;

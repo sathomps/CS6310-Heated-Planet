@@ -4,6 +4,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import PlanetSim.common.event.EventBus;
 import PlanetSim.common.event.PauseEvent;
@@ -19,7 +20,10 @@ public class SimulationEngineDaemon
 
     private SimulationEngine    engine;
 
-    private final AtomicBoolean run = new AtomicBoolean();
+    private final AtomicBoolean run           = new AtomicBoolean();
+
+    private final AtomicLong    persistEvents = new AtomicLong();
+    private final AtomicLong    persisted     = new AtomicLong();
 
     public SimulationEngineDaemon(final EventBus eventBus)
     {
@@ -51,7 +55,16 @@ public class SimulationEngineDaemon
 
     private void persist()
     {
-        eventBus.publish(new PersistEvent(engine.getSimulationSettings()));
+        if (shouldPersist())
+        {
+            eventBus.publish(new PersistEvent(engine.getSimulationSettings()));
+        }
+    }
+
+    private boolean shouldPersist()
+    {
+        final long numPersistEvents = persistEvents.getAndIncrement();
+        return (numPersistEvents % engine.getSimulationSettings().getTimePeriodSampleInterval()) == 0;
     }
 
     @Subscribe
