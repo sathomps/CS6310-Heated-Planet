@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -15,8 +16,6 @@ import PlanetSim.common.event.Subscribe;
 import PlanetSim.db.DBEngine;
 import PlanetSim.simulation.SimulationEngineDaemon;
 
-import com.sun.management.OperatingSystemMXBean;
-
 public class MetricsEngine
 {
     private static final SimpleDateFormat      SDF      = new SimpleDateFormat("hh:mm:ss.SSS");
@@ -26,7 +25,7 @@ public class MetricsEngine
 
     private Writer                             writer;
 
-    private static final OperatingSystemMXBean OS_BEAN  = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+    private static final OperatingSystemMXBean OS_BEAN  = ManagementFactory.getOperatingSystemMXBean();
 
     public MetricsEngine(final EventBus eventBus)
     {
@@ -117,7 +116,7 @@ public class MetricsEngine
     {
         try
         {
-            final double value = OS_BEAN.getProcessCpuLoad();
+            final double value = OS_BEAN.getSystemLoadAverage();
 
             if (value != -1.0)
             {
@@ -133,11 +132,7 @@ public class MetricsEngine
     public static void main(final String[] args)
     {
         final SimulationSettings settings = new SimulationSettings();
-        settings.setDatastoragePrecision(2);
-        settings.setGeographicPrecision(75);
-        settings.setTemporalPrecision(75);
-        settings.setGridSpacing(15);
-        settings.setSimulationTimeStepMinutes(1440);
+        setCommandLineArgs(args, settings);
 
         settings.setSimulationName("test_" + new Date().getTime());
         final EventBus eventBus = EventBus.getInstance();
@@ -148,4 +143,24 @@ public class MetricsEngine
         final RunEvent event = new RunEvent(settings);
         eventBus.publish(event);
     }
+
+    private static void setCommandLineArgs(final String[] args, final SimulationSettings settings)
+    {
+        for (int i = 0; i < args.length; i++)
+        {
+            if (args[i].equals("-t"))
+            {
+                settings.setTemporalPrecision(Integer.parseInt(args[i + 1]));
+            }
+            else if (args[i].equals("-g"))
+            {
+                settings.setGeographicPrecision(Integer.parseInt(args[i + 1]));
+            }
+            else if (args[i].equals("-p"))
+            {
+                settings.setDatastoragePrecision(Integer.parseInt(args[i + 1]));
+            }
+        }
+    }
+
 }
