@@ -133,6 +133,12 @@ public class MetricsEngine
     public static void main(final String[] args)
     {
         final SimulationSettings settings = new SimulationSettings();
+        settings.setDatastoragePrecision(2);
+        settings.setGeographicPrecision(75);
+        settings.setTemporalPrecision(75);
+        settings.setGridSpacing(15);
+        settings.setSimulationTimeStepMinutes(1440);
+
         settings.setSimulationName("test_" + new Date().getTime());
         final EventBus eventBus = EventBus.getInstance();
         new DBEngine(eventBus);
