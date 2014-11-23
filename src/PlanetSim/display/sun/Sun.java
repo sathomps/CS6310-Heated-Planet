@@ -59,7 +59,6 @@ public class Sun extends JPanel
     public void process(final DisplayEvent displayEvent)
     {
         settings = displayEvent.getSettings();
-        System.out.println(settings.getSimulationTimestamp());
         repaint();
     }
 }

@@ -94,6 +94,8 @@ public final class EventBus
             }
             catch (final Exception e)
             {
+                e.printStackTrace();
+                System.exit(1);
                 throw new RuntimeException(e);
             }
         }

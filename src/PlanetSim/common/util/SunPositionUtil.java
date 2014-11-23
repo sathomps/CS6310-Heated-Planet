@@ -5,6 +5,7 @@ import static PlanetSim.common.util.JulianCalendarUtil.julianDay;
 
 import java.util.Calendar;
 
+import PlanetSim.common.SimulationSettings;
 import PlanetSim.model.GridCell;
 import PlanetSim.model.SunPosition;
 
@@ -261,9 +262,12 @@ public final class SunPositionUtil
      * Calculates solar position for the current date, time and location.
      * Results are reported in azimuth and elevation in degrees.
      */
-    public static SunPosition calculateSunPosition(final GridCell gridCell, final Calendar date, final double planetsOrbitalEccentrity,
-            final double planetsAxialTilt)
+    public static SunPosition calculateSunPosition(final GridCell gridCell, final SimulationSettings settings)
     {
+        final Calendar date = settings.getSimulationTimestamp();
+        final double planetsOrbitalEccentrity = settings.getPlanetsOrbitalEccentricity();
+        final double planetsAxialTilt = settings.getPlanetsAxialTilt();
+
         final SunPosition sunPosition = new SunPosition();
         double latitude = gridCell.getLatitudeTop();
         double longitude = gridCell.getLongitudeRight();

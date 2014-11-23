@@ -66,18 +66,16 @@ public final class PlanetTemperatureUtil
         {
             for (int cell = 0; cell < grid.get(0).size(); cell++)
             {
-                calculatePlanetCellTemperature(grid.get(row).get(cell), settings.getSimulationTimestamp(), settings.getPlanetsOrbitalEccentricity(),
-                        settings.getPlanetsAxialTilt());
+                calculatePlanetCellTemperature(grid.get(row).get(cell), settings);
             }
         }
 
     }
 
-    private static void calculatePlanetCellTemperature(final GridCell gridCell, final Calendar date, final double planetsOrbitalEccentrity,
-            final double planetsAxialTilt)
+    private static void calculatePlanetCellTemperature(final GridCell gridCell, final SimulationSettings settings)
     {
-        final SunPosition sunPosition = calculateSunPosition(gridCell, date, planetsOrbitalEccentrity, planetsAxialTilt);
-        final double sunTemp = caclulateEffectiveTemperature(gridCell, sunPosition, date);
+        final SunPosition sunPosition = calculateSunPosition(gridCell, settings);
+        final double sunTemp = caclulateEffectiveTemperature(gridCell, settings, sunPosition);
         final double initialTemp = gridCell.getTemp();
         final double coolingTemp = 0;// calculateTemperatureDueToCooling(cell);
         final double neighborTemp = calculateNeighborHeat(gridCell) / 2;
@@ -90,9 +88,9 @@ public final class PlanetTemperatureUtil
      * @return
      */
 
-    private static double caclulateEffectiveTemperature(final GridCell gridCell, final SunPosition sunPosition, final Calendar date)
+    private static double caclulateEffectiveTemperature(final GridCell gridCell, final SimulationSettings settings, final SunPosition sunPosition)
     {
-        return Math.pow(calculateSolarSolarRadiationIncident(gridCell, sunPosition, date) * STEFAN_BOLTZMANN_CONSTANT, 4);
+        return Math.pow(calculateSolarSolarRadiationIncident(gridCell, settings, sunPosition) * STEFAN_BOLTZMANN_CONSTANT, 4);
     }
 
     /**
@@ -100,18 +98,18 @@ public final class PlanetTemperatureUtil
      * 
      * @return
      */
-    private static double calculateSolarSolarRadiationIncident(final GridCell gridCell, final SunPosition sunPosition, final Calendar date)
+    private static double calculateSolarSolarRadiationIncident(final GridCell gridCell, final SimulationSettings settings, final SunPosition sunPosition)
     {
-        return (calculateSolarRadiation(gridCell, sunPosition, date) * (1 - 0.3)) / 4;
+        return (calculateSolarRadiation(gridCell, settings, sunPosition) * (1 - 0.3)) / 4;
     }
 
-    private static double calculateSolarRadiation(final GridCell gridCell, final SunPosition sunPosition, final Calendar date)
+    private static double calculateSolarRadiation(final GridCell gridCell, final SimulationSettings settings, final SunPosition sunPosition)
     {
         final double sunHeight = sunPosition.getElevation();
         double maximumSolarRadiation;
         if ((sunHeight > 0.0) && (Math.abs(0.25 / sunHeight) < 50.0))
         {
-            maximumSolarRadiation = calculateSunCorrection(sunPosition, date) * sunHeight * Math.exp(-0.25 / sunHeight);
+            maximumSolarRadiation = calculateSunCorrection(settings, sunPosition) * sunHeight * Math.exp(-0.25 / sunHeight);
         }
         else
         {
@@ -120,9 +118,9 @@ public final class PlanetTemperatureUtil
         return maximumSolarRadiation;
     }
 
-    private static double calculateSunCorrection(final SunPosition sunPosition, final Calendar date)
+    private static double calculateSunCorrection(final SimulationSettings settings, final SunPosition sunPosition)
     {
-        final double sunConstantePart = Math.cos(2.0 * Math.PI * date.get(Calendar.DAY_OF_MONTH));
+        final double sunConstantePart = Math.cos(2.0 * Math.PI * settings.getSimulationTimestamp().get(Calendar.DAY_OF_MONTH));
         final double sunCorrection = calculateSolarConstant(sunPosition) * (1.0 + (0.033 * sunConstantePart));
         return sunCorrection;
     }

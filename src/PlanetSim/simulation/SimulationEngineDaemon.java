@@ -10,6 +10,7 @@ import PlanetSim.common.event.PauseEvent;
 import PlanetSim.common.event.RunEvent;
 import PlanetSim.common.event.StopEvent;
 import PlanetSim.common.event.Subscribe;
+import PlanetSim.db.PersistEvent;
 import PlanetSim.display.DisplayEvent;
 
 public class SimulationEngineDaemon
@@ -32,7 +33,8 @@ public class SimulationEngineDaemon
         {
             while (run.get() && engine.run())
             {
-                eventBus.publish(new DisplayEvent(engine.getSimulationSettings()));
+                display();
+                persist();
                 Thread.sleep(MILLISECONDS.convert(1, SECONDS));
             }
         }
@@ -40,6 +42,16 @@ public class SimulationEngineDaemon
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private void display()
+    {
+        eventBus.publish(new DisplayEvent(engine.getSimulationSettings()));
+    }
+
+    private void persist()
+    {
+        eventBus.publish(new PersistEvent(engine.getSimulationSettings()));
     }
 
     @Subscribe

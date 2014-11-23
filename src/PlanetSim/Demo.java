@@ -2,9 +2,9 @@ package PlanetSim;
 
 import javax.swing.SwingUtilities;
 
-import PlanetSim.Query.QueryEngine;
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
+import PlanetSim.db.DBEngine;
 import PlanetSim.display.SimulationUI;
 import PlanetSim.metrics.MetricsEngine;
 import PlanetSim.simulation.SimulationEngineDaemon;
@@ -13,7 +13,7 @@ public class Demo
 {
     private static SimulationSettings settings;
     private static EventBus           eventBus;
-    private static QueryEngine        queryEngine;
+    private static DBEngine        queryEngine;
 
     public static void main(final String[] args)
     {
@@ -61,7 +61,7 @@ public class Demo
 
     private static void createQueryEngine()
     {
-        queryEngine = new QueryEngine(eventBus);
+        queryEngine = new DBEngine(eventBus);
 
     }
 
@@ -92,7 +92,7 @@ public class Demo
 
     private static void startMetrics()
     {
-        new Thread(new MetricsEngine(eventBus)).start();
+        new MetricsEngine(eventBus);
     }
 
 }

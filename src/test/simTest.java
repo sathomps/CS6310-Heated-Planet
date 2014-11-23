@@ -6,10 +6,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import PlanetSim.Query.QueryEngine;
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
 import PlanetSim.common.event.RunEvent;
+import PlanetSim.db.DBEngine;
 import PlanetSim.metrics.MetricsEngine;
 import PlanetSim.simulation.SimulationEngineDaemon;
 import junit.framework.TestCase;
@@ -17,7 +17,7 @@ import junit.framework.TestCase;
 public class simTest extends TestCase {
 	private static SimulationSettings settings;
     private static EventBus           eventBus;
-    private static QueryEngine        queryEngine;
+    private static DBEngine        queryEngine;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -32,7 +32,7 @@ public class simTest extends TestCase {
 		
         settings = new SimulationSettings();
         eventBus = new EventBus();
-        queryEngine = new QueryEngine(eventBus);
+        queryEngine = new DBEngine(eventBus);
         new SimulationEngineDaemon(eventBus);
         new Thread(new MetricsEngine(eventBus)).start();
         

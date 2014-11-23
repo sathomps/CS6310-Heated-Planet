@@ -1,5 +1,6 @@
 package PlanetSim.common;
 
+import static PlanetSim.db.DataSource.SIMULATION;
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MINUTE;
 import static java.util.Calendar.MONTH;
@@ -8,84 +9,72 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 
+import PlanetSim.db.DataSource;
 import PlanetSim.model.GridCell;
+import PlanetSim.model.PlanetPosition;
 
-public class SimulationSettings implements Cloneable
+public class SimulationSettings
 {
-    private static final int PLANET_WIDTH                   = 800;
-    private static final int PLANET_HEIGHT                  = 400;
+    private static final int PLANET_WIDTH              = 800;
+    private static final int PLANET_HEIGHT             = 400;
 
-    private static int       MINUTES_IN_A_MONTH             = 43829;
-
-    // these are for the UI as well. it has to change the values on the screen
-    private double           oribitalPosition               = 0.0;
-    private double           rotationalPosition             = 0.0;
-
-    // 0 = is nothing
-    // 1 is query
-    // 2 is interpolate
-    // 3 is simulate
-    public final static int  DATASOURCE_PROCESS_DEFAULT     = 0;
-    public final static int  DATASOURCE_PROCESS_QUERY       = 1;
-    public final static int  DATASOURCE_PROCESS_INTERPOLATE = 2;
-    public final static int  DATASOURCE_PROCESS_SIMULATE    = 3;
-    private int              dataSourceProcess              = 0;
+    private static int       MINUTES_IN_A_MONTH        = 43829;
 
     // the next four attributes are the bounding rectangle for the query engine.
     // only the cells within this box are
     // returned/interpolated/simulated/persisted
-    private double           latitudeTop = -90.;
-    private double           latitudeBottom = 90.;
-    private double           longitudeLeft = -180.;
-    private double           longitudeRight = 180.;
+    private double           latitudeTop               = -90.;
+    private double           latitudeBottom            = 90.;
+    private double           longitudeLeft             = -180.;
+    private double           longitudeRight            = 180.;
 
-    private String           simulationName                 = "";
+    private String           simulationName            = "";
 
-    // //-t #: The temporal precision of the temperature data to be stored, as
-    // an integer percentage of the number of time periods
-    // saved versus the number computed. The default is 100%; that is, all
-    // computed values should be stored.
-    private double           planetsAxialTilt               = 23.44;
+    private double           planetsAxialTilt          = 23.44;
 
     // //Orbital eccentricity: non-negative real number less than one; default
     // is .0167.
-    private double           planetsOrbitalEccentrity       = 0.0167;
+    private double           planetsOrbitalEccentrity  = 0.0167;
 
     // Simulation length: non-negative integer (Solar) months between 1 and
     // 1200; default 12 (one Solar year).
-    private int              simulationLength               = 12;
+    private int              simulationLength          = 12;
 
     // -p #: The precision of the data to be stored, in decimal digits after the
     // decimal point. The default is to use the
     // number of digits storable in a normalized float variable. The maximum is
     // the number of digits storable in a
     // normalized double variable. The minimum is zero.
-    private int              datastoragePrecision           = 7;
+    private int              datastoragePrecision      = 7;
 
     // -g #: The geographic precision (sampling rate) of the temperature data to
     // be stored, as an integer percentage of the
     // number of grid cells saved versus the number simulated. The default is
     // 100%; that is, a value is stored for each grid cell.
-    private int              geographicPrecision            = 100;
+    private int              geographicPrecision       = 100;
 
     // -t #: The temporal precision of the temperature data to be stored, as an
     // integer percentage of the number of time periods
     // saved versus the number computed. The default is 100%; that is, all
     // computed values should be stored.
-    private int              temporalPrecision              = 100;
+    private int              temporalPrecision         = 100;
 
-    private int              simulationTimeStepMinutes      = 1;
-    private int              gridSpacing                    = 15;
+    private int              simulationTimeStepMinutes = 1;
+    private int              gridSpacing               = 15;
 
     private final Calendar   simulationTimestamp;
     private Calendar         simulationStartDate;
     private Calendar         simulationEndDate;
 
-    private int              simulationTimeMinutes = 1440;
+    private int              simulationTimeMinutes     = 1440;
 
     private GridSettings     gridSettings;
 
-    private int              uiRfreshRate = 1;
+    private int              uiRfreshRate              = 1;
+
+    private PlanetPosition   planetPosition;
+
+    private DataSource       dataSource                = SIMULATION;
 
     public SimulationSettings()
     {
@@ -348,36 +337,6 @@ public class SimulationSettings implements Cloneable
         this.longitudeRight = longitudeRight;
     }
 
-    public double getOribitalPosition()
-    {
-        return oribitalPosition;
-    }
-
-    public void setOribitalPosition(final double oribitalPosition)
-    {
-        this.oribitalPosition = oribitalPosition;
-    }
-
-    public double getRotationalPosition()
-    {
-        return rotationalPosition;
-    }
-
-    public void setRotationalPosition(final double rotationalPosition)
-    {
-        this.rotationalPosition = rotationalPosition;
-    }
-
-    public int getDataSourceProcess()
-    {
-        return dataSourceProcess;
-    }
-
-    public void setDataSourceProcess(final int dataSourceProcess)
-    {
-        this.dataSourceProcess = dataSourceProcess;
-    }
-
     public void calculateSimulationTimestamp()
     {
         simulationTimeMinutes += getSimulationTimeStepMinutes();
@@ -437,6 +396,26 @@ public class SimulationSettings implements Cloneable
     public GridSettings getGridSettings(final GridSettings gridSettings)
     {
         return gridSettings;
+    }
+
+    public PlanetPosition getPlanetPosition()
+    {
+        return planetPosition;
+    }
+
+    public void setPlanetPosition(final PlanetPosition planetPosition)
+    {
+        this.planetPosition = planetPosition;
+    }
+
+    public DataSource getDataSource()
+    {
+        return dataSource;
+    }
+
+    public void setDataSource(final DataSource dataSource)
+    {
+        this.dataSource = dataSource;
     }
 
 }

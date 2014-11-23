@@ -1,5 +1,6 @@
 package PlanetSim.simulation;
 
+import static PlanetSim.common.util.PlanetPositionUtil.calculatePlanetPosition;
 import static PlanetSim.common.util.PlanetTemperatureUtil.calculatePlanetTemperature;
 import PlanetSim.common.SimulationSettings;
 
@@ -17,8 +18,9 @@ public class SimulationEngine
         if (!settings.hasSimulationFinished())
         {
             calculatePlanetTemperature(settings);
-            settings.calculateSimulationTimestamp();
+            calculatePlanetPosition(settings);
 
+            settings.calculateSimulationTimestamp();
             return true;
         }
         return false;

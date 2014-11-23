@@ -1,11 +1,12 @@
-package PlanetSim.Query;
+package PlanetSim.db;
 
-import java.sql.SQLException;
+import static PlanetSim.db.DataSource.INTERPOLATION;
+import static PlanetSim.db.DataSource.QUERY;
+import static PlanetSim.db.DataSource.SIMULATION;
+
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.LinkedList;
 
-import PlanetSim.Query.db.MySqlConnection;
 import PlanetSim.common.GridSettings;
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
@@ -13,77 +14,36 @@ import PlanetSim.common.event.RunEvent;
 import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.DisplayEvent;
 import PlanetSim.display.GetSimulationNamesEvent;
+import PlanetSim.metrics.MetricEvent;
 import PlanetSim.model.GridCell;
-import PlanetSim.metrics.MetricProducedEvent;
-public class QueryEngine
+
+public class DBEngine
 {
     // used by save method so it can keep up with transactions.
-    private MySqlConnection con = null;
+    private final MySqlConnection con;
 
-    public QueryEngine()
-    {
-        con = new MySqlConnection();
-    }
+    private final EventBus        eventBus;
 
-    public static void main(final String[] args)
-    {
-        final EventBus bus = new EventBus();
-        final QueryEngine qe = new QueryEngine(bus);
-
-        final SimulationSettings ss = new SimulationSettings();
-        ss.setDataSourceProcess(SimulationSettings.DATASOURCE_PROCESS_QUERY);
-        ss.setDatastoragePrecision(8);
-        ss.setGeographicPrecision(100);
-        ss.setGridSpacing(15);
-        ss.setSimulationLength(122);
-        ss.setSimulationName("sim1");
-        ss.setSimulationTimeStepMinutes(1);
-        ss.setTemporalPrecision(100);
-        // ss.setPlanet(new Planet(ss));
-        ss.getSimulationTimestamp().setTimeInMillis(0);
-        // GridSettings gridSettings = new GridSettings(ss);
-        // for (int row = 0; row < 360 /15; row++)
-        // for(int col = 0; col < 180/15;col++)
-        // gridSettings.addCell(row, col, 5, row+col, col, row, col+1, row+1,
-        // col*10);
-        // ss.setGridSettings(gridSettings);
-        // PersistEvent event = new PersistEvent(ss);
-        // bus.publish(event);
-        // SimulationSettings s1 = qe.query(ss);
-        final QueryEvent qevent = new QueryEvent(ss);
-        final SimulationSettings s1 = qe.query(ss);
-        s1.getSimulationName();
-        System.out.println(s1.getSimulationName());
-
-    }
-
-    private EventBus eventBus = null;
-
-    public QueryEngine(final EventBus eventBus)
+    public DBEngine(final EventBus eventBus)
     {
         this.eventBus = eventBus;
         eventBus.subscribe(this);
+        con = new MySqlConnection();
     }
 
     /**
      * Lists the simulation names so they can be put in a GUI widget (or
      * whatever)
      * 
-     * @return ArrayList<String>. It will always be non-null. It will be empty
-     *         if nothing existed
-     * @throws SQLException
      */
     @Subscribe
-    public ArrayList<String> listSimulationNames(final GetSimulationNamesEvent event)
+    public void listSimulationNames(final GetSimulationNamesEvent event)
     {
-    	ArrayList<String> names = con.listSimulationNames();
-    	if (event != null)
-    		eventBus.publish(new GetSimulationNamesEvent(names));
-        return names;
+        eventBus.publish(new GetSimulationNamesEvent(con.listSimulationNames()));
     }
 
     @Subscribe
-    public void save(final PersistEvent event)
+    public void persist(final PersistEvent event)
     {
         final SimulationSettings settings = event.getSettings();
         // sanity checks
@@ -101,10 +61,13 @@ public class QueryEngine
         final int dsPrecision = settings.getDatastoragePrecision();
         final int geoPrecision = settings.getGeographicPrecision();
         final int temporalPrecision = settings.getTemporalPrecision();
-        //if the header already exists, then this is more grid data of an existing and likely concurrently running
-        //simulation.  Only save the grid data this time around.
+        // if the header already exists, then this is more grid data of an
+        // existing and likely concurrently running
+        // simulation. Only save the grid data this time around.
         if (con.queryHeader(settings.getSimulationName(), 0, 0, 0, 0, 0, 0, 0, 0).isEmpty())
-        	con.saveHeader(simName, gridSpacing, orbitalEcc, axialTilt, simLength, simTimeStep, dsPrecision, geoPrecision, temporalPrecision);
+        {
+            con.saveHeader(simName, gridSpacing, orbitalEcc, axialTilt, simLength, simTimeStep, dsPrecision, geoPrecision, temporalPrecision);
+        }
         final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
         for (int row = 0; row < grid.size(); row++)
         {
@@ -116,13 +79,15 @@ public class QueryEngine
 
             }
         }
+
+        eventBus.publish(new MetricEvent().setDatabaseSize(con.getDatabaseSize()).setSettings(settings));
     }
 
-    public SimulationSettings query(final SimulationSettings settings)
+    private SimulationSettings query(final SimulationSettings settings)
     {
         try
         {
-        	Calendar c = Calendar.getInstance();
+            final long start = System.nanoTime();
             final MySqlConnection con = new MySqlConnection();
             final ArrayList<SimulationSettings> ss = con.queryHeader(settings.getSimulationName(), settings.getGridSpacing(),
                     settings.getSimulationTimeStepMinutes(), settings.getSimulationLength(), settings.getPlanetsAxialTilt(),
@@ -182,9 +147,9 @@ public class QueryEngine
                         break;
                     }
                     else if (
-                            // settings.getGeographicPrecision() ==
-                            // s.getGeographicPrecision() &&
-                            (settings.getTemporalPrecision() == s.getTemporalPrecision()) && (settings.getDatastoragePrecision() == s.getDatastoragePrecision())
+                    // settings.getGeographicPrecision() ==
+                    // s.getGeographicPrecision() &&
+                    (settings.getTemporalPrecision() == s.getTemporalPrecision()) && (settings.getDatastoragePrecision() == s.getDatastoragePrecision())
                             && (settings.getGridSpacing() == s.getGridSpacing())
                             && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
                     {
@@ -192,37 +157,37 @@ public class QueryEngine
                         break;
                     }
                     else if (
-                            // settings.getGeographicPrecision() ==
-                            // s.getGeographicPrecision() &&
-                            // settings.getTemporalPrecision() ==
-                            // s.getTemporalPrecision() &&
-                            (settings.getDatastoragePrecision() == s.getDatastoragePrecision()) && (settings.getGridSpacing() == s.getGridSpacing())
+                    // settings.getGeographicPrecision() ==
+                    // s.getGeographicPrecision() &&
+                    // settings.getTemporalPrecision() ==
+                    // s.getTemporalPrecision() &&
+                    (settings.getDatastoragePrecision() == s.getDatastoragePrecision()) && (settings.getGridSpacing() == s.getGridSpacing())
                             && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
                     {
                         chosenOne = s;
                         break;
                     }
                     else if (
-                            // settings.getGeographicPrecision() ==
-                            // s.getGeographicPrecision() &&
-                            // settings.getTemporalPrecision() ==
-                            // s.getTemporalPrecision() &&
-                            // settings.getDatastoragePrecision() ==
-                            // s.getDatastoragePrecision() &&
-                            (settings.getGridSpacing() == s.getGridSpacing()) && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
+                    // settings.getGeographicPrecision() ==
+                    // s.getGeographicPrecision() &&
+                    // settings.getTemporalPrecision() ==
+                    // s.getTemporalPrecision() &&
+                    // settings.getDatastoragePrecision() ==
+                    // s.getDatastoragePrecision() &&
+                    (settings.getGridSpacing() == s.getGridSpacing()) && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
                     {
                         chosenOne = s;
                         break;
                     }
                     else if (
-                            // settings.getGeographicPrecision() ==
-                            // s.getGeographicPrecision() &&
-                            // settings.getTemporalPrecision() ==
-                            // s.getTemporalPrecision() &&
-                            // settings.getDatastoragePrecision() ==
-                            // s.getDatastoragePrecision() &&
-                            // settings.getGridSpacing() == s.getGridSpacing() &&
-                            settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes())
+                    // settings.getGeographicPrecision() ==
+                    // s.getGeographicPrecision() &&
+                    // settings.getTemporalPrecision() ==
+                    // s.getTemporalPrecision() &&
+                    // settings.getDatastoragePrecision() ==
+                    // s.getDatastoragePrecision() &&
+                    // settings.getGridSpacing() == s.getGridSpacing() &&
+                    settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes())
                     {
                         chosenOne = s;
                         break;
@@ -238,7 +203,7 @@ public class QueryEngine
             // nothing in the list so a simulation has to be run
             else if (s1.size() == 0)
             {
-            	chosenOne = null;
+                chosenOne = null;
             }
             // only one in the list so get it and determine the correct value of
             // interpolate
@@ -253,11 +218,13 @@ public class QueryEngine
             }
             if (chosenOne != null)
             {
-	            final GridSettings gs = con.query(chosenOne);
-	            chosenOne.setGridSettings(gs);
-	            chosenOne.setDataSourceProcess(interpolate ? SimulationSettings.DATASOURCE_PROCESS_INTERPOLATE : SimulationSettings.DATASOURCE_PROCESS_QUERY);
+                final GridSettings gs = con.query(chosenOne);
+                chosenOne.setGridSettings(gs);
+                chosenOne.setDataSource(interpolate ? INTERPOLATION : QUERY);
             }
-            this.eventBus.publish(new MetricProducedEvent("QE.query",  Calendar.getInstance().getTimeInMillis() - c.getTimeInMillis()));
+            final long end = System.nanoTime();
+
+            eventBus.publish(new MetricEvent().setQueryTime(end - start).setDatabaseSize(con.getDatabaseSize()).setSettings(settings));
             return chosenOne;
         }
         catch (final Exception e)
@@ -275,10 +242,10 @@ public class QueryEngine
             if (chosenOne == null)
             {
                 chosenOne = event.getSettings();
-                chosenOne.setDataSourceProcess(SimulationSettings.DATASOURCE_PROCESS_SIMULATE);
+                chosenOne.setDataSource(SIMULATION);
                 eventBus.publish(new RunEvent(chosenOne));
             }
-            else if (chosenOne.getDataSourceProcess() == SimulationSettings.DATASOURCE_PROCESS_QUERY)
+            else if (chosenOne.getDataSource().equals(QUERY))
             {
                 eventBus.publish(new DisplayEvent(chosenOne));
             }
@@ -293,20 +260,34 @@ public class QueryEngine
         }
     }
 
-    /**
-     * This method is intended to be part of the metrics for the design study.
-     * It may be returned on the event bus that isn't known yet but the data is
-     * now available when we need it.
-     * 
-     * @return - long value that is the database size in bytes
-     * @throws SQLException
-     */
-    @Subscribe
-    public long getDataStoreSize(MetricProducedEvent event)
+    public static void main(final String[] args)
     {
-    	long size = con.getDatabaseSize();
-    	if (event != null)
-    		eventBus.publish(new MetricProducedEvent("QE.dbsize", size));
-        return size;
+        final EventBus bus = EventBus.getInstance();
+        final DBEngine qe = new DBEngine(bus);
+
+        final SimulationSettings ss = new SimulationSettings();
+        ss.setDataSource(QUERY);
+        ss.setDatastoragePrecision(8);
+        ss.setGeographicPrecision(100);
+        ss.setGridSpacing(15);
+        ss.setSimulationLength(122);
+        ss.setSimulationName("sim1");
+        ss.setSimulationTimeStepMinutes(1);
+        ss.setTemporalPrecision(100);
+        // ss.setPlanet(new Planet(ss));
+        ss.getSimulationTimestamp().setTimeInMillis(0);
+        // GridSettings gridSettings = new GridSettings(ss);
+        // for (int row = 0; row < 360 /15; row++)
+        // for(int col = 0; col < 180/15;col++)
+        // gridSettings.addCell(row, col, 5, row+col, col, row, col+1, row+1,
+        // col*10);
+        // ss.setGridSettings(gridSettings);
+        // PersistEvent event = new PersistEvent(ss);
+        // bus.publish(event);
+        // SimulationSettings s1 = qe.query(ss);
+        final QueryEvent qevent = new QueryEvent(ss);
+        final SimulationSettings s1 = qe.query(ss);
+        s1.getSimulationName();
+        System.out.println(s1.getSimulationName());
     }
 }

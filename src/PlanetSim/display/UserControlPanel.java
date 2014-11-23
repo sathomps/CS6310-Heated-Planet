@@ -41,57 +41,68 @@ import PlanetSim.common.event.EventBus;
 import PlanetSim.common.event.PauseEvent;
 import PlanetSim.common.event.RunEvent;
 import PlanetSim.common.event.StopEvent;
+import PlanetSim.common.event.Subscribe;
+import PlanetSim.model.PlanetPosition;
 
 public class UserControlPanel extends JPanel
 {
-    private static final long         serialVersionUID = 1L;
+    private static final long             serialVersionUID = 1L;
 
-    private static final Dimension    PREFERRED_SIZE   = new Dimension(800, 400);
-    private static final Dimension    MIN_SIZE         = new Dimension(800, 400);
+    private static final Dimension        PREFERRED_SIZE   = new Dimension(800, 400);
+    private static final Dimension        MIN_SIZE         = new Dimension(800, 400);
 
-    private final SimulationSettings  settings;
+    private final SimulationSettings      settings;
 
-    private final Map<JButton, Image> defaultImages    = new HashMap<JButton, Image>();
+    private final Map<JButton, Image>     defaultImages    = new HashMap<JButton, Image>();
 
-    private final Map<JButton, Image> selectedImages   = new HashMap<JButton, Image>();
+    private final Map<JButton, Image>     selectedImages   = new HashMap<JButton, Image>();
 
-    private SpinnerNumberModel        simulationLength;
+    private SpinnerNumberModel            simulationLength;
 
-    private SpinnerNumberModel        gridSpacingModel;
-    private SpinnerNumberModel        timeStepModel;
+    private SpinnerNumberModel            gridSpacingModel;
+    private SpinnerNumberModel            timeStepModel;
 
-    private static final String       STATUS_RUN       = "run";
-    private static final String       STATUS_PAUSE     = "pause";
-    private static final String       STATUS_STOP      = "stop";
+    private static final String           STATUS_RUN       = "run";
+    private static final String           STATUS_PAUSE     = "pause";
+    private static final String           STATUS_STOP      = "stop";
 
-    private final EventBus            eventBus;
+    private final EventBus                eventBus;
 
-    private JTextField                tlat;
+    private JTextField                    tlat;
 
-    private JTextField                blat;
+    private JTextField                    blat;
 
-    private JTextField                llong;
+    private JTextField                    llong;
 
-    private JTextField                rlong;
+    private JTextField                    rlong;
 
-    private JComboBox                 simulationName;
+    private JComboBox                     simulationName;
 
-    private JTextField                eccentricity;
+    private JTextField                    eccentricity;
 
-    private JTextField                tilt;
+    private JTextField                    tilt;
 
-    private SpinnerNumberModel        refreshRateModel;
-    private SpinnerNumberModel        simLengthModel;
+    private SpinnerNumberModel            refreshRateModel;
+    private SpinnerNumberModel            simLengthModel;
 
-    private MyDateTimeSpinner         startDateTimeSpinner;
-    private MyDateTimeSpinner         endDateTimeSpinner;
+    private DateTimeSpinner             startDateTimeSpinner;
+    private DateTimeSpinner             endDateTimeSpinner;
 
-    private String                    lastButtonPushed = "";
+    private String                        lastButtonPushed = "";
+
+    private JLabel                        simulationTime;
+    private JLabel                        orbitalPosition;
+    private JLabel                        rotationalPosition;
+
+    private static final SimpleDateFormat SDF              = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
 
     public UserControlPanel(final EventBus eventBus, final SimulationSettings settings)
     {
         this.eventBus = eventBus;
+        eventBus.subscribe(this);
+
         this.settings = settings;
+
         initLayout();
 
         final Panel panel = new Panel();
@@ -211,7 +222,7 @@ public class UserControlPanel extends JPanel
         {
             SpinnerDateModel startDateTimeModel;
             startDateTimeModel = new SpinnerDateModel(getDefaultStartDateTime().getTime(), null, null, Calendar.DAY_OF_MONTH);
-            startDateTimeSpinner = new MyDateTimeSpinner(startDateTimeModel);
+            startDateTimeSpinner = new DateTimeSpinner(startDateTimeModel);
 
             final JSpinner.DateEditor startDateTimeEditor = new JSpinner.DateEditor(startDateTimeSpinner, "hh:mm a, MMM dd, yyyy");
             startDateTimeSpinner.setEditor(startDateTimeEditor);
@@ -229,7 +240,7 @@ public class UserControlPanel extends JPanel
         {
             SpinnerDateModel endDateTimeModel;
             endDateTimeModel = new SpinnerDateModel(getDefaultEndDateTime().getTime(), null, null, Calendar.DAY_OF_MONTH);
-            endDateTimeSpinner = new MyDateTimeSpinner(endDateTimeModel);
+            endDateTimeSpinner = new DateTimeSpinner(endDateTimeModel);
             final JSpinner.DateEditor endDateTimeEditor = new JSpinner.DateEditor(endDateTimeSpinner, "hh:mm a, MMM dd, yyyy");
             endDateTimeSpinner.setEditor(endDateTimeEditor);
             endDateTimeSpinner.addChangeListener(new ChangeListener()
@@ -295,17 +306,16 @@ public class UserControlPanel extends JPanel
         simTimePanel.setLayout(new BoxLayout(simTimePanel, BoxLayout.X_AXIS));
         simTimePanel.setBorder(BorderFactory.createTitledBorder("Simulation Status"));
 
-        addSimTimeField(simTimePanel, "Simulation Time:");
-        addSimTimeField(simTimePanel, "Orbital Position:");
-        addSimTimeField(simTimePanel, "Rotational Position:");
+        addSimTimeField(simTimePanel, "Simulation Time:", simulationTime = new JLabel());
+        addSimTimeField(simTimePanel, "Orbital Position:", orbitalPosition = new JLabel());
+        addSimTimeField(simTimePanel, "Rotational Position:", rotationalPosition = new JLabel());
 
         return simTimePanel;
     }
 
-    private void addSimTimeField(final JPanel simTimePanel, final String label)
+    private void addSimTimeField(final JPanel simTimePanel, final String label, final JLabel value)
     {
         final JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        final JLabel value = new JLabel("");
         row.add(new JLabel(label));
         row.add(value);
         simTimePanel.add(row);
@@ -429,9 +439,9 @@ public class UserControlPanel extends JPanel
     {
         try
         {
-            final Image defaultImg = ImageIO.read(getClass().getResource(buttonID + ".png"));
+            final Image defaultImg = ImageIO.read(getClass().getResource("images/" + buttonID + ".png"));
             defaultImages.put(button, defaultImg);
-            final Image selImg = ImageIO.read(getClass().getResource(buttonID + "_sel.png"));
+            final Image selImg = ImageIO.read(getClass().getResource("images/" + buttonID + "_sel.png"));
             selectedImages.put(button, selImg);
 
             button.setIcon(new ImageIcon(defaultImg));
@@ -508,5 +518,14 @@ public class UserControlPanel extends JPanel
     private double convertTextToDbl(final String value)
     {
         return ((value != null) && (value.length() > 0.)) ? Double.parseDouble(value) : 0.;
+    }
+
+    @Subscribe
+    public void display(final DisplayEvent event)
+    {
+        final PlanetPosition planetPosition = event.getSettings().getPlanetPosition();
+        simulationTime.setText(SDF.format(event.getSettings().getSimulationTimestamp().getTime()));
+        orbitalPosition.setText(String.format("(%s, %s)", planetPosition.getHelioLatitude(), planetPosition.getHelioLongitude()));
+        // rotationalPosition;
     }
 }

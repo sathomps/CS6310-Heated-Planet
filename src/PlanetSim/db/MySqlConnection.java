@@ -1,11 +1,11 @@
-package PlanetSim.Query.db;
+package PlanetSim.db;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+
+import org.h2.jdbcx.JdbcConnectionPool;
 
 import PlanetSim.common.GridSettings;
 import PlanetSim.common.SimulationSettings;
@@ -64,22 +64,28 @@ import PlanetSim.common.SimulationSettings;
  */
 public class MySqlConnection
 {
-    private final String url      = "jdbc:mysql://localhost:3306/heated_planet";
-    private final String user     = "root";
-    private final String password = "root";
+    private final String     url      = "jdbc:h2:file:~/heated_planet";
+    private final String     user     = "sa";
+    private final String     password = "";
 
-    // db heavy lifting
-    private Connection   con      = null;
+    final JdbcConnectionPool cp;
 
     public MySqlConnection()
     {
+        cp = JdbcConnectionPool.create(url, user, password);
+        cp.setMaxConnections(25);
+        createSchema();
+    }
+
+    private void createSchema()
+    {
         try
         {
-            con = DriverManager.getConnection(url, user, password);
+            cp.getConnection().createStatement().execute("RUNSCRIPT FROM 'classpath:heated_planet.sql'");
         }
         catch (final SQLException ex)
         {
-            throw new RuntimeException(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -94,7 +100,7 @@ public class MySqlConnection
      */
     public ArrayList<SimulationSettings> queryHeader(final String name, final int gridSpacing, final int timeStep, final int simLength, final double axialTilt,
             final double orbitalEccentricity, final int tempPrecision, final int geoPrecision, final int temporalPrecision)
-            {
+    {
         final ArrayList<SimulationSettings> result = new ArrayList<SimulationSettings>();
         String sql = "SELECT * FROM simulations WHERE 1=1 "; // 1=1 is stupid
         // trick to not
@@ -142,7 +148,7 @@ public class MySqlConnection
         {
             throw new RuntimeException(ex);
         }
-            }
+    }
 
     public ArrayList<String> listSimulationNames()
     {
@@ -229,7 +235,7 @@ public class MySqlConnection
     {
         try
         {
-            final Statement st = con.createStatement();
+            final Statement st = cp.getConnection().createStatement();
             final String sql = String.format("INSERT INTO simulations (name, grid_spacing, simulation_time_step, simulation_length"
                     + ", axial_tilt, orbital_eccentricity, temperature_precision, geographic_precision, temporal_precision) "
                     + "VALUES ('%s', %d, %d, %d, %f, %f, %d, %d, %d)", simName, gridSpacing, simTimeStep, simLength, axialTilt, orbitalEcc, dsPrecision,
@@ -252,7 +258,7 @@ public class MySqlConnection
     {
         try
         {
-            final Statement st = con.createStatement();
+            final Statement st = cp.getConnection().createStatement();
             final String sql = "INSERT INTO simulation_grid_data (simulation_name, row_position, column_position, temperature, reading_date"
                     // how many decimals to store, kinda dorky but i can't
                     // figure
@@ -283,20 +289,7 @@ public class MySqlConnection
 
     private ResultSet createResultSet(final String sql) throws SQLException
     {
-        final Statement st = con.createStatement();
+        final Statement st = cp.getConnection().createStatement();
         return st.executeQuery(sql);
-    }
-
-    @Override
-    protected void finalize() throws Throwable
-    {
-        try
-        {
-            con.close();
-        }
-        catch (final SQLException ex)
-        {
-            // IGNORE
-        }
     }
 }

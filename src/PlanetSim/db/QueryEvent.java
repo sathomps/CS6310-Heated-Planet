@@ -1,4 +1,4 @@
-package PlanetSim.Query;
+package PlanetSim.db;
 
 import PlanetSim.common.SimulationSettings;
 
