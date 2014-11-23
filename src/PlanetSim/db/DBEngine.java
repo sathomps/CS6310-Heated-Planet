@@ -121,9 +121,9 @@ public class DBEngine
                         break;
                     }
                     else if (
-                            // settings.getGeographicPrecision() ==
-                            // s.getGeographicPrecision() &&
-                            (settings.getTemporalPrecision() == s.getTemporalPrecision()) && (settings.getDatastoragePrecision() == s.getDatastoragePrecision())
+                    // settings.getGeographicPrecision() ==
+                    // s.getGeographicPrecision() &&
+                    (settings.getTemporalPrecision() == s.getTemporalPrecision()) && (settings.getDatastoragePrecision() == s.getDatastoragePrecision())
                             && (settings.getGridSpacing() == s.getGridSpacing())
                             && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
                     {
@@ -131,44 +131,44 @@ public class DBEngine
                         break;
                     }
                     else if (
-                            // settings.getGeographicPrecision() ==
-                            // s.getGeographicPrecision() &&
-                            // settings.getTemporalPrecision() ==
-                            // s.getTemporalPrecision() &&
-                            (settings.getDatastoragePrecision() == s.getDatastoragePrecision()) && (settings.getGridSpacing() == s.getGridSpacing())
+                    // settings.getGeographicPrecision() ==
+                    // s.getGeographicPrecision() &&
+                    // settings.getTemporalPrecision() ==
+                    // s.getTemporalPrecision() &&
+                    (settings.getDatastoragePrecision() == s.getDatastoragePrecision()) && (settings.getGridSpacing() == s.getGridSpacing())
                             && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
                     {
                         chosenOne = s;
                         break;
                     }
                     else if (
-                            // settings.getGeographicPrecision() ==
-                            // s.getGeographicPrecision() &&
-                            // settings.getTemporalPrecision() ==
-                            // s.getTemporalPrecision() &&
-                            // settings.getDatastoragePrecision() ==
-                            // s.getDatastoragePrecision() &&
-                            (settings.getGridSpacing() == s.getGridSpacing()) && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
+                    // settings.getGeographicPrecision() ==
+                    // s.getGeographicPrecision() &&
+                    // settings.getTemporalPrecision() ==
+                    // s.getTemporalPrecision() &&
+                    // settings.getDatastoragePrecision() ==
+                    // s.getDatastoragePrecision() &&
+                    (settings.getGridSpacing() == s.getGridSpacing()) && (settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes()))
                     {
                         chosenOne = s;
                         break;
                     }
                     else if (
-                            // settings.getGeographicPrecision() ==
-                            // s.getGeographicPrecision() &&
-                            // settings.getTemporalPrecision() ==
-                            // s.getTemporalPrecision() &&
-                            // settings.getDatastoragePrecision() ==
-                            // s.getDatastoragePrecision() &&
-                            // settings.getGridSpacing() == s.getGridSpacing() &&
-                            settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes())
+                    // settings.getGeographicPrecision() ==
+                    // s.getGeographicPrecision() &&
+                    // settings.getTemporalPrecision() ==
+                    // s.getTemporalPrecision() &&
+                    // settings.getDatastoragePrecision() ==
+                    // s.getDatastoragePrecision() &&
+                    // settings.getGridSpacing() == s.getGridSpacing() &&
+                    settings.getSimulationTimeStepMinutes() == s.getSimulationTimeStepMinutes())
                     {
                         chosenOne = s;
-                        break;
                     }
                 }
-                //didn't find one that matched so pick the first one in the list.  They all match by name
-                //and physical factors so this doesn't break that rule  
+                // didn't find one that matched so pick the first one in the
+                // list. They all match by name
+                // and physical factors so this doesn't break that rule
                 if (chosenOne == null)
                 {
                     chosenOne = s1.get(0);
