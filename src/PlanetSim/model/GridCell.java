@@ -2,27 +2,28 @@ package PlanetSim.model;
 
 public class GridCell
 {
-    private static final int DEFAULT_CELL_TEMPERATURE_CELCIUS = 85;
+    private static final double DEFAULT_CELL_TEMPERATURE_CELCIUS = 14.85;
+    private static final int    MAX_CELL_TEMPERATURE_CELCIUS     = 58;
 
-    private int              row;
-    private int              column;
+    private int                 row;
+    private int                 column;
 
-    private int              width;
-    private int              height;
+    private int                 width;
+    private int                 height;
 
-    private double           latitudeTop;
-    private double           latitudeBottom;
-    private double           longitudeLeft;
-    private double           longitudeRight;
+    private double              latitudeTop;
+    private double              latitudeBottom;
+    private double              longitudeLeft;
+    private double              longitudeRight;
 
-    private double           surfaceArea;
+    private double              surfaceArea;
 
-    private double           temp                             = DEFAULT_CELL_TEMPERATURE_CELCIUS;
+    private double              temp                             = DEFAULT_CELL_TEMPERATURE_CELCIUS;
 
-    private GridCell         north;
-    private GridCell         south;
-    private GridCell         west;
-    private GridCell         east;
+    private GridCell            north;
+    private GridCell            south;
+    private GridCell            west;
+    private GridCell            east;
 
     public GridCell getNorth()
     {
@@ -162,6 +163,15 @@ public class GridCell
     public void setTemp(final double temp)
     {
         this.temp = temp;
+        validateTemp();
+    }
+
+    private void validateTemp()
+    {
+        if (temp > MAX_CELL_TEMPERATURE_CELCIUS)
+        {
+            temp = MAX_CELL_TEMPERATURE_CELCIUS;
+        }
     }
 
     public double getWestTemp()

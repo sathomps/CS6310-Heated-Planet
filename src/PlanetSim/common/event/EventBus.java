@@ -8,19 +8,19 @@ import java.util.Map;
 
 public final class EventBus
 {
-    private static final EventBus INSTANCE = new EventBus();
+    private boolean synchronizedCalls = false;
 
-    private EventBus()
+    public EventBus(final boolean synchronizedCalls)
+    {
+        this.synchronizedCalls = synchronizedCalls;
+    }
+
+    public EventBus()
     {
     }
 
     private final Map<Class<?>, List<Method>> eventsSubscriberMethods = new HashMap<Class<?>, List<Method>>();
     private final Map<Method, Object>         eventsSubscribers       = new HashMap<Method, Object>();
-
-    public static EventBus getInstance()
-    {
-        return INSTANCE;
-    }
 
     public void subscribe(final Object subscriber)
     {
@@ -42,7 +42,14 @@ public final class EventBus
     {
         try
         {
-            new Thread(new AsynchronousInvocation(subscriber, event)).start();
+            if (synchronizedCalls)
+            {
+                subscriber.invoke(eventsSubscribers.get(subscriber), event);
+            }
+            else
+            {
+                new Thread(new AsynchronousInvocation(subscriber, event)).start();
+            }
         }
         catch (final Exception e)
         {

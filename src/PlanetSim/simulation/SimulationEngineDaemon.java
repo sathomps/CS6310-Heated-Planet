@@ -23,7 +23,6 @@ public class SimulationEngineDaemon
     private final AtomicBoolean run           = new AtomicBoolean();
 
     private final AtomicLong    persistEvents = new AtomicLong();
-    private final AtomicLong    persisted     = new AtomicLong();
 
     public SimulationEngineDaemon(final EventBus eventBus)
     {

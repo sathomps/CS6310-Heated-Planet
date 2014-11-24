@@ -1,13 +1,16 @@
 package PlanetSim.metrics;
 
+import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 import PlanetSim.common.SimulationSettings;
 import PlanetSim.common.event.EventBus;
@@ -15,6 +18,8 @@ import PlanetSim.common.event.RunEvent;
 import PlanetSim.common.event.Subscribe;
 import PlanetSim.db.DBEngine;
 import PlanetSim.simulation.SimulationEngineDaemon;
+
+import com.sun.management.OperatingSystemMXBean;
 
 public class MetricsEngine
 {
@@ -25,15 +30,20 @@ public class MetricsEngine
 
     private Writer                             writer;
 
-    private static final OperatingSystemMXBean OS_BEAN  = ManagementFactory.getOperatingSystemMXBean();
+    private static final OperatingSystemMXBean OS_BEAN  = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
     public MetricsEngine(final EventBus eventBus)
+    {
+        this(eventBus, new Date().getTime() + "");
+    }
+
+    public MetricsEngine(final EventBus eventBus, final String fileName)
     {
         this.eventBus = eventBus;
         this.eventBus.subscribe(this);
         try
         {
-            writer = new OutputStreamWriter(new FileOutputStream("metrics_" + new Date().getTime() + ".csv"), "utf-8");
+            writer = new OutputStreamWriter(new FileOutputStream("metrics/metrics_" + fileName + ".csv"), "utf-8");
             outputMetricsHeader();
         }
         catch (final Exception ex)
@@ -116,11 +126,11 @@ public class MetricsEngine
     {
         try
         {
-            final double value = OS_BEAN.getSystemLoadAverage();
+            final double value = OS_BEAN.getProcessCpuLoad();
 
-            if (value != -1.0)
+            if (value > 0)
             {
-                return ((int) (value * 1000) / 10.0);
+                return value * 100.00;
             }
         }
         catch (final Exception e)
@@ -131,36 +141,62 @@ public class MetricsEngine
 
     public static void main(final String[] args)
     {
-        final SimulationSettings settings = new SimulationSettings();
-        setCommandLineArgs(args, settings);
-
-        settings.setSimulationName("test_" + new Date().getTime());
-        final EventBus eventBus = EventBus.getInstance();
-        new DBEngine(eventBus);
-        new SimulationEngineDaemon(eventBus);
-        new MetricsEngine(eventBus);
-
-        final RunEvent event = new RunEvent(settings);
-        eventBus.publish(event);
-    }
-
-    private static void setCommandLineArgs(final String[] args, final SimulationSettings settings)
-    {
-        for (int i = 0; i < args.length; i++)
+        int test = 1;
+        for (final SimulationSettings settings : buildTests())
         {
-            if (args[i].equals("-t"))
+            for (int testIteration = 1; testIteration <= 5; ++testIteration)
             {
-                settings.setTemporalPrecision(Integer.parseInt(args[i + 1]));
+                final String fileName = "test_" + test + "_iteration_" + testIteration;
+                final String simulationName = "test_" + test + "_iteration_" + testIteration + "_" + System.nanoTime();
+
+                settings.setSimulationName(simulationName);
+                final EventBus eventBus = new EventBus(true);
+                new DBEngine(eventBus);
+                new SimulationEngineDaemon(eventBus);
+                new MetricsEngine(eventBus, fileName);
+
+                new Thread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        eventBus.publish(new RunEvent(settings));
+                    }
+                }).start();
             }
-            else if (args[i].equals("-g"))
-            {
-                settings.setGeographicPrecision(Integer.parseInt(args[i + 1]));
-            }
-            else if (args[i].equals("-p"))
-            {
-                settings.setDatastoragePrecision(Integer.parseInt(args[i + 1]));
-            }
+            ++test;
         }
     }
 
+    private static List<SimulationSettings> buildTests()
+    {
+        final LinkedList<SimulationSettings> tests = new LinkedList<SimulationSettings>();
+        try
+        {
+            final BufferedReader br = new BufferedReader(new InputStreamReader(MetricsEngine.class.getResourceAsStream("tests.csv")));
+            String line = null;
+            while ((line = br.readLine()) != null)
+            {
+                final SimulationSettings settings = new SimulationSettings();
+                final String[] params = line.split(",");
+
+                settings.setPlanetsAxialTilt(Double.parseDouble(params[0]));
+                settings.setPlanetsOrbitalEccentricity(Double.parseDouble(params[1]));
+                settings.setGridSpacing(Integer.parseInt(params[2]));
+                settings.setSimulationTimeStepMinutes(Integer.parseInt(params[3]));
+                settings.setSimulationLength(Integer.parseInt(params[4]));
+                settings.setDatastoragePrecision(Integer.parseInt(params[5]));
+                settings.setGeographicPrecision(Integer.parseInt(params[6]));
+                settings.setTemporalPrecision(Integer.parseInt(params[7]));
+
+                tests.add(settings);
+            }
+        }
+        catch (final Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return tests;
+    }
 }

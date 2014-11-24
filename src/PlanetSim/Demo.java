@@ -46,7 +46,7 @@ public class Demo
     private static void init()
     {
         settings = new SimulationSettings();
-        eventBus = EventBus.getInstance();
+        eventBus = new EventBus();
     }
 
     private static void startDBEngine()

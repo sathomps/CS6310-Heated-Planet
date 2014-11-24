@@ -17,10 +17,9 @@ import PlanetSim.metrics.MetricEvent;
 
 public class DBEngine
 {
-    // used by save method so it can keep up with transactions.
-    private final MySqlConnection con;
+    private static MySqlConnection con;
 
-    private final EventBus        eventBus;
+    private final EventBus         eventBus;
 
     public DBEngine(final EventBus eventBus)
     {
@@ -44,14 +43,7 @@ public class DBEngine
     public void persist(final PersistEvent event)
     {
         final SimulationSettings settings = event.getSettings();
-        // sanity checks
-        // if the header already exists, then this is more grid data of an
-        // existing and likely concurrently running
-        // simulation. Only save the grid data this time around.
-        if (con.queryHeader(settings.getSimulationName(), 0, 0, 0, 0, 0, 0, 0, 0).isEmpty())
-        {
-            con.saveHeader(settings);
-        }
+
         con.save(settings);
 
         eventBus.publish(new MetricEvent().setDatabaseSize(con.getDatabaseSize()).setSettings(settings));
@@ -232,36 +224,5 @@ public class DBEngine
         {
             throw new RuntimeException(e);
         }
-    }
-
-    public static void main(final String[] args)
-    {
-        final EventBus bus = EventBus.getInstance();
-        final DBEngine qe = new DBEngine(bus);
-
-        final SimulationSettings ss = new SimulationSettings();
-        ss.setDataSource(QUERY);
-        ss.setDatastoragePrecision(8);
-        ss.setGeographicPrecision(100);
-        ss.setGridSpacing(15);
-        ss.setSimulationLength(122);
-        ss.setSimulationName("sim1");
-        ss.setSimulationTimeStepMinutes(1);
-        ss.setTemporalPrecision(100);
-        // ss.setPlanet(new Planet(ss));
-        ss.getSimulationTimestamp().setTimeInMillis(0);
-        // GridSettings gridSettings = new GridSettings(ss);
-        // for (int row = 0; row < 360 /15; row++)
-        // for(int col = 0; col < 180/15;col++)
-        // gridSettings.addCell(row, col, 5, row+col, col, row, col+1, row+1,
-        // col*10);
-        // ss.setGridSettings(gridSettings);
-        // PersistEvent event = new PersistEvent(ss);
-        // bus.publish(event);
-        // SimulationSettings s1 = qe.query(ss);
-        final QueryEvent qevent = new QueryEvent(ss);
-        final SimulationSettings s1 = qe.query(ss);
-        s1.getSimulationName();
-        System.out.println(s1.getSimulationName());
     }
 }

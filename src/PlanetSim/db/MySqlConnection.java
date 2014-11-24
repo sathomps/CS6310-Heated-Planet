@@ -113,7 +113,7 @@ public class MySqlConnection
         {
             close(con);
         }
-            }
+    }
 
     public ArrayList<String> listSimulationNames()
     {
@@ -169,7 +169,7 @@ public class MySqlConnection
             if (simulationRS.next())
             {
                 final GridSettings gs = new GridSettings(settings);
-                final ResultSet settingsRS = createResultSet(con, String.format("SELECT row_position, column_position, temperature, reading_date"
+                final ResultSet settingsRS = createResultSet(con, String.format("SELECT row_position, column_position, temperature, simulation_date"
                         + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom " + " FROM simulation_grid_data WHERE simulation_name = '%s'",
                         settings.getSimulationName()));
 
@@ -187,8 +187,8 @@ public class MySqlConnection
                         final int row_pos = settingsRS.getInt("row_position");
                         final int col_pos = settingsRS.getInt("column_position");
                         final double temp = settingsRS.getDouble("temperature");
-                        final long read_dt = settingsRS.getLong("reading_date");
-                        gs.addCell(row_pos, col_pos, settings.getGridSpacing(), temp, longLeft, latTop, longRight, latBottom, read_dt, 0);
+                        final long simulation_date = settingsRS.getLong("simulation_date");
+                        gs.addCell(row_pos, col_pos, settings.getGridSpacing(), temp, longLeft, latTop, longRight, latBottom, simulation_date, 0);
                     }
                 }
                 return gs;
@@ -209,34 +209,21 @@ public class MySqlConnection
         }
     }
 
-    public void saveHeader(final SimulationSettings settings)
+    private boolean simulationExists(final SimulationSettings settings)
     {
+        final String name = settings.getSimulationName();
         Connection con = null;
-
         try
         {
+            final String sql = "SELECT TOP 1 name FROM simulations" + String.format(" WHERE name = '%s'", name);
             con = cp.getConnection();
 
-            final String simName = settings.getSimulationName();
-            final int gridSpacing = settings.getGridSpacing();
-            final double orbitalEcc = settings.getPlanetsOrbitalEccentricity();
-            final double axialTilt = settings.getPlanetsAxialTilt();
-            final int simLength = settings.getSimulationLength();
-            final int simTimeStep = settings.getSimulationTimeStepMinutes();
-            final int dsPrecision = settings.getDatastoragePrecision();
-            final int geoPrecision = settings.getGeographicPrecision();
-            final int temporalPrecision = settings.getTemporalPrecision();
-
-            final Statement st = cp.getConnection().createStatement();
-            final String sql = String.format("INSERT INTO simulations (name, grid_spacing, simulation_time_step, simulation_length"
-                    + ", axial_tilt, orbital_eccentricity, temperature_precision, geographic_precision, temporal_precision) "
-                    + "VALUES ('%s', %d, %d, %d, %f, %f, %d, %d, %d)", simName, gridSpacing, simTimeStep, simLength, axialTilt, orbitalEcc, dsPrecision,
-                    geoPrecision, temporalPrecision);
-            st.execute(sql);
+            return createResultSet(con, sql).next();
         }
         catch (final SQLException ex)
         {
-            throw new RuntimeException(ex);
+            ex.printStackTrace();
+            return true;
         }
         finally
         {
@@ -244,8 +231,48 @@ public class MySqlConnection
         }
     }
 
+    private void saveHeader(final SimulationSettings settings)
+    {
+        if (!simulationExists(settings))
+        {
+            Connection con = null;
+
+            try
+            {
+                con = cp.getConnection();
+
+                final String simName = settings.getSimulationName();
+                final int gridSpacing = settings.getGridSpacing();
+                final double orbitalEcc = settings.getPlanetsOrbitalEccentricity();
+                final double axialTilt = settings.getPlanetsAxialTilt();
+                final int simLength = settings.getSimulationLength();
+                final int simTimeStep = settings.getSimulationTimeStepMinutes();
+                final int dsPrecision = settings.getDatastoragePrecision();
+                final int geoPrecision = settings.getGeographicPrecision();
+                final int temporalPrecision = settings.getTemporalPrecision();
+
+                final Statement st = cp.getConnection().createStatement();
+                final String sql = String.format("INSERT INTO simulations (name, grid_spacing, simulation_time_step, simulation_length"
+                        + ", axial_tilt, orbital_eccentricity, temperature_precision, geographic_precision, temporal_precision) "
+                        + "VALUES ('%s', %d, %d, %d, %f, %f, %d, %d, %d)", simName, gridSpacing, simTimeStep, simLength, axialTilt, orbitalEcc, dsPrecision,
+                        geoPrecision, temporalPrecision);
+                st.execute(sql);
+            }
+            catch (final SQLException ex)
+            {
+                throw new RuntimeException(ex);
+            }
+            finally
+            {
+                close(con);
+            }
+        }
+    }
+
     public void save(final SimulationSettings settings)
     {
+        saveHeader(settings);
+
         Connection con = null;
 
         try
@@ -270,7 +297,7 @@ public class MySqlConnection
             }
             batch.executeBatch();
         }
-        catch (final SQLException ex)
+        catch (final Exception ex)
         {
             throw new RuntimeException(ex);
         }
@@ -287,15 +314,31 @@ public class MySqlConnection
 
     private void saveCell(final Statement batch, final SimulationSettings settings, final GridCell gridCell) throws SQLException
     {
-        final String sql = "INSERT INTO simulation_grid_data (simulation_name, row_position, column_position, temperature, reading_date"
-                // how many decimals to store, kinda dorky but i can't
-                // figure
-                // how to round to x round places.
-                + ", longitudeLeft, longitudeRight, latitudeTop, latitudeBottom) " + " VALUES ('%s', %d, %d" + ", %." + settings.getDatastoragePrecision()
-                + "f" + ", %d, %f, %f, %f, %f)";
-        batch.addBatch(String.format(sql, settings.getSimulationName(), gridCell.getRow(), gridCell.getColumn(), gridCell.getTemp(), settings
-                .getSimulationTimestamp().getTimeInMillis(), gridCell.getLongitudeLeft(), gridCell.getLongitudeRight(), gridCell.getLatitudeTop(), gridCell
-                .getLatitudeBottom()));
+        final StringBuilder sql = new StringBuilder("INSERT INTO simulation_grid_data ");
+        sql.append("(simulation_name, row_position, column_position, temperature, simulation_date, insertion_ts, longitudeLeft, longitudeRight, latitudeTop, latitudeBottom) ");
+        sql.append("VALUES (");
+        sql.append("'" + settings.getSimulationName() + "'");
+        sql.append(",");
+        sql.append("" + gridCell.getRow());
+        sql.append(",");
+        sql.append("" + gridCell.getColumn());
+        sql.append(",");
+        sql.append(String.format("%." + settings.getDatastoragePrecision() + "f", gridCell.getTemp()));
+        sql.append(",");
+        sql.append("" + settings.getSimulationTimestamp().getTimeInMillis());
+        sql.append(",");
+        sql.append("" + System.nanoTime());
+        sql.append(",");
+        sql.append("" + gridCell.getLongitudeLeft());
+        sql.append(",");
+        sql.append("" + gridCell.getLongitudeRight());
+        sql.append(",");
+        sql.append("" + gridCell.getLatitudeTop());
+        sql.append(",");
+        sql.append("" + gridCell.getLatitudeBottom());
+        sql.append(")");
+
+        batch.addBatch(sql.toString());
     }
 
     /**
