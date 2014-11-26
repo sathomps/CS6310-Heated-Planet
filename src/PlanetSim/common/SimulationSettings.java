@@ -76,9 +76,15 @@ public class SimulationSettings
 
     private PlanetPosition                planetPosition;
 
+    private double                        minTemp;
+    private double                        maxTemp;
+    private double                        meanRegionTemp;
+    private double                        meanTimeTemp;
+
     private static final SimpleDateFormat SDF                       = new SimpleDateFormat("hh:mm:ss.SSS");
 
     private DataSource                    dataSource                = SIMULATION;
+    private boolean                       displaySimulation;
 
     public SimulationSettings()
     {
@@ -92,6 +98,16 @@ public class SimulationSettings
     public LinkedList<LinkedList<GridCell>> getGrid()
     {
         return gridSettings.getGrid();
+    }
+
+    public int getGridSize()
+    {
+        return gridSettings.getGrid().size();
+    }
+
+    public double getGridSurfaceArea()
+    {
+        return gridSettings.getTotalSurfaceArea();
     }
 
     public int getSimulationTimeStepMinutes()
@@ -426,5 +442,55 @@ public class SimulationSettings
     public int getTimePeriodSampleInterval()
     {
         return (int) (temporalPrecision * .1);
+    }
+
+    public boolean getDisplaySimulation()
+    {
+        return displaySimulation;
+    }
+
+    public void setDisplaySimulation(final boolean displaySimulation)
+    {
+        this.displaySimulation = displaySimulation;
+    }
+
+    public double getMinTemp()
+    {
+        return minTemp;
+    }
+
+    public void setMinTemp(final double minTemp)
+    {
+        this.minTemp = minTemp;
+    }
+
+    public double getMaxTemp()
+    {
+        return maxTemp;
+    }
+
+    public void setMaxTemp(final double maxTemp)
+    {
+        this.maxTemp = maxTemp;
+    }
+
+    public double getMeanRegionTemp()
+    {
+        return meanRegionTemp;
+    }
+
+    public void setMeanRegionTemp(final double meanRegionTemp)
+    {
+        this.meanRegionTemp = meanRegionTemp;
+    }
+
+    public double getMeanTimeTemp()
+    {
+        return meanTimeTemp;
+    }
+
+    public void setMeanTimeTemp(final double meanTimeTemp)
+    {
+        this.meanTimeTemp = meanTimeTemp;
     }
 }

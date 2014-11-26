@@ -3,7 +3,6 @@ package PlanetSim.display;
 import info.clearthought.layout.TableLayout;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -46,25 +45,25 @@ import PlanetSim.model.PlanetPosition;
 
 public class UserControlPanel extends JPanel
 {
-    private static final long             serialVersionUID = 1L;
+    private static final long             serialVersionUID   = 1L;
 
-    private static final Dimension        PREFERRED_SIZE   = new Dimension(800, 400);
-    private static final Dimension        MIN_SIZE         = new Dimension(800, 400);
+    private static final Dimension        PREFERRED_SIZE     = new Dimension(800, 400);
+    private static final Dimension        MIN_SIZE           = new Dimension(800, 400);
 
     private final SimulationSettings      settings;
 
-    private final Map<JButton, Image>     defaultImages    = new HashMap<JButton, Image>();
+    private final Map<JButton, Image>     defaultImages      = new HashMap<JButton, Image>();
 
-    private final Map<JButton, Image>     selectedImages   = new HashMap<JButton, Image>();
+    private final Map<JButton, Image>     selectedImages     = new HashMap<JButton, Image>();
 
     private SpinnerNumberModel            simulationLength;
 
     private SpinnerNumberModel            gridSpacingModel;
     private SpinnerNumberModel            timeStepModel;
 
-    private static final String           STATUS_RUN       = "run";
-    private static final String           STATUS_PAUSE     = "pause";
-    private static final String           STATUS_STOP      = "stop";
+    private static final String           STATUS_RUN         = "run";
+    private static final String           STATUS_PAUSE       = "pause";
+    private static final String           STATUS_STOP        = "stop";
 
     private final EventBus                eventBus;
 
@@ -88,13 +87,35 @@ public class UserControlPanel extends JPanel
     private DateTimeSpinner               startDateTimeSpinner;
     private DateTimeSpinner               endDateTimeSpinner;
 
-    private String                        lastButtonPushed = "";
+    private String                        lastButtonPushed   = "";
 
     private JLabel                        simulationTime;
     private JLabel                        orbitalPosition;
     private JLabel                        rotationalPosition;
 
-    private static final SimpleDateFormat SDF              = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
+    private JLabel                        maxMinMeanTimeMeanRegionTemp;
+
+    private JCheckBox                     showAnimation;
+
+    private JCheckBox                     showMaxTemp;
+
+    private JCheckBox                     showMinTemp;
+
+    private JCheckBox                     showMeanTimeTemp;
+
+    private JCheckBox                     showMeanRegionTemp;
+
+    private static final DateFormat       SDF_DISPLAY        = new SimpleDateFormat("hh:mm a, MMM dd, yyyy");
+    private static final SimpleDateFormat SDF                = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+
+    private static final Calendar         DISPLAY_START_DATE = Calendar.getInstance();
+    private static final Calendar         DISPLAY_END_DATE   = Calendar.getInstance();
+
+    static
+    {
+        calculateDefaultStartDateTime();
+        calculateDefaultEndDateTime();
+    }
 
     public UserControlPanel(final EventBus eventBus, final SimulationSettings settings)
     {
@@ -115,18 +136,31 @@ public class UserControlPanel extends JPanel
 
         addTimePanel(panel);
 
-        final JPanel config = addConfigPanel();
+        addConfigPanels();
 
-        addGridSpacing(config);
-        addSimulationTimeStep(config);
-        addRefreshRate(config);
-        addSimLength(config);
-
-        add(getOutputOptions());
-        add(getSimTimePanel());
-        add(getControlButtons());
+        add(addOutputOptionPanel());
+        add(addSimTimePanel());
+        add(addControlButtonPanel());
 
         initSettings();
+    }
+
+    @Subscribe
+    public void display(final DisplayEvent event)
+    {
+        displayTime(event);
+        displayOrbitalPosition(event);
+        displayTemperature(event);
+    }
+
+    private void addConfigPanels()
+    {
+        final JPanel config = addConfigPanel();
+
+        addGridSpacingField(config);
+        addSimulationTimeStepField(config);
+        addRefreshRateField(config);
+        addSimLengthField(config);
     }
 
     private void initSettings()
@@ -150,112 +184,87 @@ public class UserControlPanel extends JPanel
 
     private void addlocationPanel(final Panel panel)
     {
-        final JPanel sPanel2 = new JPanel();
-        sPanel2.setLayout(new BoxLayout(sPanel2, BoxLayout.Y_AXIS));
-        sPanel2.setBorder(BorderFactory.createTitledBorder("Location"));
-        addLocationFields(sPanel2);
-        panel.add(sPanel2);
+        final JPanel lPanel = new JPanel();
+        lPanel.setLayout(new BoxLayout(lPanel, BoxLayout.Y_AXIS));
+        lPanel.setBorder(BorderFactory.createTitledBorder("Location"));
+        addLocationFields(lPanel);
+        panel.add(lPanel);
     }
 
     private void addTimePanel(final Panel panel)
     {
-        final JPanel sPanel3 = new JPanel();
-        sPanel3.setLayout(new BoxLayout(sPanel3, BoxLayout.Y_AXIS));
-        sPanel3.setBorder(BorderFactory.createTitledBorder("Time"));
-        addTimeFields(sPanel3);
-        panel.add(sPanel3);
+        final JPanel tPanel = new JPanel();
+        tPanel.setLayout(new BoxLayout(tPanel, BoxLayout.Y_AXIS));
+        tPanel.setBorder(BorderFactory.createTitledBorder("Time"));
+        addTimeFields(tPanel);
+        panel.add(tPanel);
     }
 
-    private void addSettingsPanel(final Panel sPanel)
+    private void addSettingsPanel(final Panel panel)
     {
-        final JPanel sPanel1 = new JPanel();
-        sPanel1.setLayout(new BoxLayout(sPanel1, BoxLayout.Y_AXIS));
-        sPanel1.setBorder(BorderFactory.createTitledBorder("Properties"));
-        addSettingsFields(sPanel1);
-        sPanel.add(sPanel1);
+        final JPanel sPanel = new JPanel();
+        sPanel.setLayout(new BoxLayout(sPanel, BoxLayout.Y_AXIS));
+        sPanel.setBorder(BorderFactory.createTitledBorder("Properties"));
+        addSettingsFields(sPanel);
+        panel.add(sPanel);
     }
 
-    public static Calendar getDefaultStartDateTime()
+    private void addTimeFields(final JPanel panel)
     {
-        final Calendar calendar = Calendar.getInstance();
-        try
-        {
-            calendar.set(2000, 0, 4, 0, 0, 0);
-            calendar.set(Calendar.MILLISECOND, 0);
-            final DateFormat formatter = new SimpleDateFormat("hh:mm a, MMM dd, yyyy");
-            calendar.setTime(formatter.parse(formatter.format(calendar.getTime())));
-        }
-        catch (final ParseException e)
-        {
-            e.printStackTrace();
-        }
-        return calendar;
-    }
-
-    public static Calendar getDefaultEndDateTime()
-    {
-        final Calendar calendar = getDefaultStartDateTime();
-        calendar.setTime(getDefaultStartDateTime().getTime());
-        calendar.add(Calendar.MINUTE, 30 * 12 * 24 * 60);
-        return calendar;
-    }
-
-    private Component addTimeFields(final JPanel datePanel)
-    {
-
         final TableLayout datePanelLayout = new TableLayout(new double[][] { { TableLayout.FILL, 50.0, 170.0, TableLayout.FILL }, { 30.0, 30.0, 30.0, 30.0 } });
         datePanelLayout.setHGap(10);
         datePanelLayout.setVGap(10);
-        datePanel.setLayout(datePanelLayout);
-        {
-            final JLabel startDateLabel = new JLabel();
-            datePanel.add(startDateLabel, "1, 0");
-            startDateLabel.setText("Start");
-            startDateLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-        }
-        {
-            final JLabel endDateLabel = new JLabel();
-            datePanel.add(endDateLabel, "1, 1");
-            endDateLabel.setText("End");
-            endDateLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-        }
-        {
-            SpinnerDateModel startDateTimeModel;
-            startDateTimeModel = new SpinnerDateModel(getDefaultStartDateTime().getTime(), null, null, Calendar.DAY_OF_MONTH);
-            startDateTimeSpinner = new DateTimeSpinner(startDateTimeModel);
+        panel.setLayout(datePanelLayout);
+        final JLabel startDateLabel = new JLabel();
+        panel.add(startDateLabel, "1, 0");
+        startDateLabel.setText("Start");
+        startDateLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 
-            final JSpinner.DateEditor startDateTimeEditor = new JSpinner.DateEditor(startDateTimeSpinner, "hh:mm a, MMM dd, yyyy");
-            startDateTimeSpinner.setEditor(startDateTimeEditor);
-            startDateTimeSpinner.addChangeListener(new ChangeListener()
+        addStartDateField(panel);
+
+        addEndDate(panel);
+    }
+
+    private void addStartDateField(final JPanel datePanel)
+    {
+        final JLabel endDateLabel = new JLabel();
+        datePanel.add(endDateLabel, "1, 1");
+        endDateLabel.setText("End");
+        endDateLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+
+        SpinnerDateModel startDateTimeModel;
+        startDateTimeModel = new SpinnerDateModel(DISPLAY_START_DATE.getTime(), null, null, Calendar.DAY_OF_MONTH);
+        startDateTimeSpinner = new DateTimeSpinner(startDateTimeModel);
+
+        final JSpinner.DateEditor startDateTimeEditor = new JSpinner.DateEditor(startDateTimeSpinner, "hh:mm a, MMM dd, yyyy");
+        startDateTimeSpinner.setEditor(startDateTimeEditor);
+        startDateTimeSpinner.addChangeListener(new ChangeListener()
+        {
+            @Override
+            public void stateChanged(final ChangeEvent e)
             {
-                @Override
-                public void stateChanged(final ChangeEvent e)
-                {
-                    startDateTimeSpinner.notifyActionListeners(e.hashCode());
-                }
+                startDateTimeSpinner.notifyActionListeners(e.hashCode());
+            }
 
-            });
-            datePanel.add(startDateTimeSpinner, "2, 0");
-        }
+        });
+        datePanel.add(startDateTimeSpinner, "2, 0");
+    }
+
+    private void addEndDate(final JPanel panel)
+    {
+        final SpinnerDateModel endDateTimeModel = new SpinnerDateModel(DISPLAY_END_DATE.getTime(), null, null, Calendar.DAY_OF_MONTH);
+        endDateTimeSpinner = new DateTimeSpinner(endDateTimeModel);
+        final JSpinner.DateEditor endDateTimeEditor = new JSpinner.DateEditor(endDateTimeSpinner, "hh:mm a, MMM dd, yyyy");
+        endDateTimeSpinner.setEditor(endDateTimeEditor);
+        endDateTimeSpinner.addChangeListener(new ChangeListener()
         {
-            SpinnerDateModel endDateTimeModel;
-            endDateTimeModel = new SpinnerDateModel(getDefaultEndDateTime().getTime(), null, null, Calendar.DAY_OF_MONTH);
-            endDateTimeSpinner = new DateTimeSpinner(endDateTimeModel);
-            final JSpinner.DateEditor endDateTimeEditor = new JSpinner.DateEditor(endDateTimeSpinner, "hh:mm a, MMM dd, yyyy");
-            endDateTimeSpinner.setEditor(endDateTimeEditor);
-            endDateTimeSpinner.addChangeListener(new ChangeListener()
+            @Override
+            public void stateChanged(final ChangeEvent e)
             {
-
-                @Override
-                public void stateChanged(final ChangeEvent e)
-                {
-                    endDateTimeSpinner.notifyActionListeners(e.hashCode());
-                }
-
-            });
-            datePanel.add(endDateTimeSpinner, "2, 1");
-        }
-        return datePanel;
+                endDateTimeSpinner.notifyActionListeners(e.hashCode());
+            }
+        });
+        panel.add(endDateTimeSpinner, "2, 1");
     }
 
     private void initLayout()
@@ -266,7 +275,7 @@ public class UserControlPanel extends JPanel
         setPreferredSize(PREFERRED_SIZE);
     }
 
-    private Panel getControlButtons()
+    private Panel addControlButtonPanel()
     {
         final Panel panel = new Panel();
         panel.setLayout(new GridLayout(1, 3));
@@ -276,49 +285,38 @@ public class UserControlPanel extends JPanel
         return panel;
     }
 
-    private JPanel getOutputOptions()
+    private JPanel addOutputOptionPanel()
     {
-        final JCheckBox max = new JCheckBox("Max");
-        final JCheckBox min = new JCheckBox("Min");
-        final JCheckBox meanT = new JCheckBox("Mean(Time)");
-        final JCheckBox meanR = new JCheckBox("Mean(Region)");
-        final JCheckBox showAnimation = new JCheckBox("Show Animation");
-
-        max.setSelected(true);
-        min.setSelected(true);
-        meanT.setSelected(true);
-        meanR.setSelected(true);
-        showAnimation.setSelected(true);
-
-        final JPanel outPutPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        outPutPanel.add(max);
-        outPutPanel.add(min);
-        outPutPanel.add(meanT);
-        outPutPanel.add(meanR);
-        outPutPanel.add(showAnimation);
-        outPutPanel.setBorder(BorderFactory.createTitledBorder("Output Options"));
-        return outPutPanel;
+        final JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(showMaxTemp = new JCheckBox("Max", true));
+        panel.add(showMinTemp = new JCheckBox("Min", true));
+        panel.add(showMeanTimeTemp = new JCheckBox("Mean (Time)", true));
+        panel.add(showMeanRegionTemp = new JCheckBox("Mean (Region)", true));
+        panel.add(showAnimation = new JCheckBox("Show Animation", true));
+        panel.add(maxMinMeanTimeMeanRegionTemp = new JLabel());
+        panel.setBorder(BorderFactory.createTitledBorder("Output Options"));
+        return panel;
     }
 
-    private JPanel getSimTimePanel()
+    private JPanel addSimTimePanel()
     {
-        final JPanel simTimePanel = new JPanel();
-        simTimePanel.setLayout(new BoxLayout(simTimePanel, BoxLayout.X_AXIS));
-        simTimePanel.setBorder(BorderFactory.createTitledBorder("Simulation Status"));
+        final JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.setBorder(BorderFactory.createTitledBorder("Simulation Status"));
 
-        addSimTimeField(simTimePanel, "Simulation Time:", simulationTime = new JLabel());
-        addSimTimeField(simTimePanel, "Orbital Position:", orbitalPosition = new JLabel());
-        addSimTimeField(simTimePanel, "Rotational Position:", rotationalPosition = new JLabel());
+        addSimTimeField(panel, "Simulation Time:", simulationTime = new JLabel());
+        addSimTimeField(panel, "Orbital Position:", orbitalPosition = new JLabel());
+        addSimTimeField(panel, "Rotational Position:", rotationalPosition = new JLabel());
 
-        return simTimePanel;
+        return panel;
     }
 
-    private void addSimTimeField(final JPanel simTimePanel, final String label, final JLabel value)
+    private void addSimTimeField(final JPanel panel, final String label, final JLabel value)
     {
         final JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT));
         row.add(new JLabel(label));
         row.add(value);
-        simTimePanel.add(row);
+        panel.add(row);
     }
 
     private void addSettingsFields(final JPanel root)
@@ -353,27 +351,28 @@ public class UserControlPanel extends JPanel
         root.add(row);
     }
 
-    private void addGridSpacing(final JPanel root)
+    private void addGridSpacingField(final JPanel panel)
     {
-        addSpinner(root, gridSpacingModel = new SpinnerNumberModel(new Integer(15), new Integer(1), new Integer(180), new Integer(15)), "Grid Spacing");
+        addSpinnerField(panel, gridSpacingModel = new SpinnerNumberModel(new Integer(15), new Integer(1), new Integer(180), new Integer(15)), "Grid Spacing");
     }
 
-    private void addSimulationTimeStep(final JPanel root)
+    private void addSimulationTimeStepField(final JPanel panel)
     {
-        addSpinner(root, timeStepModel = new SpinnerNumberModel(new Integer(1440), new Integer(1), new Integer(525600), new Integer(60)), "Time Step");
+        addSpinnerField(panel, timeStepModel = new SpinnerNumberModel(new Integer(1440), new Integer(1), new Integer(525600), new Integer(60)), "Time Step");
     }
 
-    private void addRefreshRate(final JPanel root)
+    private void addRefreshRateField(final JPanel panel)
     {
-        addSpinner(root, refreshRateModel = new SpinnerNumberModel(new Integer(1), new Integer(1), new Integer(100), new Integer(1)), "Refresh Rate");
+        addSpinnerField(panel, refreshRateModel = new SpinnerNumberModel(new Integer(1), new Integer(1), new Integer(100), new Integer(1)), "Refresh Rate");
     }
 
-    private void addSimLength(final JPanel root)
+    private void addSimLengthField(final JPanel panel)
     {
-        addSpinner(root, simLengthModel = new SpinnerNumberModel(new Integer(12), new Integer(1), new Integer(1200), new Integer(12)), "Simulation Length");
+        addSpinnerField(panel, simLengthModel = new SpinnerNumberModel(new Integer(12), new Integer(1), new Integer(1200), new Integer(12)),
+                "Simulation Length");
     }
 
-    private void addSpinner(final JPanel root, final SpinnerNumberModel model, final String label)
+    private void addSpinnerField(final JPanel root, final SpinnerNumberModel model, final String label)
     {
         final JPanel panel = new JPanel(new BorderLayout());
         panel.add(new JLabel(label), BorderLayout.WEST);
@@ -470,16 +469,18 @@ public class UserControlPanel extends JPanel
 
     private SimulationSettings cloneSettings()
     {
-        final SimulationSettings cloneSettings;
-        cloneSettings = new SimulationSettings();
+        final SimulationSettings cloneSettings = new SimulationSettings();
+
         cloneDateSettings(cloneSettings);
         cloneSimulationSettings(cloneSettings);
         cloneLocationSettings(cloneSettings);
         cloneCommandLineSettings(settings);
+
         cloneSettings.setGridSpacing(gridSpacingModel.getNumber().intValue());
         cloneSettings.setSimulationTimeStepMinutes(timeStepModel.getNumber().intValue());
         cloneSettings.setUIRefreshRate(refreshRateModel.getNumber().intValue());
         cloneSettings.setSimulationLength(simLengthModel.getNumber().intValue());
+
         return cloneSettings;
     }
 
@@ -492,6 +493,7 @@ public class UserControlPanel extends JPanel
 
     private void cloneSimulationSettings(final SimulationSettings cloneSettings)
     {
+        cloneSettings.setDisplaySimulation(showAnimation.isSelected());
         cloneSettings.setSimulationName(simulationName.getSelectedItem().toString());
         cloneSettings.setPlanetsOrbitalEccentricity(convertTextToDbl(eccentricity.getText()));
         cloneSettings.setPlanetsAxialTilt(convertTextToDbl(tilt.getText()));
@@ -520,12 +522,59 @@ public class UserControlPanel extends JPanel
         return ((value != null) && (value.length() > 0.)) ? Double.parseDouble(value) : 0.;
     }
 
-    @Subscribe
-    public void display(final DisplayEvent event)
+    private void displayTime(final DisplayEvent event)
     {
         simulationTime.setText(SDF.format(event.getSettings().getSimulationTimestamp().getTime()));
+    }
+
+    private void displayTemperature(final DisplayEvent event)
+    {
+        final StringBuilder temp = new StringBuilder();
+
+        if (showMaxTemp.isSelected())
+        {
+            temp.append("Max: " + settings.getMaxTemp() + " ");
+        }
+        if (showMinTemp.isSelected())
+        {
+            temp.append("Min: " + settings.getMinTemp() + " ");
+        }
+        if (showMeanTimeTemp.isSelected())
+        {
+            temp.append("Mean Time: " + settings.getMeanTimeTemp() + " ");
+        }
+        if (showMeanRegionTemp.isSelected())
+        {
+            temp.append("Mean Region: " + settings.getMeanRegionTemp() + " ");
+        }
+
+        maxMinMeanTimeMeanRegionTemp.setText(temp.toString());
+    }
+
+    private void displayOrbitalPosition(final DisplayEvent event)
+    {
         final PlanetPosition planetPosition = event.getSettings().getPlanetPosition();
 
-        orbitalPosition.setText(String.format("(%s, %s)", planetPosition.getHelioLatitude(), planetPosition.getHelioLongitude()));
+        orbitalPosition.setText(String.format("(%.2f, %.2f)", planetPosition.getHelioLatitude(), planetPosition.getHelioLongitude()));
+    }
+
+    private static void calculateDefaultStartDateTime()
+    {
+        try
+        {
+            DISPLAY_START_DATE.set(2000, 0, 4, 0, 0, 0);
+            DISPLAY_START_DATE.set(Calendar.MILLISECOND, 0);
+            DISPLAY_START_DATE.setTime(SDF_DISPLAY.parse(SDF_DISPLAY.format(DISPLAY_START_DATE.getTime())));
+        }
+        catch (final ParseException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void calculateDefaultEndDateTime()
+    {
+        DISPLAY_END_DATE.setTime(DISPLAY_START_DATE.getTime());
+        DISPLAY_END_DATE.add(Calendar.MINUTE, 30 * 12 * 24 * 60);
     }
 }

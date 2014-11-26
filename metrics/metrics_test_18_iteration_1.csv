@@ -1,2 +1,1 @@
 SimulationName,DataSource,DataStoragePrecision,GeographicPrecision,TemporalPrecision,GridSpacing,QueryTime,DatabaseSize,UsedSystemMemory,CPU %,Date
-test_18_iteration_3_56129964310212,SIMULATION,7,100,100,15,0,838,56332.0,76.70731707317073,09:35:51.242

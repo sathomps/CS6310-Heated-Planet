@@ -150,7 +150,7 @@ public class MetricsEngine
                 final String simulationName = "test_" + test + "_iteration_" + testIteration + "_" + System.nanoTime();
 
                 settings.setSimulationName(simulationName);
-                final EventBus eventBus = new EventBus(true);
+                final EventBus eventBus = EventBus.getInstance(true);
                 new DBEngine(eventBus);
                 new SimulationEngineDaemon(eventBus);
                 new MetricsEngine(eventBus, fileName);

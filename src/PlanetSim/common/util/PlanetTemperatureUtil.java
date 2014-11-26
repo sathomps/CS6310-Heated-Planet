@@ -69,7 +69,21 @@ public final class PlanetTemperatureUtil
                 calculatePlanetCellTemperature(grid.get(row).get(cell), settings);
             }
         }
+    }
 
+    public static double calculatePlanetAverageTemperature(final SimulationSettings settings)
+    {
+        double averageTemp = 0;
+        final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
+        for (int row = 0; row < grid.size(); row++)
+        {
+            for (int cell = 0; cell < grid.get(0).size(); cell++)
+            {
+                averageTemp += grid.get(row).get(cell).getTemp();
+            }
+        }
+
+        return averageTemp /= settings.getGridSize();
     }
 
     private static void calculatePlanetCellTemperature(final GridCell gridCell, final SimulationSettings settings)
@@ -77,9 +91,18 @@ public final class PlanetTemperatureUtil
         final SunPosition sunPosition = calculateSunPosition(gridCell, settings);
         final double sunTemp = caclulateEffectiveTemperature(gridCell, settings, sunPosition);
         final double initialTemp = gridCell.getTemp();
-        final double coolingTemp = 0;// calculateTemperatureDueToCooling(cell);
+        final double coolingTemp = calculateHeatLoss(gridCell, settings);
         final double neighborTemp = calculateNeighborHeat(gridCell) / 2;
-        gridCell.setTemp(initialTemp + sunTemp + coolingTemp + neighborTemp);
+
+        gridCell.setTemp((initialTemp + sunTemp + neighborTemp + coolingTemp) / 4);
+    }
+
+    private static double calculateHeatLoss(final GridCell gridCell, final SimulationSettings settings)
+    {
+        final double avgGridCellSize = (settings.getGridSurfaceArea() / (settings.getGridSize())) * 1000000;
+        final double relativeSizeFactor = gridCell.getSurfaceArea() / avgGridCellSize;
+        final double relativeTempFactor = gridCell.getTemp() / calculatePlanetAverageTemperature(settings);
+        return -relativeSizeFactor * relativeTempFactor * 278;
     }
 
     /**

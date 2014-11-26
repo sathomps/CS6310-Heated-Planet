@@ -46,27 +46,28 @@ public class Planet extends JPanel
 
     private void fillCellColors(final Graphics g)
     {
-        // if(settings.) {
-        final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
-
-        int cellX = 0;
-        int cellY = 0;
-        final int cellWidth = settings.getPixelsPerCellX();
-
-        for (int x = 0; x < grid.size(); x++)
+        if (settings.getDisplaySimulation())
         {
-            final LinkedList<GridCell> cells = grid.get(x);
-            for (int y = 0; y < cells.size(); y++)
+            final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
+
+            int cellX = 0;
+            int cellY = 0;
+            final int cellWidth = settings.getPixelsPerCellX();
+
+            for (int x = 0; x < grid.size(); x++)
             {
-                final GridCell cell = cells.get(y);
-                g.setColor(getColor(cell.getTemp()));
-                g.fillRect(cellX, cellY, cell.getWidth(), cell.getHeight());
-                cellY += cell.getHeight();
+                final LinkedList<GridCell> cells = grid.get(x);
+                for (int y = 0; y < cells.size(); y++)
+                {
+                    final GridCell cell = cells.get(y);
+                    g.setColor(getColor(cell.getTemp()));
+                    g.fillRect(cellX, cellY, cell.getWidth(), cell.getHeight());
+                    cellY += cell.getHeight();
+                }
+                cellX += cellWidth;
+                cellY = 0;
             }
-            cellX += cellWidth;
-            cellY = 0;
         }
-        // }
     }
 
     private void drawGrid(final Graphics g)

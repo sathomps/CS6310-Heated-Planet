@@ -20,6 +20,8 @@ public class GridSettings
 
     private final SimulationSettings               settings;
 
+    private double                                 totalSurfaceArea;
+
     public GridSettings(final SimulationSettings settings)
     {
         this.settings = settings;
@@ -124,6 +126,7 @@ public class GridSettings
     private void calculateSurfaceArea(final GridCell cell, final double topLength, final double bottomLength)
     {
         cell.setSurfaceArea(calculateTrapezoidArea(topLength, bottomLength, cell.getHeight()));
+        totalSurfaceArea += cell.getSurfaceArea();
     }
 
     private void calculateHeight(final GridCell cell)
@@ -175,5 +178,10 @@ public class GridSettings
     public int size()
     {
         return grid.size() * grid.get(0).size();
+    }
+
+    public double getTotalSurfaceArea()
+    {
+        return totalSurfaceArea;
     }
 }

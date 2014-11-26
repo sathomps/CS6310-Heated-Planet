@@ -5,22 +5,32 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class EventBus
 {
-    private boolean synchronizedCalls = false;
+    private static final AtomicReference<EventBus> INSTANCE                = new AtomicReference<EventBus>();
 
-    public EventBus(final boolean synchronizedCalls)
+    private final Map<Class<?>, List<Method>>      eventsSubscriberMethods = new HashMap<Class<?>, List<Method>>();
+    private final Map<Method, Object>              eventsSubscribers       = new HashMap<Method, Object>();
+
+    private boolean                                synchronizedCalls       = false;
+
+    private EventBus(final boolean synchronizedCalls)
     {
         this.synchronizedCalls = synchronizedCalls;
     }
 
-    public EventBus()
+    public static EventBus getInstance()
     {
+        return getInstance(false);
     }
 
-    private final Map<Class<?>, List<Method>> eventsSubscriberMethods = new HashMap<Class<?>, List<Method>>();
-    private final Map<Method, Object>         eventsSubscribers       = new HashMap<Method, Object>();
+    public static EventBus getInstance(final boolean synchronizedCalls)
+    {
+        INSTANCE.compareAndSet(null, new EventBus(synchronizedCalls));
+        return INSTANCE.get();
+    }
 
     public void subscribe(final Object subscriber)
     {
