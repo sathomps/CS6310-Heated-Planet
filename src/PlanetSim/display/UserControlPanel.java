@@ -150,6 +150,7 @@ public class UserControlPanel extends JPanel
     {
         displayTime(event);
         displayOrbitalPosition(event);
+        displayRotationalPosition(event);
         displayTemperature(event);
     }
 
@@ -556,6 +557,14 @@ public class UserControlPanel extends JPanel
         final PlanetPosition planetPosition = event.getSettings().getPlanetPosition();
 
         orbitalPosition.setText(String.format("(%.2f, %.2f)", planetPosition.getHelioLatitude(), planetPosition.getHelioLongitude()));
+    }
+    
+    private void displayRotationalPosition(final DisplayEvent event)
+    {
+        final PlanetPosition planetPosition = event.getSettings().getPlanetPosition();
+       
+
+        rotationalPosition.setText(String.format("(%.2f)",  planetPosition.getRotationalPostion()));
     }
 
     private static void calculateDefaultStartDateTime()
