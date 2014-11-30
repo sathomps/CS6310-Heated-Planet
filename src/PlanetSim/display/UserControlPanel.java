@@ -37,8 +37,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import PlanetSim.common.SimulationSettings;
+import PlanetSim.common.StatsEngine;
 import PlanetSim.common.event.EventBus;
 import PlanetSim.common.event.PauseEvent;
+import PlanetSim.common.event.PrintEvent;
 import PlanetSim.common.event.RunEvent;
 import PlanetSim.common.event.StopEvent;
 import PlanetSim.common.event.Subscribe;
@@ -94,7 +96,7 @@ public class UserControlPanel extends JPanel
     private JLabel                        orbitalPosition;
     private JLabel                        rotationalPosition;
 
-    private JLabel                        maxMinMeanTimeMeanRegionTemp;
+    //private JLabel                        maxMinMeanTimeMeanRegionTemp;
 
     private JCheckBox                     showAnimation;
 
@@ -152,7 +154,14 @@ public class UserControlPanel extends JPanel
         displayTime(event);
         displayOrbitalPosition(event);
         displayRotationalPosition(event);
-        displayTemperature(event);
+        //displayTemperature(event);
+        displayStats(event);
+    }
+    
+    public void displayStats(DisplayEvent event)
+    {
+    	StatsEngine s = new StatsEngine(eventBus);
+    	s.aggregate(event.getSettings());
     }
     
     @Subscribe
@@ -306,7 +315,7 @@ public class UserControlPanel extends JPanel
         panel.add(showMeanTimeTemp = new JCheckBox("Mean (Time)", true));
         panel.add(showMeanRegionTemp = new JCheckBox("Mean (Region)", true));
         panel.add(showAnimation = new JCheckBox("Show Animation", true));
-        panel.add(maxMinMeanTimeMeanRegionTemp = new JLabel());
+        //panel.add(maxMinMeanTimeMeanRegionTemp = new JLabel());
         panel.setBorder(BorderFactory.createTitledBorder("Output Options"));
         return panel;
     }
@@ -437,6 +446,14 @@ public class UserControlPanel extends JPanel
                     {
                         eventBus.publish(new StopEvent());
                         eventBus.publish(new DisplayEvent(cloneSettings()));
+                        
+                        try {
+							Thread.sleep(300);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+                        eventBus.publish(new PrintEvent());
                     }
                     else if (STATUS_PAUSE.equalsIgnoreCase(button.getActionCommand()))
                     {
@@ -494,6 +511,23 @@ public class UserControlPanel extends JPanel
         cloneSettings.setSimulationTimeStepMinutes(timeStepModel.getNumber().intValue());
         cloneSettings.setUIRefreshRate(refreshRateModel.getNumber().intValue());
         cloneSettings.setSimulationLength(simLengthModel.getNumber().intValue());
+        
+        if (showMaxTemp.isSelected())
+        {
+            cloneSettings.setMaxTemp(1.);
+        }
+        if (showMinTemp.isSelected())
+        {
+        	cloneSettings.setMinTemp(1.);
+        }
+        if (showMeanTimeTemp.isSelected())
+        {
+        	cloneSettings.setMeanTimeTemp(1.);
+        }
+        if (showMeanRegionTemp.isSelected())
+        {
+        	cloneSettings.setMeanRegionTemp(1.);
+        }
 
         return cloneSettings;
     }
@@ -562,22 +596,58 @@ public class UserControlPanel extends JPanel
             temp.append("Mean Region: " + settings.getMeanRegionTemp() + " ");
         }
 
-        maxMinMeanTimeMeanRegionTemp.setText(temp.toString());
+        //maxMinMeanTimeMeanRegionTemp.setText(temp.toString());
+    }
+    
+    public static String getRotationinDegrees(double value) {
+        double val1;
+        double val2;
+
+        double rotationDegrees = Math.floor( value );
+        if ( rotationDegrees < 0 )
+            rotationDegrees = rotationDegrees + 1;
+        val1 = Math.abs( value - rotationDegrees );
+        val2 = val1 * 3600;
+        double degreeMinutes = Math.floor( val2 / 60 );
+        double degreeSeconds = val2 - degreeMinutes * 60;
+
+        if ( Math.rint( degreeSeconds ) == 60 )
+        {
+            degreeMinutes = degreeMinutes + 1;
+            degreeSeconds = 0;
+        }
+
+        if ( Math.rint( degreeMinutes ) == 60 )
+        {
+            if ( rotationDegrees < 0 )
+                rotationDegrees = rotationDegrees - 1;
+            else
+                rotationDegrees = rotationDegrees + 1;
+            degreeMinutes = 0;
+        }
+
+        if (rotationDegrees == -0 || Double.isNaN(rotationDegrees))
+            rotationDegrees = 0;
+        if (Double.isNaN(degreeMinutes))
+            degreeMinutes = 0;
+        if (Double.isNaN(degreeSeconds))
+            degreeSeconds = 0;
+
+        return (rotationDegrees + "° " + degreeMinutes + "' " + (int) degreeSeconds + "\"" );
     }
 
     private void displayOrbitalPosition(final DisplayEvent event)
     {
         final PlanetPosition planetPosition = event.getSettings().getPlanetPosition();
 
-        orbitalPosition.setText(String.format("(%.2f, %.2f)", planetPosition.getHelioLatitude(), planetPosition.getHelioLongitude()));
+        orbitalPosition.setText(String.format("(%.2f, %.2f)", planetPosition.getProjectedHelioLongitude()/2, planetPosition.getHelioLongitude()));
     }
     
     private void displayRotationalPosition(final DisplayEvent event)
     {
         final PlanetPosition planetPosition = event.getSettings().getPlanetPosition();
        
-
-        rotationalPosition.setText(String.format("(%.2f)",  planetPosition.getRotationalPostion()));
+        rotationalPosition.setText(getRotationinDegrees(planetPosition.getHelioLongitude()));
     }
 
     private static void calculateDefaultStartDateTime()

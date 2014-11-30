@@ -2,12 +2,24 @@ package PlanetSim.common;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import PlanetSim.common.event.EventBus;
+import PlanetSim.common.event.PrintEvent;
+import PlanetSim.common.event.StopEvent;
+import PlanetSim.common.event.Subscribe;
+import PlanetSim.display.DisplayEvent;
 import PlanetSim.model.GridCell;
 
 public class StatsEngine {
+	LinkedList<StatsData> allData;
+	private final AtomicBoolean doPrint           = new AtomicBoolean(true);
+	SimulationSettings settings;
 
-	public StatsEngine () {}
+	public StatsEngine (EventBus bus) {
+	allData = new LinkedList<StatsData>();
+	bus.subscribe(this);
+	}
 	/**
 	 * calcs the max, min and mean temp of the cells in teh query window
 	 * also returns an arraylist of Doubles ordered left to right of the columns 
@@ -18,11 +30,13 @@ public class StatsEngine {
 	public StatsData aggregate(SimulationSettings settings)
 	{
 		StatsData result = new StatsData();
+		this.settings = settings;
 		Double acctemp  = 0.0;
 		Double cnt = 0.0;
 		//note that this is a column first traversal of the grid.  This is because
 		//the mean of the same timezone is required.  that meant column first. 
         final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
+        System.out.print(settings.getSimulationTimestamp().getTime());
         for (int col = 0; col < grid.get(0).size(); col++)
         {
         	Double timeTemp = 0.0;
@@ -32,8 +46,8 @@ public class StatsEngine {
             {
             	final GridCell c = grid.get(row).get(col);
             	//only want the temp if it is in the queried window
-            	if (isInRectangle(settings.getLongitudeLeft(), settings.getLongitudeRight(), settings.getLatitudeTop(), settings.getLatitudeBottom()
-            			, c.getLongitudeLeft(), c.getLatitudeTop()))
+            	//if (isInRectangle(settings.getLongitudeLeft(), settings.getLongitudeRight(), settings.getLatitudeTop(), settings.getLatitudeBottom()
+            	//		, c.getLongitudeLeft(), c.getLatitudeTop()))
             	{
             		
             		if (result.getMinTemp() > c.getTemp())
@@ -43,13 +57,82 @@ public class StatsEngine {
             		acctemp += c.getTemp();
             		timeTemp += c.getTemp();
             		cnt++;
+            		if (doPrint.get())
+            		{
+	            		System.out.print("\t");
+	            		System.out.print(c.getTemp());
+            		}
             	}
             }
-            result.getTimeTemp().add(timeTemp / row);
         }
-		result.setMeanTemp(acctemp / cnt);
+        
+        if ((doPrint.get() == true) && (settings.getMeanRegionTemp() > 0.))
+		{
+        	System.out.print(acctemp/(grid.get(0).size() *grid.size()));
+		//result.setMeanTemp(acctemp / cnt);
+        	System.out.println();
+    		allData.add(result);
+		}
 		return result;
 	}
+	
+	public double getMaxTemp()
+	{
+		double maxTemp = 0;
+		
+		 for (int inx = 0; inx < allData.size(); inx++)
+         {
+         	final StatsData c = allData.get(inx);
+         	if (inx ==0)
+         	{
+         		maxTemp = c.getMaxTemp();
+         	}
+         	else if (maxTemp < c.getMaxTemp())
+         	{
+         		maxTemp = c.getMaxTemp();
+         	}
+         }
+		 
+		 return maxTemp;
+	}
+	
+	public double getMinTemp()
+	{
+		double minTemp = 0;
+		
+		 for (int inx = 0; inx < allData.size(); inx++)
+        {
+        	final StatsData c = allData.get(inx);
+        	if (inx ==0)
+        	{
+        		minTemp = c.getMinTemp();
+        	}
+        	else if (minTemp > c.getMinTemp())
+        	{
+        		minTemp = c.getMinTemp();
+        	}
+        }
+		 
+		 return minTemp;
+	}
+	
+	 @Subscribe
+    public void process(final PrintEvent event)
+    {
+		 if (doPrint.get() && settings.getMaxTemp() > 0.)
+		 {
+			 System.out.print("Max=");
+			 System.out.println(getMaxTemp());
+		 }
+		 if (doPrint.get() && settings.getMinTemp() > 0.)
+		 {
+			 System.out.print("Min=");
+			 System.out.println(getMinTemp());
+		 }
+		 doPrint.set(false);
+    }
+	
+	
     private boolean isInRectangle(final double longitudeLeft, final double longitudeRight, final double latitudeTop, final double latitudeBottom,
             final double x, final double y)
     {

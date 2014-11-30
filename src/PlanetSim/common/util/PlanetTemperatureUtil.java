@@ -39,8 +39,10 @@ public final class PlanetTemperatureUtil
     {
         final Color c = Color.getHSBColor((float) (.666 * tempInCelcius), 1f, 1f);
         return new Color(c.getRed(), c.getGreen(), c.getBlue(), 120);
+        
     }
-
+    
+	
     public static double calculatePlanetsAverageTemperature(final GridSettings gridSettings)
     {
         final LinkedList<LinkedList<GridCell>> grid = gridSettings.getGrid();
