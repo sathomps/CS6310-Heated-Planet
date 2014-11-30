@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -152,6 +153,17 @@ public class UserControlPanel extends JPanel
         displayOrbitalPosition(event);
         displayRotationalPosition(event);
         displayTemperature(event);
+    }
+    
+    @Subscribe
+    public void updateNames(final SetSimulationNamesEvent event)
+    {
+    	ArrayList<String> names = event.getNames();
+    	for (int inx = 0; inx < names.size(); inx++)
+    	{
+    		simulationName.addItem(names.get(inx));
+    	}
+    	repaint();
     }
 
     private void addConfigPanels()
@@ -333,6 +345,7 @@ public class UserControlPanel extends JPanel
 
         addField(root, eccentricity = new JTextField(5), "Eccentricity:");
         addField(root, tilt = new JTextField(5), "Tilt:");
+        
         // addField(root, precision = new JTextField(5), "Precision:");
     }
 

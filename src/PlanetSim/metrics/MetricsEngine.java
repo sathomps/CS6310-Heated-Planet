@@ -126,7 +126,9 @@ public class MetricsEngine
     {
         try
         {
-            final double value = OS_BEAN.getProcessCpuLoad();
+        	//TODO: Fix this to be compatible with 1.6
+        	final double value = 0.;
+            //final double value = OS_BEAN.getProcessCpuLoad();
 
             if (value > 0)
             {

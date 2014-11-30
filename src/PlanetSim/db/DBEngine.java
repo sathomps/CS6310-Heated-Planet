@@ -13,6 +13,7 @@ import PlanetSim.common.event.RunEvent;
 import PlanetSim.common.event.Subscribe;
 import PlanetSim.display.DisplayEvent;
 import PlanetSim.display.GetSimulationNamesEvent;
+import PlanetSim.display.SetSimulationNamesEvent;
 import PlanetSim.metrics.MetricEvent;
 
 public class DBEngine
@@ -36,7 +37,9 @@ public class DBEngine
     @Subscribe
     public void listSimulationNames(final GetSimulationNamesEvent event)
     {
-        eventBus.publish(new GetSimulationNamesEvent(con.listSimulationNames()));
+    	SetSimulationNamesEvent event1 = new SetSimulationNamesEvent();
+    	event1.setNames(con.listSimulationNames());
+        eventBus.publish(event1);
     }
 
     @Subscribe

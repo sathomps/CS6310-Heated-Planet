@@ -127,7 +127,7 @@ public class MySqlConnection
             final ResultSet rs = createResultSet(con, "SELECT name FROM simulations");
             while (rs.next())
             {
-                result.add(rs.getString(0));
+                result.add(rs.getString(1));
             }
             return result;
         }

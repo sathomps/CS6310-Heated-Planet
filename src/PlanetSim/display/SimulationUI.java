@@ -2,6 +2,7 @@ package PlanetSim.display;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -43,6 +44,8 @@ public class SimulationUI extends JFrame
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
+        
+        eventBus.publish(new GetSimulationNamesEvent());
     }
 
     private void addGridBagLayout()

@@ -2,9 +2,9 @@ package PlanetSim.display;
 
 import java.util.ArrayList;
 
-public class GetSimulationNamesEvent {
+public class SetSimulationNamesEvent {
 	private ArrayList<String> names = null;
-	public GetSimulationNamesEvent()
+	public SetSimulationNamesEvent()
 	{
 	}
 	public ArrayList<String> getNames() {

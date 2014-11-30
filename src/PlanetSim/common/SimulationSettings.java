@@ -64,7 +64,7 @@ public class SimulationSettings
     private int                           simulationTimeStepMinutes = 1;
     private int                           gridSpacing               = 15;
 
-    private final Calendar                simulationTimestamp;
+    private Calendar                	  simulationTimestamp;
     private Calendar                      simulationStartDate;
     private Calendar                      simulationEndDate;
 
@@ -382,6 +382,7 @@ public class SimulationSettings
     public void setSimulationStartDate(final Calendar simulationStartDate)
     {
         this.simulationStartDate = simulationStartDate;
+        simulationTimestamp = simulationStartDate;
     }
 
     public Calendar getSimulationEndDate()
