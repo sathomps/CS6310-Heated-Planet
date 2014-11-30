@@ -2,6 +2,7 @@ package PlanetSim.display.planet;
 
 import static PlanetSim.common.util.GeoUtil.calculateDistanceToEquator;
 import static PlanetSim.common.util.PlanetTemperatureUtil.getColor;
+import static PlanetSim.common.StatsEngine.isInRectangle;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -58,8 +59,12 @@ public class Planet extends JPanel
                 for (int y = 0; y < cells.size(); y++)
                 {
                     final GridCell cell = cells.get(y);
-                    g.setColor(getColor(cell.getTemp()));
-                    g.fillRect(cellX, cellY, cell.getWidth(), cell.getHeight());
+                    if(isInRectangle(settings.getLongitudeLeft(), settings.getLongitudeRight(), settings.getLatitudeTop(), settings.getLatitudeBottom()
+                			, cell.getLongitudeLeft(), cell.getLatitudeTop()))
+                    {
+	                    g.setColor(getColor(cell.getTemp()));
+	                    g.fillRect(cellX, cellY, cell.getWidth(), cell.getHeight());
+                    }
                     cellY += cell.getHeight();
                 }
                 cellX += cellWidth;

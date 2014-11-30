@@ -54,8 +54,8 @@ public class StatsEngine {
             {
             	final GridCell c = grid.get(row).get(col);
             	//only want the temp if it is in the queried window
-            	//if (isInRectangle(settings.getLongitudeLeft(), settings.getLongitudeRight(), settings.getLatitudeTop(), settings.getLatitudeBottom()
-            	//		, c.getLongitudeLeft(), c.getLatitudeTop()))
+            	if (isInRectangle(settings.getLongitudeLeft(), settings.getLongitudeRight(), settings.getLatitudeTop(), settings.getLatitudeBottom()
+            			, c.getLongitudeLeft(), c.getLatitudeTop()))
             	{
             		
             		if (result.getMinTemp() > c.getTemp())
@@ -148,12 +148,26 @@ public class StatsEngine {
     }
 	
 	
-    private boolean isInRectangle(final double longitudeLeft, final double longitudeRight, final double latitudeTop, final double latitudeBottom,
+    public static boolean isInRectangle(final double longitudeLeft, final double longitudeRight, final double latitudeTop, final double latitudeBottom,
             final double x, final double y)
     {
 		//if zero was supplied for all four corners then the whole grid is what we want - return true
+    	
 		if ((longitudeLeft != 0) && (latitudeBottom  != 0)&& (longitudeRight != 0) && (latitudeTop  != 0))
-			return (longitudeLeft <= x) && (x <= longitudeRight) && (latitudeTop >= y) && (latitudeBottom <= y);
+		{
+			boolean eval =  (longitudeLeft <= x) && (x <= longitudeRight) && (latitudeTop <= y) && (latitudeBottom >= y);
+			/*if (true)
+			{
+				System.out.print(longitudeLeft);
+		    	System.out.print(longitudeRight);
+		    	System.out.print(latitudeTop);
+		    	System.out.print(latitudeBottom);
+		    	System.out.print(x);
+		    	System.out.print(y);
+				System.out.print(eval);
+			}*/
+			return eval;
+		}
 		else 
 			return true;
     }
