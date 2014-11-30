@@ -67,6 +67,9 @@ public class EarthSunPanel extends JPanel
     @Subscribe
     public void process(final DisplayEvent displayEvent)
     {
-        repaint();
+    	 if (displayEvent.getSettings().getDisplaySimulation() == true)
+         {
+ 	        repaint();
+         }
     }
 }

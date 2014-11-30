@@ -46,8 +46,6 @@ public class Planet extends JPanel
 
     private void fillCellColors(final Graphics g)
     {
-        if (settings.getDisplaySimulation())
-        {
             final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
 
             int cellX = 0;
@@ -67,7 +65,6 @@ public class Planet extends JPanel
                 cellX += cellWidth;
                 cellY = 0;
             }
-        }
     }
 
     private void drawGrid(final Graphics g)
@@ -85,7 +82,7 @@ public class Planet extends JPanel
     {
         g.setColor(Color.blue);
         // prime meridian
-        g.drawLine(settings.getPlanetWidth() / 2, 0, settings.getPlanetWidth() / 2, settings.getPlanetHeight());
+        //g.drawLine(settings.getPlanetWidth() / 2, 0, settings.getPlanetWidth() / 2, settings.getPlanetHeight());
         // equator
         g.drawLine(0, settings.getPlanetHeight() / 2, settings.getPlanetWidth(), settings.getPlanetHeight() / 2);
     }
@@ -112,8 +109,11 @@ public class Planet extends JPanel
     public void process(final DisplayEvent displayEvent)
     {
         settings = displayEvent.getSettings();
-        drawGrid = false;
-        repaint();
-        drawGrid = true;
+        if (settings.getDisplaySimulation() == true)
+        {
+	        drawGrid = false;
+	        repaint();
+	        drawGrid = true;
+        }
     }
 }
