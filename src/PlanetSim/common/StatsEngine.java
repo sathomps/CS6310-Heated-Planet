@@ -74,7 +74,7 @@ public class StatsEngine {
             }
         }
         
-        if ((doPrint.get() == true) && (print == 1))
+        if ((doPrint.get() == true) && (print == 1) && settings.getMeanRegionTemp() > 0.)
 		{
         	System.out.print(String.format("\t(Mean = %3.7f)", acctemp/(grid.get(0).size() *grid.size())));
 		   //result.setMeanTemp(acctemp / cnt);
@@ -136,6 +136,13 @@ public class StatsEngine {
 		 {
 			 System.out.print("Min=");
 			 System.out.println(String.format("(%3.7f)",getMinTemp()));
+		 }
+		 
+		 if (doPrint.get())
+		 {
+			 System.out.println("Storage Precision = " + settings.getDatastoragePrecision()); //int
+			 System.out.println("Geographic Precision = " + settings.getGeographicPrecision() + "%"); //int
+			 System.out.println("Temporal Precision = " + settings.getTemporalPrecision() + "%"); //int
 		 }
 		 doPrint.set(false);
     }
