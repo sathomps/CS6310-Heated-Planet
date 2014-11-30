@@ -6,12 +6,12 @@ CS6310-Heated-Planet
 ./build.sh
 ```
 
-# Step 2 - Run
+## Step 2 - Run
 ```
 ./run.sh
 ```
 
-# Optional - Command Line Args
+## Optional - Command Line Args
 ```
 java -classpath '.:./lib/*:./bin' PlanetSim.Demo [-s] [-p] [-r|-t] [-b #]
 ```
