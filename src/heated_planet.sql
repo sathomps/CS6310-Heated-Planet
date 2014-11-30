@@ -3,8 +3,8 @@ CREATE TABLE IF NOT EXISTS simulations (
   grid_spacing INT NOT NULL,
   simulation_time_step INT NOT NULL,
   simulation_length INT NOT NULL,
-  axial_tilt DOUBLE NOT NULL,
-  orbital_eccentricity DOUBLE NOT NULL,
+  axial_tilt FLOAT NOT NULL,
+  orbital_eccentricity FLOAT NOT NULL,
   temperature_precision INT NOT NULL,
   geographic_precision INT NOT NULL,
   temporal_precision INT NOT NULL,
@@ -18,10 +18,10 @@ CREATE TABLE IF NOT EXISTS simulation_grid_data (
   insertion_ts BIGINT NOT NULL,
   row_position INT NOT NULL,
   column_position INT NOT NULL,
-  longitudeLeft DOUBLE NOT NULL,
-  longitudeRight DOUBLE NOT NULL,
-  latitudeTop DOUBLE NOT NULL,
-  latitudeBottom DOUBLE NOT NULL,
+  longitudeLeft FLOAT NOT NULL,
+  longitudeRight FLOAT NOT NULL,
+  latitudeTop FLOAT NOT NULL,
+  latitudeBottom FLOAT NOT NULL,
   PRIMARY KEY (simulation_name,simulation_date,insertion_ts,row_position,column_position)
 );
 
