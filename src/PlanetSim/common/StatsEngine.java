@@ -1,6 +1,7 @@
 package PlanetSim.common;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -12,12 +13,12 @@ import PlanetSim.display.DisplayEvent;
 import PlanetSim.model.GridCell;
 
 public class StatsEngine {
-	LinkedList<StatsData> allData;
+	static LinkedList<StatsData> allData = new LinkedList<StatsData>();
 	private final AtomicBoolean doPrint           = new AtomicBoolean(true);
+	private static int header = 0;
 	SimulationSettings settings;
 
 	public StatsEngine (EventBus bus) {
-	allData = new LinkedList<StatsData>();
 	bus.subscribe(this);
 	}
 	/**
@@ -33,10 +34,17 @@ public class StatsEngine {
 		this.settings = settings;
 		Double acctemp  = 0.0;
 		Double cnt = 0.0;
+		int print = 1;
 		//note that this is a column first traversal of the grid.  This is because
 		//the mean of the same timezone is required.  that meant column first. 
         final LinkedList<LinkedList<GridCell>> grid = settings.getGrid();
-        System.out.print(settings.getSimulationTimestamp().getTime());
+
+        Date t1 = settings.getSimulationTimestamp().getTime() ;
+        Date t2 = settings.getSimulationStartDate().getTime();
+        
+        if (print == 1)
+        	System.out.print(settings.getSimulationTimestamp().getTime());
+        
         for (int col = 0; col < grid.get(0).size(); col++)
         {
         	Double timeTemp = 0.0;
@@ -57,19 +65,19 @@ public class StatsEngine {
             		acctemp += c.getTemp();
             		timeTemp += c.getTemp();
             		cnt++;
-            		if (doPrint.get())
+            		if (doPrint.get() && (print == 1))
             		{
 	            		System.out.print("\t");
-	            		System.out.print(c.getTemp());
+	            		System.out.print(String.format("(%3.7f)", c.getTemp()));
             		}
             	}
             }
         }
         
-        if ((doPrint.get() == true) && (settings.getMeanRegionTemp() > 0.))
+        if ((doPrint.get() == true) && (print == 1))
 		{
-        	System.out.print(acctemp/(grid.get(0).size() *grid.size()));
-		//result.setMeanTemp(acctemp / cnt);
+        	System.out.print(String.format("\t(Mean = %3.7f)", acctemp/(grid.get(0).size() *grid.size())));
+		   //result.setMeanTemp(acctemp / cnt);
         	System.out.println();
     		allData.add(result);
 		}
@@ -122,12 +130,12 @@ public class StatsEngine {
 		 if (doPrint.get() && settings.getMaxTemp() > 0.)
 		 {
 			 System.out.print("Max=");
-			 System.out.println(getMaxTemp());
+			 System.out.println(String.format("(%3.7f)",getMaxTemp()));
 		 }
 		 if (doPrint.get() && settings.getMinTemp() > 0.)
 		 {
 			 System.out.print("Min=");
-			 System.out.println(getMinTemp());
+			 System.out.println(String.format("(%3.7f)",getMinTemp()));
 		 }
 		 doPrint.set(false);
     }
@@ -145,7 +153,7 @@ public class StatsEngine {
 	public class StatsData
 	{
 		private double maxTemp = 0;
-		private double minTemp = 0;
+		private double minTemp = 100;
 		private double meanTemp = 0;
 		private ArrayList<Double> timeTemp ;
 		
