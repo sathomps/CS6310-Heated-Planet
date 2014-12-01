@@ -13,7 +13,7 @@ CS6310-Heated-Planet
 
 ## Optional - Command Line Args
 ```
-java -classpath '.:./lib/*:./bin' PlanetSim.Demo [-s] [-p] [-r|-t] [-b #]
+java -classpath '.:./lib/*:./bin' PlanetSim.Demo [-p #] [-g #] [-t #]
 ```
 
 
