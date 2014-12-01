@@ -1,5 +1,7 @@
 package PlanetSim.display;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -30,6 +32,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -230,27 +233,26 @@ public class UserControlPanel extends JPanel
 
     private void addTimeFields(final JPanel panel)
     {
-    	
-    	final JPanel sPanel = new JPanel();
-        sPanel.setLayout(new BoxLayout(sPanel, BoxLayout.Y_AXIS));
-        
+        final TableLayout datePanelLayout = new TableLayout(new double[][] { { TableLayout.FILL, 50.0, 170.0, TableLayout.FILL }, { 30.0, 30.0, 30.0, 30.0 } });
+        datePanelLayout.setHGap(10);
+        datePanelLayout.setVGap(10);
+        panel.setLayout(datePanelLayout);
+        final JLabel startDateLabel = new JLabel();
+        panel.add(startDateLabel, "1, 0");
+        startDateLabel.setText("Start");
+        startDateLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 
-        addStartDateField(sPanel);
+        addStartDateField(panel);
 
-        addEndDate(sPanel);
-        
-        panel.add(sPanel);
+        addEndDate(panel);
     }
 
     private void addStartDateField(final JPanel datePanel)
     {
-    	 final JPanel sPanel = new JPanel();
-         sPanel.setLayout(new BoxLayout(sPanel, BoxLayout.X_AXIS));
-         
-         final JLabel startDateLabel = new JLabel();
-         
-         sPanel.add(startDateLabel);
-         startDateLabel.setText("Start");
+        final JLabel endDateLabel = new JLabel();
+        datePanel.add(endDateLabel, "1, 1");
+        endDateLabel.setText("End");
+        endDateLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 
         SpinnerDateModel startDateTimeModel;
         startDateTimeModel = new SpinnerDateModel(DISPLAY_START_DATE.getTime(), null, null, Calendar.DAY_OF_MONTH);
@@ -267,23 +269,11 @@ public class UserControlPanel extends JPanel
             }
 
         });
-        
-        sPanel.add(startDateTimeSpinner);
-        
-        datePanel.add(sPanel);
+        datePanel.add(startDateTimeSpinner, "2, 0");
     }
 
     private void addEndDate(final JPanel panel)
     {
-    	final JPanel sPanel = new JPanel();
-        sPanel.setLayout(new BoxLayout(sPanel, BoxLayout.X_AXIS));
-        
-    	 final JLabel endDateLabel = new JLabel();
-         sPanel.add(endDateLabel);
-         endDateLabel.setText("End");
-         //endDateLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-         
-         
         final SpinnerDateModel endDateTimeModel = new SpinnerDateModel(DISPLAY_END_DATE.getTime(), null, null, Calendar.DAY_OF_MONTH);
         endDateTimeSpinner = new DateTimeSpinner(endDateTimeModel);
         final JSpinner.DateEditor endDateTimeEditor = new JSpinner.DateEditor(endDateTimeSpinner, "hh:mm a, MMM dd, yyyy");
@@ -296,8 +286,7 @@ public class UserControlPanel extends JPanel
                 endDateTimeSpinner.notifyActionListeners(e.hashCode());
             }
         });
-        sPanel.add(endDateTimeSpinner);
-        panel.add(sPanel);
+        panel.add(endDateTimeSpinner, "2, 1");
     }
 
     private void initLayout()
